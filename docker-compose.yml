@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: agentdesk-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-agentdesk}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agentdesk_password}
+      POSTGRES_DB: ${POSTGRES_DB:-agentdesk_dev}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./supabase/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agentdesk}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agentdesk-network
+
+  # Optional: PgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: agentdesk-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@agentdesk.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - agentdesk-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  agentdesk-network:
+    driver: bridge
+

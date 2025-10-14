@@ -1,0 +1,34 @@
+{
+  "name": "agentdesk",
+  "version": "1.0.0",
+  "description": "AI-powered customer service agent platform for SMBs",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend",
+    "widget"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:widget\"",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:widget": "cd widget && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend && npm run build:widget",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build:widget": "cd widget && npm run build",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ../widget && npm install"
+  },
+  "keywords": [
+    "ai",
+    "chatbot",
+    "customer-service",
+    "saas"
+  ],
+  "author": "AgentDesk Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+
