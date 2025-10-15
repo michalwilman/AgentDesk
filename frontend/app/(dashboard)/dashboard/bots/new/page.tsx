@@ -66,28 +66,63 @@ export default function NewBotPage() {
       const supabase = createClient()
       
       const {
-        data: { session },
-      } = await supabase.auth.getSession()
+        data: { user },
+      } = await supabase.auth.getUser()
 
-      if (!session) {
+      if (!user) {
         throw new Error('Not authenticated')
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(formData),
-      })
+      // Check if user exists in users table, if not create it
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', user.id)
+        .single()
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Failed to create bot')
+      if (!existingUser) {
+        // Create user profile if it doesn't exist
+        const userData = user.user_metadata || {}
+        const { error: userError } = await supabase.from('users').insert([
+          {
+            id: user.id,
+            email: user.email,
+            full_name: userData.full_name || userData.name || '',
+            company_name: userData.company_name || '',
+            avatar_url: userData.avatar_url || userData.picture || null,
+          },
+        ])
+
+        if (userError) {
+          console.error('Error creating user profile:', userError)
+          throw new Error('Failed to create user profile')
+        }
       }
 
-      const bot = await response.json()
+      // Create bot directly in Supabase
+      const { data: bot, error: insertError } = await supabase
+        .from('bots')
+        .insert([
+          {
+            user_id: user.id,
+            name: formData.name,
+            description: formData.description,
+            language: formData.language,
+            personality: formData.personality,
+            welcome_message: formData.welcome_message,
+            primary_color: formData.primary_color,
+            is_active: true,
+            is_trained: false,
+          },
+        ])
+        .select()
+        .single()
+
+      if (insertError) {
+        throw new Error(insertError.message || 'Failed to create bot')
+      }
+
+      // Redirect to the new bot's page
       router.push(`/dashboard/bots/${bot.id}`)
     } catch (error: any) {
       setError(error.message || 'Failed to create bot')
@@ -100,7 +135,7 @@ export default function NewBotPage() {
     return (
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-center py-12">
-          <p className="text-gray-600">Checking bot limit...</p>
+          <p className="text-dark-800">Checking bot limit...</p>
         </div>
       </div>
     )
@@ -139,11 +174,11 @@ export default function NewBotPage() {
             />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-white mb-1">
                 Description
               </label>
               <textarea
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border border-primary/20 bg-dark-50 px-3 py-2 text-sm text-white placeholder:text-[#666666] focus:outline-none focus:ring-2 focus:ring-primary"
                 rows={3}
                 placeholder="A helpful assistant for customer inquiries"
                 value={formData.description}
@@ -152,11 +187,11 @@ export default function NewBotPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-white mb-1">
                 Language
               </label>
               <select
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border border-primary/20 bg-dark-50 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary"
                 value={formData.language}
                 onChange={(e) => setFormData({ ...formData, language: e.target.value })}
               >
@@ -180,13 +215,13 @@ export default function NewBotPage() {
             />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-white mb-1">
                 Primary Color
               </label>
               <div className="flex items-center space-x-2">
                 <input
                   type="color"
-                  className="h-10 w-20 rounded border border-gray-300"
+                  className="h-10 w-20 rounded border border-primary/20 bg-dark-50"
                   value={formData.primary_color}
                   onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
                 />

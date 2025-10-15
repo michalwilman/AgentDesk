@@ -147,6 +147,21 @@ CREATE TABLE audit_logs (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Transactions Table (Payment Records)
+CREATE TABLE transactions (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  plan VARCHAR(50) NOT NULL, -- starter, pro, business
+  amount NUMERIC(10,2) NOT NULL,
+  currency VARCHAR(3) DEFAULT 'ILS',
+  status VARCHAR(20) NOT NULL DEFAULT 'pending', -- pending, success, failed, cancelled
+  paypal_order_id TEXT,
+  full_name VARCHAR(255),
+  email VARCHAR(255),
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- ============================================================================
 -- INDEXES
 -- ============================================================================
@@ -162,6 +177,9 @@ CREATE INDEX idx_chats_session_id ON chats(session_id);
 CREATE INDEX idx_messages_chat_id ON messages(chat_id);
 CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
 CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at);
+CREATE INDEX idx_transactions_user_id ON transactions(user_id);
+CREATE INDEX idx_transactions_status ON transactions(status);
+CREATE INDEX idx_transactions_created_at ON transactions(created_at);
 
 -- Vector similarity search index (IVFFlat for faster similarity search)
 CREATE INDEX idx_knowledge_embeddings_vector ON knowledge_embeddings 
@@ -263,10 +281,14 @@ ALTER TABLE knowledge_embeddings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chats ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
 -- Users table policies
 CREATE POLICY "Users can view own profile" ON users
   FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can create own profile" ON users
+  FOR INSERT WITH CHECK (auth.uid() = id);
 
 CREATE POLICY "Users can update own profile" ON users
   FOR UPDATE USING (auth.uid() = id);
@@ -325,6 +347,13 @@ CREATE POLICY "Users can view own bot messages" ON messages
 -- Audit logs policies (users can only view their own logs)
 CREATE POLICY "Users can view own audit logs" ON audit_logs
   FOR SELECT USING (auth.uid() = user_id);
+
+-- Transactions policies
+CREATE POLICY "Users can view own transactions" ON transactions
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create own transactions" ON transactions
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- ============================================================================
 -- INITIAL DATA

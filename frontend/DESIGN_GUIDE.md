@@ -1,24 +1,27 @@
-# AgentDesk Design Guide
+# AgentDesk Design Guide - Cyber-AI Dark Theme
 
 ## Color Palette
 
-### Primary Colors (Soft Pink)
-- **Primary 50**: `#FFF5F9` - Very light pink (backgrounds)
-- **Primary 100**: `#FFE8F1` - Light pink
-- **Primary 200**: `#FFD6E7` - Soft pink
-- **Primary 400**: `#FFB6D9` - Main soft pink (DEFAULT)
-- **Primary 600**: `#FF69B4` - Accent pink
-- **Primary 700**: `#E6539E` - Darker pink
+### Primary Colors (Turquoise Glow)
+- **Primary 50**: `#E6FFFC` - Very light turquoise
+- **Primary 100**: `#CCFFF9` - Light turquoise
+- **Primary 200**: `#99FFF3` - Soft turquoise
+- **Primary 400**: `#33FFE7` - Glowing turquoise
+- **Primary 500**: `#00E0C6` - Main turquoise (DEFAULT)
+- **Primary 600**: `#00B39E` - Accent turquoise
+- **Primary 700**: `#008677` - Darker turquoise
 
 ### Secondary Colors
-- **Secondary**: `#FF69B4` - Hot pink (accent)
-- **Secondary Light**: `#FF8DC7`
-- **Secondary Dark**: `#E6539E`
+- **Secondary**: `#00E0C6` - Turquoise (accent)
+- **Secondary Light**: `#33FFE7` - Light turquoise glow
+- **Secondary Dark**: `#00B39E` - Dark turquoise
 
-### Neutral Colors
-- **Gray-900**: `#111827` - For main text (Tailwind default)
-- **Gray-50**: `#F9FAFB` - Very light gray backgrounds
-- **White**: `#FFFFFF` - Clean backgrounds
+### Dark Colors
+- **Dark**: `#0D0D0D` - Main dark background
+- **Dark-50**: `#1A1A1A` - Secondary dark background
+- **Dark-100**: `#262626` - Tertiary dark background
+- **Dark-800**: `#B0B0B0` - Secondary text (gray)
+- **White**: `#FFFFFF` - Main text
 
 ## Typography
 
@@ -43,20 +46,20 @@
 
 ### Buttons
 - **Shape**: Rounded-full (pill shape)
-- **Primary Button**: Gradient from primary-600 to secondary
-- **Hover**: shadow-soft-lg effect
+- **Primary Button**: Gradient from turquoise with glow effect
+- **Hover**: shadow-glow-lg effect
 - **Example**:
 ```tsx
-<Button className="bg-gradient-to-r from-primary-600 to-secondary rounded-full">
+<Button className="bg-gradient-cyan hover:shadow-glow-lg rounded-full text-dark">
   Click Me
 </Button>
 ```
 
 ### Cards
 - **Corners**: rounded-3xl or rounded-2xl
-- **Shadow**: shadow-soft for subtle depth
-- **Border**: border-primary-100 for soft outline
-- **Background**: bg-gradient-pink for light pink gradient
+- **Shadow**: shadow-glow for glowing effect
+- **Border**: border-primary/20 for subtle turquoise outline
+- **Background**: bg-dark-50 for dark card background
 
 ### Animations
 
@@ -78,13 +81,17 @@
 </div>
 ```
 
-### Shadows
-- `shadow-soft` - Subtle pink-tinted shadow
-- `shadow-soft-lg` - Larger pink-tinted shadow for hover effects
+### Shadows & Glow Effects
+- `shadow-soft` - Subtle turquoise-tinted shadow
+- `shadow-soft-lg` - Larger turquoise-tinted shadow
+- `shadow-glow` - Turquoise glow effect for emphasis
+- `shadow-glow-lg` - Larger turquoise glow for hover effects
+- `text-glow` - Turquoise text glow for headlines
 
 ### Gradients
-- `bg-gradient-pink` - White to light pink (135deg)
-- `bg-gradient-pink-reverse` - Light pink to white (135deg)
+- `bg-gradient-dark` - Dark gradient (#0D0D0D to #1A1A1A)
+- `bg-gradient-dark-reverse` - Reverse dark gradient
+- `bg-gradient-cyan` - Turquoise gradient for buttons
 
 ### Hover Effects
 ```tsx
@@ -118,25 +125,28 @@
 
 ### Header
 - Sticky positioning with backdrop blur
-- White background with pink tinted border
-- Rounded buttons with gradient
+- Dark background with turquoise glow border
+- Rounded buttons with turquoise gradient
+- Turquoise text glow on logo
 
 ### Hero Section
 - Large, bold typography (text-5xl to text-7xl)
-- Gradient background (bg-gradient-pink)
-- Floating decoration elements
+- Dark gradient background (bg-gradient-dark)
+- Floating turquoise glow decoration elements
 - Two-column layout on desktop
 
 ### Feature Cards
-- Rounded icons with gradient backgrounds
-- Soft shadows and borders
-- Hover lift effect
+- Rounded icons with turquoise gradient backgrounds
+- Glow shadows and turquoise borders
+- Hover lift effect with enhanced glow
 - Staggered animations
+- Dark card backgrounds
 
 ### Footer
-- Minimal design with social icons
-- Rounded icon containers with shadows
+- Dark design with turquoise social icons
+- Rounded icon containers with glow shadows
 - Organized grid layout
+- Turquoise hover effects
 
 ## RTL Support
 
@@ -151,19 +161,21 @@ The design includes full Hebrew (RTL) support. To enable:
 
 The floating chat widget:
 - Fixed positioning (bottom-right)
-- Gradient background matching primary colors
+- Turquoise gradient background with glow effect
 - Pulse animation for online indicator
-- Soft shadow with hover scale effect
+- Glow shadow with hover scale effect
 
 ## Best Practices
 
 1. **Always use rounded corners** - rounded-full for buttons, rounded-2xl/3xl for cards
 2. **Apply smooth transitions** - Use transition-smooth class
 3. **Add animations** - Use animate-fade-in for content reveals
-4. **Use gradients** - Pink gradients for visual interest
-5. **Generous spacing** - Don't be afraid of white space
-6. **Soft shadows** - Use shadow-soft variants for depth
-7. **Pink accents** - Use primary colors for interactive elements
+4. **Use glow effects** - Turquoise glow for emphasis and depth
+5. **Generous spacing** - Don't be afraid of dark space
+6. **Glow shadows** - Use shadow-glow variants for depth
+7. **Turquoise accents** - Use primary colors for interactive elements
+8. **High contrast** - White text on dark backgrounds
+9. **Dark backgrounds** - Use bg-dark and bg-dark-50 for sections
 
 ## Responsive Design
 
@@ -176,24 +188,35 @@ The floating chat widget:
 
 ### Feature Card
 ```tsx
-<div className="p-8 rounded-3xl bg-gradient-pink hover-lift border border-primary-100">
-  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-primary-400 to-secondary text-white mb-6 shadow-soft">
+<div className="p-8 rounded-3xl bg-dark-50 hover-lift border border-primary/20 shadow-glow">
+  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-cyan text-dark mb-6 shadow-glow">
     <Icon className="h-10 w-10" />
   </div>
-  <h3 className="text-2xl font-semibold mb-3">Feature Title</h3>
-  <p className="text-gray-600">Feature description</p>
+  <h3 className="text-2xl font-semibold mb-3 text-white">Feature Title</h3>
+  <p className="text-dark-800">Feature description</p>
 </div>
 ```
 
 ### CTA Button
 ```tsx
-<Button className="bg-gradient-to-r from-primary-600 to-secondary hover:shadow-soft-lg transition-smooth rounded-full px-8 py-6 text-white font-semibold group">
+<Button className="bg-gradient-cyan hover:shadow-glow-lg transition-smooth rounded-full px-8 py-6 text-dark font-semibold group">
   Get Started
   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
 </Button>
 ```
 
+### Glowing Heading
+```tsx
+<h1 className="text-5xl font-bold text-white">
+  Your Headline
+  <br />
+  <span className="text-primary text-glow">
+    With Glow Effect
+  </span>
+</h1>
+```
+
 ---
 
-*This design system creates a clean, feminine, modern aesthetic inspired by professional personal branding websites while maintaining a unique identity for AgentDesk.*
+*This design system creates a futuristic, high-tech Cyber-AI aesthetic with dark backgrounds, turquoise glow effects, and high contrast for a modern, professional look that stands out.*
 

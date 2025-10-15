@@ -9,6 +9,7 @@ interface Message {
 }
 
 interface BotChatPreviewProps {
+  botId: string
   botName: string
   botToken: string
   primaryColor: string
@@ -18,6 +19,7 @@ interface BotChatPreviewProps {
 }
 
 export function BotChatPreview({
+  botId,
   botName,
   botToken,
   primaryColor,
@@ -75,27 +77,21 @@ export function BotChatPreview({
     setLoading(true)
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/chat/message`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Bot-Token': botToken,
-          },
-          body: JSON.stringify({
-            sessionId,
-            message: userMessage,
-            visitorMetadata: {
-              userAgent: navigator.userAgent,
-              timestamp: new Date().toISOString(),
-            },
-          }),
-        }
-      )
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          sessionId: sessionId,
+          botId: botId,
+        }),
+      })
 
       if (!response.ok) {
-        throw new Error('Failed to send message')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to send message')
       }
 
       const data = await response.json()
@@ -104,13 +100,15 @@ export function BotChatPreview({
         ...prev,
         { role: 'assistant', content: data.message },
       ])
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to send message:', error)
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: 'Sorry, I encountered an error. Please try again.',
+          content: language === 'he' 
+            ? 'מצטער, נתקלתי בשגיאה. אנא נסה שוב.'
+            : 'Sorry, I encountered an error. Please try again.',
         },
       ])
     } finally {
@@ -199,7 +197,7 @@ export function BotChatPreview({
     <div className="fixed bottom-6 right-6 z-50">
       <div 
         className="flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden"
-        style={{ width: '380px', height: '580px' }}
+        style={{ width: '480px', height: '720px' }}
       >
       {/* Header */}
       <div
@@ -318,7 +316,7 @@ export function BotChatPreview({
             {/* Message Bubble */}
             <div className="flex flex-col gap-1">
               <div
-                className={`rounded-3xl px-4 py-3 ${
+                className={`rounded-3xl px-5 py-4 max-w-[370px] ${
                   message.role === 'user'
                     ? 'text-white'
                     : 'bg-white text-gray-800 border border-gray-200'
@@ -329,7 +327,7 @@ export function BotChatPreview({
                     : {}
                 }
               >
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                <p className="text-[15px] whitespace-pre-wrap leading-[1.6]">
                   {message.content}
                 </p>
               </div>
@@ -377,18 +375,18 @@ export function BotChatPreview({
               {/* Online Status Indicator */}
               <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border border-white"></div>
             </div>
-            <div className="bg-white text-gray-800 border border-gray-200 rounded-3xl px-4 py-3">
-              <div className="flex space-x-1">
+            <div className="bg-white text-gray-800 border border-gray-200 rounded-3xl px-5 py-4 max-w-[370px]">
+              <div className="flex space-x-1.5">
                 <div 
-                  className="w-2 h-2 rounded-full animate-bounce"
+                  className="w-2.5 h-2.5 rounded-full animate-bounce"
                   style={{ backgroundColor: primaryColor, animationDelay: '0ms' }}
                 />
                 <div
-                  className="w-2 h-2 rounded-full animate-bounce"
+                  className="w-2.5 h-2.5 rounded-full animate-bounce"
                   style={{ backgroundColor: primaryColor, animationDelay: '150ms' }}
                 />
                 <div
-                  className="w-2 h-2 rounded-full animate-bounce"
+                  className="w-2.5 h-2.5 rounded-full animate-bounce"
                   style={{ backgroundColor: primaryColor, animationDelay: '300ms' }}
                 />
               </div>
@@ -399,7 +397,7 @@ export function BotChatPreview({
       </div>
 
       {/* Input */}
-      <div className="border-t border-gray-200 p-4 bg-white">
+      <div className="border-t border-gray-200 p-5 bg-white">
         <div className="flex items-center gap-3">
           <input
             type="text"
@@ -409,9 +407,8 @@ export function BotChatPreview({
             placeholder={
               language === 'he' ? 'הקלד הודעה...' : 'Type your message...'
             }
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
+            className="flex-1 px-5 py-3.5 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50 text-[15px] text-gray-900 placeholder:text-gray-400"
             style={{ 
-              focusRingColor: primaryColor,
               boxShadow: input ? `0 0 0 2px ${primaryColor}20` : undefined 
             }}
             disabled={loading}
@@ -420,7 +417,7 @@ export function BotChatPreview({
           <button
             onClick={sendMessage}
             disabled={!input.trim() || loading}
-            className="flex items-center justify-center w-12 h-12 text-white rounded-full transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 flex-shrink-0"
+            className="flex items-center justify-center w-12 h-12 text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 hover:scale-105 flex-shrink-0 shadow-md"
             style={{ backgroundColor: primaryColor }}
             aria-label={language === 'he' ? 'שלח הודעה' : 'Send message'}
           >

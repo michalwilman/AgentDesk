@@ -28,9 +28,9 @@ export default async function BotChatPage({
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="fixed inset-0 bg-gradient-dark">
       {/* Header Bar */}
-      <div className="absolute top-0 left-0 right-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+      <div className="absolute top-0 left-0 right-0 bg-dark-50 border-b border-primary/20 px-6 py-4 z-10 shadow-glow">
         <Link href="/dashboard">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -38,13 +38,14 @@ export default async function BotChatPage({
           </Button>
         </Link>
         <div className="mt-2">
-          <h1 className="text-xl font-semibold text-gray-900">Test Chat - {bot.name}</h1>
-          <p className="text-sm text-gray-500">Preview how your bot looks and interacts</p>
+          <h1 className="text-xl font-semibold text-white">Test Chat - {bot.name}</h1>
+          <p className="text-sm text-dark-800">Preview how your bot looks and interacts</p>
         </div>
       </div>
 
       {/* Floating Widget Preview */}
       <BotChatPreview
+        botId={bot.id}
         botName={bot.name}
         botToken={bot.api_token}
         primaryColor={bot.primary_color}
@@ -55,16 +56,16 @@ export default async function BotChatPage({
 
       {/* Demo Content - Shows how widget appears on a real site */}
       <div className="pt-32 px-8 max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <div className="bg-[#141414] rounded-lg shadow-glow border border-primary/20 p-8 mb-6">
+          <h2 className="text-2xl font-bold text-white mb-4">
             {bot.language === 'he' ? 'דף הדגמה' : 'Demo Page'}
           </h2>
-          <p className="text-gray-600 mb-4">
+          <p className="text-dark-800 mb-4">
             {bot.language === 'he' 
               ? 'זהו דף הדגמה שמראה איך הבוט שלך יופיע באתר אמיתי. הבוט מוצג כחלון צף בפינה הימנית התחתונה.'
               : 'This is a demo page showing how your bot will appear on a real website. The bot is displayed as a floating widget in the bottom-right corner.'}
           </p>
-          <div className="space-y-3 text-gray-600">
+          <div className="space-y-3 text-dark-800">
             <p>
               {bot.language === 'he'
                 ? '• הבוט נפתח כחלון צף מעוגל'
@@ -88,11 +89,11 @@ export default async function BotChatPage({
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <h3 className="text-xl font-semibold text-gray-900 mb-3">
+        <div className="bg-[#141414] rounded-lg shadow-glow border border-primary/20 p-8">
+          <h3 className="text-xl font-semibold text-white mb-3">
             {bot.language === 'he' ? 'מידע נוסף' : 'Additional Information'}
           </h3>
-          <p className="text-gray-600">
+          <p className="text-dark-800">
             {bot.language === 'he'
               ? 'נסה לשוחח עם הבוט בפינה - הוא משתמש במידע שהוספת במסד הידע שלו.'
               : 'Try chatting with the bot in the corner - it uses the knowledge base you\'ve added.'}

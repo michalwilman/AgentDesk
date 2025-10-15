@@ -17,17 +17,19 @@ export function DashboardNav({ user }: { user: any }) {
   }
 
   return (
-    <nav className="border-b bg-white">
+    <nav className="border-b border-primary/20 bg-dark-50 shadow-glow">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center space-x-2">
-            <Bot className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold">AgentDesk</span>
+            <div className="bg-gradient-cyan p-1.5 rounded-lg shadow-glow">
+              <Bot className="h-6 w-6 text-dark" />
+            </div>
+            <span className="text-2xl font-bold text-primary text-glow">AgentDesk</span>
           </Link>
 
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <User className="h-4 w-4" />
+            <div className="flex items-center space-x-2 text-sm text-dark-800">
+              <User className="h-4 w-4 text-primary" />
               <span>{user.email}</span>
             </div>
             <Button variant="ghost" size="sm" onClick={handleLogout}>

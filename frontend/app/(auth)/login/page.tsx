@@ -40,15 +40,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-dark px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2 mb-4">
-            <Bot className="h-10 w-10 text-primary" />
-            <span className="text-3xl font-bold">AgentDesk</span>
+            <div className="bg-gradient-cyan p-2 rounded-xl shadow-glow">
+              <Bot className="h-8 w-8 text-dark" />
+            </div>
+            <span className="text-3xl font-bold text-primary text-glow">AgentDesk</span>
           </Link>
-          <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to your account</p>
+          <h1 className="text-2xl font-bold mb-2 text-white">Welcome Back</h1>
+          <p className="text-dark-800">Sign in to your account</p>
         </div>
 
         <Card>
@@ -88,8 +90,8 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-4 text-center text-sm">
-              <span className="text-gray-600">Don't have an account? </span>
-              <Link href="/register" className="text-primary hover:underline font-medium">
+              <span className="text-dark-800">Don't have an account? </span>
+              <Link href="/register" className="text-primary hover:text-primary/80 transition-smooth font-medium">
                 Sign up
               </Link>
             </div>

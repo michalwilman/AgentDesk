@@ -4,18 +4,18 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 5%;
+    --foreground: 0 0% 100%;
     --font-inter: var(--font-inter);
     --font-poppins: var(--font-poppins);
   }
 
   * {
-    @apply border-gray-200;
+    @apply border-dark-100;
   }
 
   body {
-    @apply bg-white text-gray-900 antialiased;
+    @apply bg-dark text-white antialiased;
     font-family: var(--font-inter), Inter, sans-serif;
   }
 
@@ -86,22 +86,34 @@
     animation-delay: 400ms;
   }
 
-  /* Soft shadows */
+  /* Glow shadows */
   .shadow-soft {
-    box-shadow: 0 4px 20px rgba(255, 182, 217, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 224, 198, 0.15);
   }
 
   .shadow-soft-lg {
-    box-shadow: 0 10px 40px rgba(255, 182, 217, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 224, 198, 0.25);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 20px rgba(0, 224, 198, 0.4), 0 0 40px rgba(0, 224, 198, 0.2);
+  }
+
+  .shadow-glow-lg {
+    box-shadow: 0 0 30px rgba(0, 224, 198, 0.5), 0 0 60px rgba(0, 224, 198, 0.3);
   }
 
   /* Gradient backgrounds */
-  .bg-gradient-pink {
-    background: linear-gradient(135deg, #ffffff 0%, #FFF5F9 100%);
+  .bg-gradient-dark {
+    background: linear-gradient(135deg, #0D0D0D 0%, #1A1A1A 100%);
   }
 
-  .bg-gradient-pink-reverse {
-    background: linear-gradient(135deg, #FFF5F9 0%, #ffffff 100%);
+  .bg-gradient-dark-reverse {
+    background: linear-gradient(135deg, #1A1A1A 0%, #0D0D0D 100%);
+  }
+
+  .bg-gradient-cyan {
+    background: linear-gradient(135deg, #00E0C6 0%, #00B39E 100%);
   }
 
   /* Smooth transitions */
@@ -116,7 +128,12 @@
 
   .hover-lift:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(255, 182, 217, 0.25);
+    box-shadow: 0 0 30px rgba(0, 224, 198, 0.4), 0 15px 40px rgba(0, 224, 198, 0.2);
+  }
+
+  /* Glow text */
+  .text-glow {
+    text-shadow: 0 0 20px rgba(0, 224, 198, 0.5);
   }
 }
 

@@ -23,8 +23,8 @@ export default async function DashboardPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">My Bots</h1>
-          <p className="text-gray-600 mt-1">Manage your AI chatbots</p>
+          <h1 className="text-3xl font-bold text-white">My Bots</h1>
+          <p className="text-dark-800 mt-1">Manage your AI chatbots</p>
         </div>
         {(!bots || bots.length === 0) && (
           <Link href="/dashboard/bots/new">
@@ -39,9 +39,9 @@ export default async function DashboardPage() {
       {!bots || bots.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <BotIcon className="h-16 w-16 text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No bots yet</h3>
-            <p className="text-gray-600 mb-6 text-center">
+            <BotIcon className="h-16 w-16 text-primary/40 mb-4" />
+            <h3 className="text-xl font-semibold mb-2 text-white">No bots yet</h3>
+            <p className="text-dark-800 mb-6 text-center">
               Create your first AI chatbot to get started
             </p>
             <Link href="/dashboard/bots/new">
@@ -67,8 +67,8 @@ export default async function DashboardPage() {
                   <div
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
                       bot.is_active
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-700'
+                        ? 'bg-primary/20 text-primary border border-primary/20'
+                        : 'bg-dark-100 text-dark-800 border border-dark-100'
                     }`}
                   >
                     {bot.is_active ? 'Active' : 'Inactive'}
@@ -77,11 +77,11 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MessageSquare className="h-4 w-4 mr-2" />
+                  <div className="flex items-center text-sm text-dark-800">
+                    <MessageSquare className="h-4 w-4 mr-2 text-primary" />
                     <span>Language: {bot.language === 'he' ? 'Hebrew' : 'English'}</span>
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-[#666666]">
                     Created {formatDate(bot.created_at)}
                   </div>
                   <div className="flex items-center space-x-2 pt-2">
