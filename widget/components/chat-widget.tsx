@@ -2,11 +2,20 @@
 
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
-import { MessageSquare, X, Send } from 'lucide-react'
+import { MessageSquare, X, Send, MoreVertical, Trash2, Download, Clock, Copy, Check, Minus, Bot } from 'lucide-react'
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
+}
+
+interface BotConfig {
+  name: string
+  avatar_url: string | null
+  primary_color: string
+  welcome_message: string
+  language: string
+  position: string
 }
 
 export function ChatWidget({ botToken }: { botToken: string }) {
@@ -14,8 +23,13 @@ export function ChatWidget({ botToken }: { botToken: string }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [botConfig, setBotConfig] = useState<BotConfig | null>(null)
+  const [configLoading, setConfigLoading] = useState(true)
+  const [showMenu, setShowMenu] = useState(false)
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substring(7)}`)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -25,17 +39,54 @@ export function ChatWidget({ botToken }: { botToken: string }) {
     scrollToBottom()
   }, [messages])
 
+  // Fetch bot configuration
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
+    const fetchConfig = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/bots/config/${botToken}`
+        )
+        setBotConfig(response.data)
+      } catch (error) {
+        console.error('Failed to fetch bot config:', error)
+        // Set default config if fetch fails
+        setBotConfig({
+          name: 'Chat Support',
+          avatar_url: null,
+          primary_color: '#ff0099',
+          welcome_message: 'Hello! How can I help you today?',
+          language: 'en',
+          position: 'bottom-right',
+        })
+      } finally {
+        setConfigLoading(false)
+      }
+    }
+    fetchConfig()
+  }, [botToken])
+
+  useEffect(() => {
+    if (isOpen && messages.length === 0 && botConfig) {
       // Add welcome message
       setMessages([
         {
           role: 'assistant',
-          content: 'Hello! How can I help you today?',
+          content: botConfig.welcome_message,
         },
       ])
     }
-  }, [isOpen])
+  }, [isOpen, botConfig])
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return
@@ -88,64 +139,289 @@ export function ChatWidget({ botToken }: { botToken: string }) {
     }
   }
 
+  const copyMessage = async (content: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(content)
+      setCopiedIndex(index)
+      setTimeout(() => setCopiedIndex(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy text:', err)
+    }
+  }
+
+  const clearChat = () => {
+    if (botConfig) {
+      setMessages([
+        {
+          role: 'assistant',
+          content: botConfig.welcome_message,
+        },
+      ])
+    }
+    setShowMenu(false)
+  }
+
+  const downloadChat = () => {
+    const chatText = messages
+      .map((msg) => `${msg.role === 'user' ? (botConfig?.language === 'he' ? 'אני' : 'User') : botConfig?.name}: ${msg.content}`)
+      .join('\n\n')
+    
+    const blob = new Blob([chatText], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `chat-${sessionId}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    setShowMenu(false)
+  }
+
+  if (configLoading || !botConfig) {
+    return null
+  }
+
+  const isRtl = botConfig.language === 'he'
+  const primaryColor = botConfig.primary_color
+
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      {/* Chat Button */}
+      {/* Floating Chat Button */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors"
-          aria-label="Open chat"
-        >
-          <MessageSquare className="w-6 h-6" />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="flex items-center justify-center w-16 h-16 text-white rounded-full shadow-xl hover:scale-110 transition-transform duration-200"
+            style={{ backgroundColor: primaryColor }}
+            aria-label="Open chat"
+          >
+            {botConfig.avatar_url ? (
+              <img 
+                src={botConfig.avatar_url} 
+                alt={botConfig.name}
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <Bot className="w-8 h-8" />
+            )}
+          </button>
+          {/* Online Status Indicator */}
+          <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white">
+            <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75"></span>
+          </div>
+        </div>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="flex flex-col w-96 h-[500px] bg-white rounded-lg shadow-2xl overflow-hidden">
+        <div 
+          className="flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideUp"
+          style={{ width: '380px', height: '580px' }}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-blue-600 text-white">
-            <div className="flex items-center space-x-2">
-              <MessageSquare className="w-5 h-5" />
-              <span className="font-medium">Chat Support</span>
+          <div 
+            className="flex items-center justify-between px-5 py-4 text-white"
+            style={{ backgroundColor: primaryColor }}
+          >
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                {botConfig.avatar_url ? (
+                  <img 
+                    src={botConfig.avatar_url} 
+                    alt={botConfig.name}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-white"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-white bg-opacity-30 flex items-center justify-center">
+                    <Bot className="w-6 h-6" />
+                  </div>
+                )}
+                {/* Online Status Indicator */}
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+              </div>
+              <div>
+                <h3 className="font-semibold text-base">{botConfig.name}</h3>
+                <p className="text-xs opacity-90">
+                  {isRtl ? 'מקוון' : 'Online'}
+                </p>
+              </div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="hover:bg-blue-700 rounded p-1 transition-colors"
-              aria-label="Close chat"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Menu Button */}
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="hover:bg-white hover:bg-opacity-20 rounded-full p-1.5 transition-colors"
+                  aria-label="Menu"
+                >
+                  <MoreVertical className="w-5 h-5" />
+                </button>
+                
+                {/* Dropdown Menu */}
+                {showMenu && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
+                    <button
+                      onClick={clearChat}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors text-left text-sm"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span>{isRtl ? 'נקה שיחה' : 'Clear chat'}</span>
+                    </button>
+                    <button
+                      onClick={downloadChat}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors text-left text-sm"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>{isRtl ? 'הורד שיחה' : 'Download chat'}</span>
+                    </button>
+                    <button
+                      onClick={() => setShowMenu(false)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors text-left text-sm"
+                    >
+                      <Clock className="w-4 h-4" />
+                      <span>{isRtl ? 'שיחות אחרונות' : 'Recent chats'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Minimize Button */}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="hover:bg-white hover:bg-opacity-20 rounded-full p-1.5 transition-colors"
+                aria-label={isRtl ? 'מזעור' : 'Minimize'}
+                title={isRtl ? 'מזעור' : 'Minimize'}
+              >
+                <Minus className="w-5 h-5" />
+              </button>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="hover:bg-white hover:bg-opacity-20 rounded-full p-1.5 transition-colors"
+                aria-label={isRtl ? 'סגור' : 'Close'}
+                title={isRtl ? 'סגור' : 'Close'}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+          <div 
+            className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50"
+            dir={isRtl ? 'rtl' : 'ltr'}
+          >
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                className={`flex items-end gap-2 ${
+                  message.role === 'user' 
+                    ? 'justify-end' 
+                    : 'justify-start'
                 }`}
               >
-                <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                    message.role === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-800 border border-gray-200'
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                {/* Bot Avatar */}
+                {message.role === 'assistant' && (
+                  <div className="flex-shrink-0 mb-1 relative">
+                    {botConfig.avatar_url ? (
+                      <img 
+                        src={botConfig.avatar_url} 
+                        alt={botConfig.name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div 
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+                        style={{ backgroundColor: primaryColor }}
+                      >
+                        {botConfig.name.charAt(0)}
+                      </div>
+                    )}
+                    {/* Online Status Indicator */}
+                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border border-white"></div>
+                  </div>
+                )}
+
+                {/* Message Bubble */}
+                <div className="flex flex-col gap-1">
+                  <div
+                    className={`rounded-3xl px-4 py-3 ${
+                      message.role === 'user'
+                        ? 'text-white'
+                        : 'bg-white text-gray-800 border border-gray-200'
+                    }`}
+                    style={
+                      message.role === 'user'
+                        ? { backgroundColor: primaryColor }
+                        : {}
+                    }
+                  >
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                      {message.content}
+                    </p>
+                  </div>
+                  
+                  {/* Copy Button for Bot Messages */}
+                  {message.role === 'assistant' && (
+                    <button
+                      onClick={() => copyMessage(message.content, index)}
+                      className="self-start flex items-center gap-1.5 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                      title={isRtl ? 'העתק' : 'Copy'}
+                    >
+                      {copiedIndex === index ? (
+                        <>
+                          <Check className="w-3 h-3" />
+                          <span>{isRtl ? 'הועתק!' : 'Copied!'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          <span>{isRtl ? 'העתק' : 'Copy'}</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
+
+            {/* Loading Indicator */}
             {loading && (
-              <div className="flex justify-start">
-                <div className="bg-white text-gray-800 border border-gray-200 rounded-lg px-4 py-2">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+              <div className="flex items-end gap-2 justify-start">
+                <div className="flex-shrink-0 mb-1 relative">
+                  {botConfig.avatar_url ? (
+                    <img 
+                      src={botConfig.avatar_url} 
+                      alt={botConfig.name}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div 
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {botConfig.name.charAt(0)}
+                    </div>
+                  )}
+                  {/* Online Status Indicator */}
+                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border border-white"></div>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-3xl px-4 py-3">
+                  <div className="flex space-x-1">
+                    <div 
+                      className="w-2 h-2 rounded-full animate-bounce"
+                      style={{ backgroundColor: primaryColor, animationDelay: '0ms' }}
+                    />
+                    <div 
+                      className="w-2 h-2 rounded-full animate-bounce"
+                      style={{ backgroundColor: primaryColor, animationDelay: '150ms' }}
+                    />
+                    <div 
+                      className="w-2 h-2 rounded-full animate-bounce"
+                      style={{ backgroundColor: primaryColor, animationDelay: '300ms' }}
+                    />
                   </div>
                 </div>
               </div>
@@ -153,23 +429,29 @@ export function ChatWidget({ botToken }: { botToken: string }) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
+          {/* Input Area */}
           <div className="border-t border-gray-200 p-4 bg-white">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-3">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                placeholder={isRtl ? 'הקלד הודעה...' : 'Type your message...'}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
+                style={{ 
+                  focusRingColor: primaryColor,
+                  boxShadow: input ? `0 0 0 2px ${primaryColor}20` : undefined 
+                }}
                 disabled={loading}
+                dir={isRtl ? 'rtl' : 'ltr'}
               />
               <button
                 onClick={sendMessage}
                 disabled={!input.trim() || loading}
-                className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Send message"
+                className="flex items-center justify-center w-12 h-12 text-white rounded-full transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 flex-shrink-0"
+                style={{ backgroundColor: primaryColor }}
+                aria-label={isRtl ? 'שלח הודעה' : 'Send message'}
               >
                 <Send className="w-5 h-5" />
               </button>
@@ -177,6 +459,22 @@ export function ChatWidget({ botToken }: { botToken: string }) {
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        .animate-slideUp {
+          animation: slideUp 0.3s ease-out;
+        }
+      `}</style>
     </div>
   )
 }

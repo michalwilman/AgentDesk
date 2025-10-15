@@ -80,5 +80,18 @@ export class BotsController {
     const user = await this.validateAuth(authorization);
     return this.botsService.delete(id, user.id);
   }
+
+  @Get('config/:token')
+  async getPublicConfig(@Param('token') token: string) {
+    const bot = await this.botsService.findByApiToken(token);
+    return {
+      name: bot.name,
+      avatar_url: bot.avatar_url,
+      primary_color: bot.primary_color,
+      welcome_message: bot.welcome_message,
+      language: bot.language,
+      position: bot.position,
+    };
+  }
 }
 
