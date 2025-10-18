@@ -17,6 +17,9 @@
 
 ---
 
+<img width="1703" height="856" alt="image" src="https://github.com/user-attachments/assets/73341bc0-c7c5-452f-9cf7-89446a21e9b1" />
+
+
 ## 🎯 What is AgentDesk?
 
 AgentDesk is a **production-ready SaaS platform** that empowers businesses to create AI-powered customer service agents without code. Built on cutting-edge RAG (Retrieval-Augmented Generation) technology, AgentDesk enables your chatbots to learn from your website, documents, and knowledge base to provide accurate, contextual responses 24/7.
