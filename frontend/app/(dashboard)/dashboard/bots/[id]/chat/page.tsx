@@ -50,6 +50,7 @@ export default async function BotChatPage({
         botToken={bot.api_token}
         primaryColor={bot.primary_color}
         welcomeMessage={bot.welcome_message}
+        welcomeMessages={bot.welcome_messages}
         language={bot.language}
         avatarUrl={bot.avatar_url}
       />

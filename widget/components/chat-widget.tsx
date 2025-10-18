@@ -14,6 +14,7 @@ interface BotConfig {
   avatar_url: string | null
   primary_color: string
   welcome_message: string
+  welcome_messages?: string[]
   language: string
   position: string
 }
@@ -30,6 +31,7 @@ export function ChatWidget({ botToken }: { botToken: string }) {
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substring(7)}`)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const lastWelcomeKey = useRef<string>('')
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -67,15 +69,63 @@ export function ChatWidget({ botToken }: { botToken: string }) {
 
   useEffect(() => {
     if (isOpen && messages.length === 0 && botConfig) {
-      // Add welcome message
-      setMessages([
-        {
-          role: 'assistant',
-          content: botConfig.welcome_message,
-        },
-      ])
+      // Add welcome messages with typing effect
+      const messagesToShow = botConfig.welcome_messages && botConfig.welcome_messages.length > 0 
+        ? botConfig.welcome_messages 
+        : botConfig.welcome_message
+        ? [botConfig.welcome_message]
+        : []
+
+      // Don't proceed if no messages to show
+      if (messagesToShow.length === 0) return
+
+      // Create a key from messages to detect changes
+      const welcomeKey = JSON.stringify(messagesToShow)
+      
+      // Only run if messages changed (skip check if this is the first time - empty key)
+      if (lastWelcomeKey.current !== '' && lastWelcomeKey.current === welcomeKey) return
+      
+      lastWelcomeKey.current = welcomeKey
+
+      let timeouts: NodeJS.Timeout[] = []
+      let cumulativeDelay = 0
+      let isCancelled = false
+
+      messagesToShow.forEach((message, index) => {
+        const timeout = setTimeout(() => {
+          if (!isCancelled) {
+            setMessages(prev => [
+              ...prev,
+              {
+                role: 'assistant',
+                content: message,
+              },
+            ])
+          }
+        }, cumulativeDelay)
+
+        timeouts.push(timeout)
+        
+        // Calculate delay for next message based on current message length (0.04 seconds per character)
+        cumulativeDelay += message.length * 40
+      })
+
+      // Cleanup function - only cancel if messages actually changed
+      return () => {
+        const currentKey = botConfig.welcome_messages && botConfig.welcome_messages.length > 0 
+          ? JSON.stringify(botConfig.welcome_messages)
+          : botConfig.welcome_message
+          ? JSON.stringify([botConfig.welcome_message])
+          : ''
+        
+        // Only cancel timeouts if messages actually changed
+        if (currentKey !== welcomeKey) {
+          isCancelled = true
+          timeouts.forEach(timeout => clearTimeout(timeout))
+        }
+      }
     }
-  }, [isOpen, botConfig])
+  }, [isOpen, botConfig, messages.length])
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -151,12 +201,32 @@ export function ChatWidget({ botToken }: { botToken: string }) {
 
   const clearChat = () => {
     if (botConfig) {
-      setMessages([
-        {
-          role: 'assistant',
-          content: botConfig.welcome_message,
-        },
-      ])
+      const messagesToShow = botConfig.welcome_messages && botConfig.welcome_messages.length > 0 
+        ? botConfig.welcome_messages 
+        : [botConfig.welcome_message]
+
+      lastWelcomeKey.current = '' // Reset key to force re-show
+      setMessages([])
+      
+      // Re-show welcome messages with typing effect
+      let cumulativeDelay = 0
+      
+      messagesToShow.forEach((message, index) => {
+        setTimeout(() => {
+          setMessages(prev => [
+            ...prev,
+            {
+              role: 'assistant' as const,
+              content: message,
+            },
+          ])
+        }, cumulativeDelay)
+        
+        cumulativeDelay += message.length * 40
+      })
+
+      // Update the key after setting up timeouts
+      lastWelcomeKey.current = JSON.stringify(messagesToShow)
     }
     setShowMenu(false)
   }

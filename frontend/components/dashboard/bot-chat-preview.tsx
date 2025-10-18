@@ -14,6 +14,7 @@ interface BotChatPreviewProps {
   botToken: string
   primaryColor: string
   welcomeMessage: string
+  welcomeMessages?: string[]
   language: string
   avatarUrl?: string | null
 }
@@ -24,6 +25,7 @@ export function BotChatPreview({
   botToken,
   primaryColor,
   welcomeMessage,
+  welcomeMessages,
   language,
   avatarUrl,
 }: BotChatPreviewProps) {
@@ -38,7 +40,7 @@ export function BotChatPreview({
   )
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
-
+  const lastWelcomeKey = useRef<string>('')
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -48,14 +50,69 @@ export function BotChatPreview({
   }, [messages])
 
   useEffect(() => {
-    // Add welcome message on mount
-    setMessages([
-      {
-        role: 'assistant',
-        content: welcomeMessage,
-      },
-    ])
-  }, [welcomeMessage])
+    // Determine which messages to show
+    const messagesToShow = welcomeMessages && welcomeMessages.length > 0 
+      ? welcomeMessages 
+      : welcomeMessage 
+      ? [welcomeMessage]
+      : []
+
+    // Don't proceed if no messages to show
+    if (messagesToShow.length === 0) return
+
+    // Create a key from messages to detect changes
+    const welcomeKey = JSON.stringify(messagesToShow)
+    
+    // Only run if messages changed (skip check if this is the first time - empty key)
+    if (lastWelcomeKey.current !== '' && lastWelcomeKey.current === welcomeKey) {
+      return
+    }
+    
+    lastWelcomeKey.current = welcomeKey
+
+    let timeouts: NodeJS.Timeout[] = []
+    let cumulativeDelay = 0
+    let isCancelled = false
+    
+    // Clear and set initial messages
+    setMessages([])
+
+    messagesToShow.forEach((message, index) => {
+      const timeout = setTimeout(() => {
+        if (!isCancelled) {
+          setMessages(prev => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: message,
+            },
+          ])
+        }
+      }, cumulativeDelay)
+      
+      timeouts.push(timeout)
+      
+      // Calculate delay for next message based on current message length (0.04 seconds per character)
+      cumulativeDelay += message.length * 40
+    })
+
+    // Cleanup function - only cancel if key changed (new messages incoming)
+    return () => {
+      const currentKey = JSON.stringify(
+        welcomeMessages && welcomeMessages.length > 0 
+          ? welcomeMessages 
+          : welcomeMessage 
+          ? [welcomeMessage]
+          : []
+      )
+      
+      // Only cancel timeouts if messages actually changed
+      if (currentKey !== welcomeKey) {
+        isCancelled = true
+        timeouts.forEach(timeout => clearTimeout(timeout))
+      }
+    }
+  }, [welcomeMessage, welcomeMessages])
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -134,12 +191,33 @@ export function BotChatPreview({
   }
 
   const clearChat = () => {
-    setMessages([
-      {
-        role: 'assistant',
-        content: welcomeMessage,
-      },
-    ])
+    const messagesToShow = welcomeMessages && welcomeMessages.length > 0 
+      ? welcomeMessages 
+      : [welcomeMessage]
+
+    lastWelcomeKey.current = '' // Reset key to force re-show
+    setMessages([])
+    
+    // Re-show welcome messages with typing effect
+    let cumulativeDelay = 0
+    
+    messagesToShow.forEach((message, index) => {
+      setTimeout(() => {
+        setMessages(prev => [
+          ...prev,
+          {
+            role: 'assistant' as const,
+            content: message,
+          },
+        ])
+      }, cumulativeDelay)
+      
+      cumulativeDelay += message.length * 40
+    })
+    
+    // Update the key after setting up timeouts
+    lastWelcomeKey.current = JSON.stringify(messagesToShow)
+    
     setShowMenu(false)
   }
 
@@ -197,7 +275,7 @@ export function BotChatPreview({
     <div className="fixed bottom-6 right-6 z-50">
       <div 
         className="flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden"
-        style={{ width: '480px', height: '720px' }}
+        style={{ width: '400px', height: '600px' }}
       >
       {/* Header */}
       <div
@@ -316,7 +394,7 @@ export function BotChatPreview({
             {/* Message Bubble */}
             <div className="flex flex-col gap-1">
               <div
-                className={`rounded-3xl px-5 py-4 max-w-[370px] ${
+                className={`rounded-3xl px-4 py-3 max-w-[290px] ${
                   message.role === 'user'
                     ? 'text-white'
                     : 'bg-white text-gray-800 border border-gray-200'
@@ -327,7 +405,7 @@ export function BotChatPreview({
                     : {}
                 }
               >
-                <p className="text-[15px] whitespace-pre-wrap leading-[1.6]">
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">
                   {message.content}
                 </p>
               </div>
@@ -375,7 +453,7 @@ export function BotChatPreview({
               {/* Online Status Indicator */}
               <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border border-white"></div>
             </div>
-            <div className="bg-white text-gray-800 border border-gray-200 rounded-3xl px-5 py-4 max-w-[370px]">
+            <div className="bg-white text-gray-800 border border-gray-200 rounded-3xl px-4 py-3 max-w-[290px]">
               <div className="flex space-x-1.5">
                 <div 
                   className="w-2.5 h-2.5 rounded-full animate-bounce"
@@ -397,8 +475,8 @@ export function BotChatPreview({
       </div>
 
       {/* Input */}
-      <div className="border-t border-gray-200 p-5 bg-white">
-        <div className="flex items-center gap-3">
+      <div className="border-t border-gray-200 p-4 bg-white">
+        <div className="flex items-center gap-2.5">
           <input
             type="text"
             value={input}
@@ -407,7 +485,7 @@ export function BotChatPreview({
             placeholder={
               language === 'he' ? 'הקלד הודעה...' : 'Type your message...'
             }
-            className="flex-1 px-5 py-3.5 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50 text-[15px] text-gray-900 placeholder:text-gray-400"
+            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-gray-900 placeholder:text-gray-400"
             style={{ 
               boxShadow: input ? `0 0 0 2px ${primaryColor}20` : undefined 
             }}
@@ -417,11 +495,11 @@ export function BotChatPreview({
           <button
             onClick={sendMessage}
             disabled={!input.trim() || loading}
-            className="flex items-center justify-center w-12 h-12 text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 hover:scale-105 flex-shrink-0 shadow-md"
+            className="flex items-center justify-center w-10 h-10 text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 hover:scale-105 flex-shrink-0 shadow-md"
             style={{ backgroundColor: primaryColor }}
             aria-label={language === 'he' ? 'שלח הודעה' : 'Send message'}
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-4 h-4" />
           </button>
         </div>
       </div>

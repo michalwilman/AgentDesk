@@ -37,6 +37,11 @@ export class CreateBotDto {
   welcome_message?: string;
 
   @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  welcome_messages?: string[];
+
+  @IsOptional()
   @IsString()
   @IsIn(['gpt-4o-mini', 'gpt-4o'])
   model?: string;
@@ -99,6 +104,11 @@ export class UpdateBotDto {
   @IsOptional()
   @IsString()
   welcome_message?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  welcome_messages?: string[];
 
   @IsOptional()
   @IsString()

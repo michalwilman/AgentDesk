@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CopyButton } from '@/components/dashboard/copy-button'
 import { DeleteBotButton } from '@/components/dashboard/delete-bot-button'
-import { ArrowLeft, Code } from 'lucide-react'
+import { ArrowLeft, Code, Pencil } from 'lucide-react'
 
 export default async function BotDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -45,8 +45,18 @@ export default async function BotDetailPage({ params }: { params: { id: string }
         {/* Bot Configuration */}
         <Card>
           <CardHeader>
-            <CardTitle>Bot Configuration</CardTitle>
-            <CardDescription>Current bot settings</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Bot Configuration</CardTitle>
+                <CardDescription>Current bot settings</CardDescription>
+              </div>
+              <Link href={`/dashboard/bots/${bot.id}/edit`}>
+                <Button variant="outline" size="sm">
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit Bot
+                </Button>
+              </Link>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Bot, Target, Users, Zap, Shield, Heart, Linkedin, Github, Instagram, ArrowRight } from 'lucide-react'
+import HomeChatWidget from '@/components/home/HomeChatWidget'
 
 export default function AboutPage() {
   return (
@@ -260,6 +261,9 @@ export default function AboutPage() {
           </div>
         </div>
       </footer>
+
+      {/* Chat Widget */}
+      <HomeChatWidget />
     </main>
   )
 }

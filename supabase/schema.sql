@@ -54,6 +54,7 @@ CREATE TABLE bots (
   primary_color VARCHAR(7) DEFAULT '#3B82F6',
   position VARCHAR(20) DEFAULT 'bottom-right', -- bottom-right, bottom-left
   welcome_message TEXT DEFAULT 'Hello! How can I help you today?',
+  welcome_messages JSONB DEFAULT '["Hello! How can I help you today?"]'::jsonb, -- Array of welcome messages
   
   -- Configuration
   model VARCHAR(50) DEFAULT 'gpt-4o-mini', -- gpt-4o-mini, gpt-4o

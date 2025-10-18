@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Bot, Check, ArrowRight, Linkedin, Github, Instagram } from 'lucide-react'
+import HomeChatWidget from '@/components/home/HomeChatWidget'
 
 export default function PricingPage() {
   return (
@@ -310,6 +311,9 @@ export default function PricingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Chat Widget */}
+      <HomeChatWidget />
     </main>
   )
 }

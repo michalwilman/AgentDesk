@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Bot } from 'lucide-react'
+import { FaGoogle, FaFacebook } from 'react-icons/fa'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -39,6 +40,23 @@ export default function LoginPage() {
     }
   }
 
+  const handleOAuthSignIn = async (provider: 'google' | 'facebook') => {
+    try {
+      setError('')
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      
+      if (error) throw error
+    } catch (error: any) {
+      setError(error.message || `Failed to sign in with ${provider}`)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-dark px-4">
       <div className="w-full max-w-md">
@@ -65,6 +83,39 @@ export default function LoginPage() {
                   {error}
                 </div>
               )}
+
+              {/* OAuth Buttons */}
+              <div className="space-y-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full bg-white hover:bg-gray-50 text-gray-900 border-gray-300 flex items-center justify-center gap-3 py-6 font-medium transition-smooth"
+                  onClick={() => handleOAuthSignIn('google')}
+                >
+                  <FaGoogle className="h-5 w-5 text-red-500" />
+                  Continue with Google
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full bg-[#1877F2] hover:bg-[#166FE5] text-white border-none flex items-center justify-center gap-3 py-6 font-medium transition-smooth"
+                  onClick={() => handleOAuthSignIn('facebook')}
+                >
+                  <FaFacebook className="h-5 w-5" />
+                  Continue with Facebook
+                </Button>
+              </div>
+
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-dark-100"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-dark-50 text-dark-800">Or continue with email</span>
+                </div>
+              </div>
 
               <Input
                 label="Email"

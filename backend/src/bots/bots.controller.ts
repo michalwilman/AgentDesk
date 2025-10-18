@@ -89,6 +89,7 @@ export class BotsController {
       avatar_url: bot.avatar_url,
       primary_color: bot.primary_color,
       welcome_message: bot.welcome_message,
+      welcome_messages: bot.welcome_messages,
       language: bot.language,
       position: bot.position,
     };

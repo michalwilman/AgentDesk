@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Bot, MessageSquare, Zap, Shield, Sparkles, ArrowRight, Mail, Twitter, Linkedin, Github, Instagram, Globe, Settings } from 'lucide-react'
+import HomeChatWidget from '@/components/home/HomeChatWidget'
 
 export default function Home() {
   return (
@@ -376,13 +377,8 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Chat Widget - Floating Button */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <button className="bg-gradient-cyan text-dark rounded-full p-5 shadow-glow-lg hover:shadow-glow hover:scale-110 transition-smooth group">
-          <MessageSquare className="h-7 w-7" />
-          <span className="absolute -top-1 -right-1 bg-primary h-4 w-4 rounded-full border-2 border-dark animate-pulse"></span>
-        </button>
-      </div>
+      {/* Chat Widget - Marketing Bot */}
+      <HomeChatWidget />
     </main>
   )
 }

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Bot, Mail, Clock, MessageSquare, HelpCircle, Book, Linkedin, Github, Instagram, ArrowRight } from 'lucide-react'
+import HomeChatWidget from '@/components/home/HomeChatWidget'
 
 export default function SupportPage() {
   return (
@@ -292,6 +293,9 @@ export default function SupportPage() {
           </div>
         </div>
       </footer>
+
+      {/* Chat Widget */}
+      <HomeChatWidget />
     </main>
   )
 }

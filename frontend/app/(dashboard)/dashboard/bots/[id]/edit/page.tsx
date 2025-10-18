@@ -9,11 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-export default function NewBotPage() {
+export default function EditBotPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [checking, setChecking] = useState(true)
+  const [success, setSuccess] = useState('')
+  const [fetching, setFetching] = useState(true)
   
   const [formData, setFormData] = useState({
     name: '',
@@ -43,7 +44,7 @@ export default function NewBotPage() {
   }
 
   useEffect(() => {
-    const checkBotLimit = async () => {
+    const fetchBot = async () => {
       try {
         const supabase = createClient()
         const {
@@ -55,30 +56,50 @@ export default function NewBotPage() {
           return
         }
 
-        const { data: bots } = await supabase
+        const { data: bot, error: fetchError } = await supabase
           .from('bots')
-          .select('id')
+          .select('*')
+          .eq('id', params.id)
           .eq('user_id', user.id)
+          .single()
 
-        if (bots && bots.length >= 1) {
-          router.push('/dashboard?error=bot_limit_reached')
+        if (fetchError || !bot) {
+          router.push('/dashboard')
           return
         }
 
-        setChecking(false)
+        // Pre-fill form with existing bot data
+        setFormData({
+          name: bot.name || '',
+          description: bot.description || '',
+          language: bot.language || 'en',
+          personality: bot.personality || 'helpful and professional',
+          welcome_message: bot.welcome_message || 'Hello! How can I help you today?',
+          primary_color: bot.primary_color || '#3B82F6',
+        })
+
+        // Load welcome messages (use array if available, otherwise use single message)
+        if (bot.welcome_messages && Array.isArray(bot.welcome_messages) && bot.welcome_messages.length > 0) {
+          setWelcomeMessages(bot.welcome_messages)
+        } else if (bot.welcome_message) {
+          setWelcomeMessages([bot.welcome_message])
+        }
+
+        setFetching(false)
       } catch (error) {
-        console.error('Error checking bot limit:', error)
-        setChecking(false)
+        console.error('Error fetching bot:', error)
+        router.push('/dashboard')
       }
     }
 
-    checkBotLimit()
-  }, [router])
+    fetchBot()
+  }, [params.id, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSuccess('')
 
     try {
       const supabase = createClient()
@@ -91,89 +112,70 @@ export default function NewBotPage() {
         throw new Error('Not authenticated')
       }
 
-      // Check if user exists in users table, if not create it
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('id', user.id)
-        .single()
-
-      if (!existingUser) {
-        // Create user profile if it doesn't exist
-        const userData = user.user_metadata || {}
-        const { error: userError } = await supabase.from('users').insert([
-          {
-            id: user.id,
-            email: user.email,
-            full_name: userData.full_name || userData.name || '',
-            company_name: userData.company_name || '',
-            avatar_url: userData.avatar_url || userData.picture || null,
-          },
-        ])
-
-        if (userError) {
-          console.error('Error creating user profile:', userError)
-          throw new Error('Failed to create user profile')
-        }
-      }
-
-      // Create bot directly in Supabase
-      const { data: bot, error: insertError } = await supabase
+      // Update bot in Supabase
+      const { data: bot, error: updateError } = await supabase
         .from('bots')
-        .insert([
-          {
-            user_id: user.id,
-            name: formData.name,
-            description: formData.description,
-            language: formData.language,
-            personality: formData.personality,
-            welcome_message: welcomeMessages[0] || formData.welcome_message, // First message for backward compatibility
-            welcome_messages: welcomeMessages.filter(msg => msg.trim() !== ''), // Array of all messages
-            primary_color: formData.primary_color,
-            is_active: true,
-            is_trained: false,
-          },
-        ])
+        .update({
+          name: formData.name,
+          description: formData.description,
+          language: formData.language,
+          personality: formData.personality,
+          welcome_message: welcomeMessages[0] || formData.welcome_message, // First message for backward compatibility
+          welcome_messages: welcomeMessages.filter(msg => msg.trim() !== ''), // Array of all messages
+          primary_color: formData.primary_color,
+        })
+        .eq('id', params.id)
+        .eq('user_id', user.id)
         .select()
         .single()
 
-      if (insertError) {
-        throw new Error(insertError.message || 'Failed to create bot')
+      if (updateError) {
+        throw new Error(updateError.message || 'Failed to update bot')
       }
 
-      // Redirect to the new bot's page
-      router.push(`/dashboard/bots/${bot.id}`)
+      // Show success message
+      const successMessage = formData.language === 'he' 
+        ? 'הבוט עודכן בהצלחה ✅' 
+        : 'Bot updated successfully ✅'
+      setSuccess(successMessage)
+
+      // Redirect after a short delay
+      setTimeout(() => {
+        router.push(`/dashboard/bots/${params.id}`)
+      }, 1500)
     } catch (error: any) {
-      setError(error.message || 'Failed to create bot')
+      setError(error.message || 'Failed to update bot')
     } finally {
       setLoading(false)
     }
   }
 
-  if (checking) {
+  if (fetching) {
     return (
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-center py-12">
-          <p className="text-dark-800">Checking bot limit...</p>
+          <p className="text-dark-800">Loading bot data...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Link href="/dashboard">
+    <div className="max-w-2xl mx-auto" dir={formData.language === 'he' ? 'rtl' : 'ltr'}>
+      <Link href={`/dashboard/bots/${params.id}`}>
         <Button variant="ghost" size="sm" className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
+          {formData.language === 'he' ? 'חזרה לבוט' : 'Back to Bot'}
         </Button>
       </Link>
 
       <Card>
         <CardHeader>
-          <CardTitle>Create New Bot</CardTitle>
+          <CardTitle>{formData.language === 'he' ? 'ערוך בוט' : 'Edit Bot'}</CardTitle>
           <CardDescription>
-            Set up your AI chatbot with custom settings
+            {formData.language === 'he' 
+              ? 'עדכן את הגדרות הבוט שלך' 
+              : 'Update your bot settings'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -184,8 +186,14 @@ export default function NewBotPage() {
               </div>
             )}
 
+            {success && (
+              <div className="p-3 rounded-lg bg-green-50 border border-green-200 text-green-600 text-sm">
+                {success}
+              </div>
+            )}
+
             <Input
-              label="Bot Name"
+              label={formData.language === 'he' ? 'שם הבוט' : 'Bot Name'}
               placeholder="Customer Support Bot"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -194,12 +202,14 @@ export default function NewBotPage() {
 
             <div>
               <label className="block text-sm font-medium text-white mb-1">
-                Description
+                {formData.language === 'he' ? 'תיאור' : 'Description'}
               </label>
               <textarea
                 className="w-full rounded-lg border border-primary/20 bg-dark-50 px-3 py-2 text-sm text-white placeholder:text-[#666666] focus:outline-none focus:ring-2 focus:ring-primary"
                 rows={3}
-                placeholder="A helpful assistant for customer inquiries"
+                placeholder={formData.language === 'he' 
+                  ? 'תיאור הבוט שלך' 
+                  : 'A helpful assistant for customer inquiries'}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />
@@ -207,7 +217,7 @@ export default function NewBotPage() {
 
             <div>
               <label className="block text-sm font-medium text-white mb-1">
-                Language
+                {formData.language === 'he' ? 'שפה' : 'Language'}
               </label>
               <select
                 className="w-full rounded-lg border border-primary/20 bg-dark-50 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary"
@@ -215,12 +225,12 @@ export default function NewBotPage() {
                 onChange={(e) => setFormData({ ...formData, language: e.target.value })}
               >
                 <option value="en">English</option>
-                <option value="he">Hebrew</option>
+                <option value="he">עברית</option>
               </select>
             </div>
 
             <Input
-              label="Personality"
+              label={formData.language === 'he' ? 'אישיות' : 'Personality'}
               placeholder="helpful and professional"
               value={formData.personality}
               onChange={(e) => setFormData({ ...formData, personality: e.target.value })}
@@ -228,16 +238,18 @@ export default function NewBotPage() {
 
             <div>
               <label className="block text-sm font-medium text-white mb-1">
-                Welcome Messages
+                {formData.language === 'he' ? 'הודעות פתיחה' : 'Welcome Messages'}
               </label>
               <p className="text-xs text-[#666666] mb-3">
-                Add one or more opening messages that will be shown sequentially when the chat starts
+                {formData.language === 'he' 
+                  ? 'הוסף הודעת פתיחה אחת או יותר שיוצגו ברצף כשהצ\'אט מתחיל' 
+                  : 'Add one or more opening messages that will be shown sequentially when the chat starts'}
               </p>
               <div className="space-y-2">
                 {welcomeMessages.map((message, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <Input
-                      placeholder={`Message ${index + 1}`}
+                      placeholder={formData.language === 'he' ? `הודעה ${index + 1}` : `Message ${index + 1}`}
                       value={message}
                       onChange={(e) => updateWelcomeMessage(index, e.target.value)}
                       className="flex-1"
@@ -247,7 +259,7 @@ export default function NewBotPage() {
                         type="button"
                         onClick={() => removeWelcomeMessage(index)}
                         className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Remove message"
+                        title={formData.language === 'he' ? 'הסר הודעה' : 'Remove message'}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -282,14 +294,14 @@ export default function NewBotPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  Add Line
+                  {formData.language === 'he' ? 'הוסף שורת פתיחה' : 'Add Line'}
                 </button>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-white mb-1">
-                Primary Color
+                {formData.language === 'he' ? 'צבע ראשי' : 'Primary Color'}
               </label>
               <div className="flex items-center space-x-2">
                 <input
@@ -307,13 +319,15 @@ export default function NewBotPage() {
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <Button type="submit" disabled={loading} className="flex-1">
-                {loading ? 'Creating...' : 'Create Bot'}
+            <div className="flex items-center space-x-2 gap-2">
+              <Button type="submit" disabled={loading || success !== ''} className="flex-1">
+                {loading 
+                  ? (formData.language === 'he' ? 'מעדכן...' : 'Updating...') 
+                  : (formData.language === 'he' ? 'שמור שינויים' : 'Save Changes')}
               </Button>
-              <Link href="/dashboard" className="flex-1">
-                <Button type="button" variant="outline" className="w-full">
-                  Cancel
+              <Link href={`/dashboard/bots/${params.id}`} className="flex-1">
+                <Button type="button" variant="outline" className="w-full" disabled={loading}>
+                  {formData.language === 'he' ? 'ביטול' : 'Cancel'}
                 </Button>
               </Link>
             </div>
