@@ -10,8 +10,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-10.0-red)](https://nestjs.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-14.0-black)](https://nextjs.org/)
+[![API Docs](https://img.shields.io/badge/API-Documentation-green)](API.md)
 
-[Live Demo](#) • [Documentation](#) • [API Reference](#) • [Support](#)
+[Live Demo](#) • [Documentation](#) • [API Reference](API.md) • [Support](#)
 
 </div>
 
@@ -471,7 +472,8 @@ Property inquiries, viewing bookings, virtual assistance
 ## 📚 Documentation
 
 - 📖 **[Complete Setup Guide](./SETUP_GUIDE.md)** - Step-by-step installation
-- 🔧 **[Backend API Docs](./backend/README.md)** - REST API reference
+- 🔌 **[API Documentation](./API.md)** - Complete REST API reference with examples
+- 🔧 **[Backend Guide](./backend/README.md)** - Backend development & architecture
 - 🎨 **[Frontend Guide](./frontend/README.md)** - Dashboard development
 - 🪟 **[Widget Integration](./widget/README.md)** - Embed on your site
 - 🔗 **[External Channels Setup](./EXTERNAL_CHANNELS_SETUP.md)** - Telegram & WhatsApp
