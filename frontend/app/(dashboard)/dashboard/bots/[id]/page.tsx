@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CopyButton } from '@/components/dashboard/copy-button'
 import { DeleteBotButton } from '@/components/dashboard/delete-bot-button'
+import { ChannelConnections } from '@/components/dashboard/channel-connections'
 import { ArrowLeft, Code, Pencil } from 'lucide-react'
 
 export default async function BotDetailPage({ params }: { params: { id: string } }) {
@@ -151,6 +152,19 @@ export default async function BotDetailPage({ params }: { params: { id: string }
                 size="sm"
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Connect Channels */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Connect Channels</CardTitle>
+            <CardDescription>
+              Connect your bot to external messaging platforms
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChannelConnections bot={bot} />
           </CardContent>
         </Card>
 

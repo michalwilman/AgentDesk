@@ -7,6 +7,7 @@ import { ScraperModule } from './scraper/scraper.module';
 import { EmbeddingsModule } from './embeddings/embeddings.module';
 import { ChatModule } from './chat/chat.module';
 import { KnowledgeModule } from './knowledge/knowledge.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { KnowledgeModule } from './knowledge/knowledge.module';
     EmbeddingsModule,
     ChatModule,
     KnowledgeModule,
+    WebhooksModule,
   ],
 })
 export class AppModule {}

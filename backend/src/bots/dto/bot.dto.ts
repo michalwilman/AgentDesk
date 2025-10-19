@@ -143,5 +143,25 @@ export class UpdateBotDto {
   @IsOptional()
   @IsBoolean()
   is_trained?: boolean;
+
+  @IsOptional()
+  @IsString()
+  telegram_token?: string;
+
+  @IsOptional()
+  @IsString()
+  telegram_bot_username?: string;
+
+  @IsOptional()
+  @IsString()
+  whatsapp_sid?: string;
+
+  @IsOptional()
+  @IsString()
+  whatsapp_auth_token?: string;
+
+  @IsOptional()
+  @IsString()
+  whatsapp_phone_number?: string;
 }
 
