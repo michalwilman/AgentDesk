@@ -540,7 +540,9 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## 📄 License
 
-AgentDesk is [MIT Licensed](LICENSE).
+AgentDesk is distributed under the MIT License. This means you are free to use, modify, and distribute this software for any purpose, including commercial applications, as long as you include the original copyright notice.
+
+For complete license terms, see the [LICENSE](LICENSE) file.
 
 ---
 
