@@ -177,6 +177,12 @@ export default function NewBotPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Info about Knowledge Base */}
+          <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200">
+            <p className="text-sm text-blue-800">
+              💡 <strong>Tip:</strong> After creating your bot, you can add documents and build your knowledge base in the edit page.
+            </p>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">

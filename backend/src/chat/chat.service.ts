@@ -145,16 +145,25 @@ export class ChatService {
     await this.saveMessage(chat.id, 'user', userMessage);
 
     // Search for relevant context using RAG
+    // Lower threshold for better recall (0.3 = more results, 0.7 = only very similar)
     const context = await this.embeddingsService.searchSimilarContent(
       userMessage,
       botId,
-      0.7,
+      0.3, // Lowered from 0.7 to get more relevant results
       5,
     );
 
     const contextText = context
       .map((c) => c.content_text)
       .join('\n\n');
+
+    // Debug: Log retrieved context for monitoring
+    console.log(`📚 Retrieved ${context.length} context chunks for query: "${userMessage.substring(0, 50)}..."`);
+    if (context.length > 0) {
+      console.log(`✅ Context preview: ${contextText.substring(0, 200)}...`);
+    } else {
+      console.log('⚠️  No relevant context found in knowledge base');
+    }
 
     // Build conversation messages for OpenAI
     const messages: any[] = [

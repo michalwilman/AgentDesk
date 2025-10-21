@@ -87,8 +87,49 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Build messages array for OpenAI
-    const systemMessage = `You are ${bot.name}, a helpful AI assistant. ${bot.personality}. Respond in ${bot.language === 'he' ? 'Hebrew' : 'English'}.`
+    // 🔍 RAG: Search for relevant context from knowledge base
+    let knowledgeContext = ''
+    try {
+      // Generate embedding for the user's message
+      const embeddingResponse = await openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: message,
+      })
+      const queryEmbedding = embeddingResponse.data[0].embedding
+
+      // Search for similar content in knowledge base
+      const { data: similarContent, error: searchError } = await supabase.rpc(
+        'search_knowledge',
+        {
+          query_embedding: queryEmbedding,
+          bot_uuid: botId,
+          match_threshold: 0.3, // Lower threshold = more results
+          match_count: 5,
+        }
+      )
+
+      if (searchError) {
+        console.error('Knowledge search error:', searchError)
+      } else if (similarContent && similarContent.length > 0) {
+        knowledgeContext = similarContent
+          .map((chunk: any) => chunk.content_text)
+          .join('\n\n')
+        
+        console.log(`📚 Retrieved ${similarContent.length} context chunks for query: "${message.substring(0, 50)}..."`)
+        console.log(`✅ Context preview: ${knowledgeContext.substring(0, 200)}...`)
+      } else {
+        console.log('⚠️  No relevant context found in knowledge base')
+      }
+    } catch (embeddingError) {
+      console.error('Error generating embeddings or searching knowledge:', embeddingError)
+    }
+
+    // Build enhanced system message with knowledge base context
+    let systemMessage = `You are ${bot.name}, a helpful AI assistant. ${bot.personality}. Respond in ${bot.language === 'he' ? 'Hebrew' : 'English'}.`
+    
+    if (knowledgeContext) {
+      systemMessage += `\n\n📚 Knowledge Base Context:\n${knowledgeContext}\n\nUse this context to answer the user's questions accurately. If the answer is in the context, cite it. If not, use your general knowledge.`
+    }
     
     const openaiMessages: any[] = [
       { role: 'system', content: systemMessage },

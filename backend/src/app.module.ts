@@ -8,6 +8,7 @@ import { EmbeddingsModule } from './embeddings/embeddings.module';
 import { ChatModule } from './chat/chat.module';
 import { KnowledgeModule } from './knowledge/knowledge.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { DocumentsModule } from './documents/documents.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     ChatModule,
     KnowledgeModule,
     WebhooksModule,
+    DocumentsModule,
   ],
 })
 export class AppModule {}

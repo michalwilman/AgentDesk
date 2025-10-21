@@ -6,11 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Settings, Database } from 'lucide-react'
 import Link from 'next/link'
+import KnowledgeBaseTab from '@/components/dashboard/knowledge-base-tab'
 
 export default function EditBotPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const [activeTab, setActiveTab] = useState<'settings' | 'knowledge'>('settings')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -179,6 +181,34 @@ export default function EditBotPage({ params }: { params: { id: string } }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Tab Navigation */}
+          <div className="flex gap-2 border-b border-primary/20 mb-6">
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === 'settings'
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-[#666666] hover:text-white'
+              }`}
+            >
+              <Settings className="h-4 w-4" />
+              {formData.language === 'he' ? 'הגדרות' : 'Settings'}
+            </button>
+            <button
+              onClick={() => setActiveTab('knowledge')}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === 'knowledge'
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-[#666666] hover:text-white'
+              }`}
+            >
+              <Database className="h-4 w-4" />
+              {formData.language === 'he' ? 'בסיס ידע' : 'Knowledge Base'}
+            </button>
+          </div>
+
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
@@ -332,6 +362,12 @@ export default function EditBotPage({ params }: { params: { id: string } }) {
               </Link>
             </div>
           </form>
+          )}
+
+          {/* Knowledge Base Tab */}
+          {activeTab === 'knowledge' && (
+            <KnowledgeBaseTab botId={params.id} language={formData.language} />
+          )}
         </CardContent>
       </Card>
     </div>
