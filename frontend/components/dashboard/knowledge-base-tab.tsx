@@ -5,6 +5,7 @@ import { Upload, Globe, RefreshCw } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import FileUploadZone from './file-upload-zone'
 import DocumentsTable from './documents-table'
+import WebsiteCrawlingTab from './website-crawling-tab'
 import { documentsApi, Document, getMaxFileSizeForTier } from '@/lib/api/documents'
 import { Button } from '@/components/ui/button'
 
@@ -298,17 +299,7 @@ export default function KnowledgeBaseTab({
       )}
 
       {activeTab === 'crawling' && (
-        <div className="text-center py-12">
-          <Globe className="h-12 w-12 text-[#666666] mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">
-            {isHebrew ? 'בקרוב' : 'Coming Soon'}
-          </h3>
-          <p className="text-sm text-[#666666]">
-            {isHebrew
-              ? 'אפשרות סריקת אתרים תהיה זמינה בקרוב'
-              : 'Website crawling feature will be available soon'}
-          </p>
-        </div>
+        <WebsiteCrawlingTab botId={botId} language={language} />
       )}
     </div>
   )

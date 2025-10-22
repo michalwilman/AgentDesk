@@ -21,6 +21,23 @@ services:
     networks:
       - agentdesk-network
 
+  # Redis for BullMQ job queue
+  redis:
+    image: redis:7-alpine
+    container_name: agentdesk-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - agentdesk-network
+
   # Optional: PgAdmin for database management
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -38,6 +55,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
 
 networks:

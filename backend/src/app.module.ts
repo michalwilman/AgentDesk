@@ -9,6 +9,7 @@ import { ChatModule } from './chat/chat.module';
 import { KnowledgeModule } from './knowledge/knowledge.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { DocumentsModule } from './documents/documents.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { DocumentsModule } from './documents/documents.module';
     WebhooksModule,
     DocumentsModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
 

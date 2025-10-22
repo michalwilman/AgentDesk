@@ -38,7 +38,9 @@
     "twilio": "^5.0.0",
     "pdf-parse": "^1.1.1",
     "mammoth": "^1.6.0",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "bullmq": "^5.1.0",
+    "ioredis": "^5.3.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.3.0",

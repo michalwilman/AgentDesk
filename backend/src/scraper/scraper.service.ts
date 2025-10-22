@@ -4,6 +4,9 @@ import * as cheerio from 'cheerio';
 import axios from 'axios';
 import puppeteer from 'puppeteer';
 import { SupabaseService } from '../common/supabase.service';
+import { EncryptionService } from '../common/encryption.service';
+import { getSiteCrawlerQueue } from './site-crawler.queue';
+import { StartSiteScanDto, SiteScanJobResponse, SiteScanJobsListResponse, SiteCrawlerJobData } from './dto/site-scan.dto';
 
 @Injectable()
 export class ScraperService {
@@ -14,6 +17,7 @@ export class ScraperService {
   constructor(
     private configService: ConfigService,
     private supabaseService: SupabaseService,
+    private encryptionService: EncryptionService,
   ) {
     this.chunkSize = parseInt(this.configService.get('CHUNK_SIZE', '500'));
     this.chunkOverlap = parseInt(this.configService.get('CHUNK_OVERLAP', '50'));
@@ -184,6 +188,137 @@ export class ScraperService {
     }
 
     return { message: 'Content deleted successfully' };
+  }
+
+  /**
+   * Start a new site scan job
+   * Creates database record and adds job to BullMQ queue
+   */
+  async startSiteScan(dto: StartSiteScanDto): Promise<SiteScanJobResponse> {
+    const supabase = this.supabaseService.getClient();
+
+    // Encrypt credentials if provided
+    let usernameEncrypted: string | undefined;
+    let passwordEncrypted: string | undefined;
+
+    if (dto.username && dto.password) {
+      usernameEncrypted = this.encryptionService.encrypt(dto.username);
+      passwordEncrypted = this.encryptionService.encrypt(dto.password);
+    }
+
+    // Create job record in database
+    const { data: job, error: dbError } = await supabase
+      .from('site_scan_jobs')
+      .insert([
+        {
+          bot_id: dto.botId,
+          login_url: dto.loginUrl,
+          start_url_after_login: dto.startUrlAfterLogin,
+          username_selector: dto.usernameSelector,
+          password_selector: dto.passwordSelector,
+          submit_selector: dto.submitSelector,
+          username_encrypted: usernameEncrypted,
+          password_encrypted: passwordEncrypted,
+          status: 'queued',
+        },
+      ])
+      .select()
+      .single();
+
+    if (dbError || !job) {
+      throw new Error(`Failed to create scan job: ${dbError?.message}`);
+    }
+
+    // Add job to BullMQ queue
+    const queue = getSiteCrawlerQueue(this.configService);
+    
+    const jobData: SiteCrawlerJobData = {
+      jobId: job.id,
+      botId: dto.botId,
+      startUrlAfterLogin: dto.startUrlAfterLogin,
+      loginUrl: dto.loginUrl,
+      usernameSelector: dto.usernameSelector,
+      passwordSelector: dto.passwordSelector,
+      submitSelector: dto.submitSelector,
+      usernameEncrypted,
+      passwordEncrypted,
+    };
+
+    await queue.add('crawl-site', jobData);
+
+    console.log(`🚀 Site scan job ${job.id} added to queue`);
+
+    return {
+      id: job.id,
+      botId: job.bot_id,
+      startUrlAfterLogin: job.start_url_after_login,
+      loginUrl: job.login_url,
+      status: job.status,
+      createdAt: job.created_at,
+      updatedAt: job.updated_at,
+    };
+  }
+
+  /**
+   * Get all site scan jobs for a bot
+   */
+  async getSiteScanJobs(botId: string): Promise<SiteScanJobsListResponse> {
+    const supabase = this.supabaseService.getClient();
+
+    const { data: jobs, error } = await supabase
+      .from('site_scan_jobs')
+      .select('*')
+      .eq('bot_id', botId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch site scan jobs: ${error.message}`);
+    }
+
+    const jobsFormatted: SiteScanJobResponse[] = (jobs || []).map((job) => ({
+      id: job.id,
+      botId: job.bot_id,
+      startUrlAfterLogin: job.start_url_after_login,
+      loginUrl: job.login_url,
+      status: job.status,
+      errorMessage: job.error_message,
+      createdAt: job.created_at,
+      updatedAt: job.updated_at,
+    }));
+
+    return {
+      jobs: jobsFormatted,
+      total: jobsFormatted.length,
+    };
+  }
+
+  /**
+   * Get a specific site scan job
+   */
+  async getSiteScanJob(jobId: string, botId: string): Promise<SiteScanJobResponse> {
+    const supabase = this.supabaseService.getClient();
+
+    const { data: job, error } = await supabase
+      .from('site_scan_jobs')
+      .select('*')
+      .eq('id', jobId)
+      .eq('bot_id', botId)
+      .single();
+
+    if (error || !job) {
+      throw new Error('Job not found');
+    }
+
+    return {
+      id: job.id,
+      botId: job.bot_id,
+      startUrlAfterLogin: job.start_url_after_login,
+      loginUrl: job.login_url,
+      status: job.status,
+      errorMessage: job.error_message,
+      createdAt: job.created_at,
+      updatedAt: job.updated_at,
+    };
   }
 }
 

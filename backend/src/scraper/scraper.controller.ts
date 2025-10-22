@@ -11,6 +11,7 @@ import {
 import { ScraperService } from './scraper.service';
 import { AuthService } from '../auth/auth.service';
 import { BotsService } from '../bots/bots.service';
+import { StartSiteScanDto } from './dto/site-scan.dto';
 
 @Controller('scraper')
 export class ScraperController {
@@ -91,6 +92,51 @@ export class ScraperController {
     await this.botsService.findOne(botId, user.id);
 
     return await this.scraperService.deleteScrapedContent(contentId, botId);
+  }
+
+  @Post('scan/start')
+  async startSiteScan(
+    @Headers('authorization') authorization: string,
+    @Body() body: StartSiteScanDto,
+  ) {
+    const user = await this.validateAuth(authorization);
+    
+    // Verify bot ownership
+    await this.botsService.findOne(body.botId, user.id);
+
+    const job = await this.scraperService.startSiteScan(body);
+
+    return {
+      message: 'Site scan started successfully',
+      job,
+    };
+  }
+
+  @Get('scan/jobs/:botId')
+  async getSiteScanJobs(
+    @Headers('authorization') authorization: string,
+    @Param('botId') botId: string,
+  ) {
+    const user = await this.validateAuth(authorization);
+    
+    // Verify bot ownership
+    await this.botsService.findOne(botId, user.id);
+
+    return await this.scraperService.getSiteScanJobs(botId);
+  }
+
+  @Get('scan/job/:jobId/:botId')
+  async getSiteScanJob(
+    @Headers('authorization') authorization: string,
+    @Param('jobId') jobId: string,
+    @Param('botId') botId: string,
+  ) {
+    const user = await this.validateAuth(authorization);
+    
+    // Verify bot ownership
+    await this.botsService.findOne(botId, user.id);
+
+    return await this.scraperService.getSiteScanJob(jobId, botId);
   }
 }
 
