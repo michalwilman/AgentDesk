@@ -320,5 +320,49 @@ export class ScraperService {
       updatedAt: job.updated_at,
     };
   }
+
+  /**
+   * Delete a site scan job and its associated scraped content
+   */
+  async deleteSiteScanJob(jobId: string, botId: string): Promise<void> {
+    const supabase = this.supabaseService.getClient();
+
+    // First verify the job exists and belongs to the bot
+    const { data: job, error: fetchError } = await supabase
+      .from('site_scan_jobs')
+      .select('start_url_after_login')
+      .eq('id', jobId)
+      .eq('bot_id', botId)
+      .single();
+
+    if (fetchError || !job) {
+      throw new Error('Job not found');
+    }
+
+    // Delete associated scraped content (if job was completed)
+    const { error: contentError } = await supabase
+      .from('scraped_content')
+      .delete()
+      .eq('bot_id', botId)
+      .eq('source_url', job.start_url_after_login);
+
+    if (contentError) {
+      console.error(`Warning: Failed to delete scraped content: ${contentError.message}`);
+      // Don't throw, continue with job deletion
+    }
+
+    // Delete the job
+    const { error: deleteError } = await supabase
+      .from('site_scan_jobs')
+      .delete()
+      .eq('id', jobId)
+      .eq('bot_id', botId);
+
+    if (deleteError) {
+      throw new Error(`Failed to delete job: ${deleteError.message}`);
+    }
+
+    console.log(`✅ Deleted scan job ${jobId} and associated content`);
+  }
 }
 

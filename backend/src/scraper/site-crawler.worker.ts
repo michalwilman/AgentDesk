@@ -136,46 +136,68 @@ export class SiteCrawlerWorker {
 
       console.log(`📝 Extracted ${content.length} characters from "${title}"`);
 
-      // Save to scraped_content table
+      // Chunk the text (500 words per chunk with 50 word overlap)
+      const chunkSize = 500;
+      const chunkOverlap = 50;
+      const words = content.split(/\s+/);
+      const chunks: string[] = [];
+
+      for (let i = 0; i < words.length; i += chunkSize - chunkOverlap) {
+        const chunk = words.slice(i, i + chunkSize).join(' ');
+        if (chunk.trim().length > 0) {
+          chunks.push(chunk);
+        }
+      }
+
+      console.log(`📦 Created ${chunks.length} chunks from content`);
+
+      // Save all chunks to scraped_content table
+      const insertData = chunks.map((chunk, index) => ({
+        bot_id: botId,
+        source_url: startUrlAfterLogin,
+        content_type: 'website',
+        title: title || startUrlAfterLogin,
+        content: chunk,
+        chunk_index: index,
+        file_name: title || 'Website Content',
+        file_type: 'website',
+        word_count: chunk.split(/\s+/).length,
+        processing_status: 'completed',
+        metadata: {
+          crawled_at: new Date().toISOString(),
+          login_required: !!loginUrl,
+          total_chunks: chunks.length,
+        },
+      }));
+
       const { data: scrapedContent, error: insertError } = await supabase
         .from('scraped_content')
-        .insert([
-          {
-            bot_id: botId,
-            source_url: startUrlAfterLogin,
-            content_type: 'website',
-            title: title || startUrlAfterLogin,
-            content: content,
-            file_name: title || 'Website Content',
-            file_type: 'website',
-            word_count: content.split(/\s+/).length,
-            processing_status: 'completed',
-            metadata: {
-              crawled_at: new Date().toISOString(),
-              login_required: !!loginUrl,
-            },
-          },
-        ])
-        .select()
-        .single();
+        .insert(insertData)
+        .select();
 
       if (insertError) {
         throw new Error(`Failed to save content: ${insertError.message}`);
       }
 
-      console.log(`💾 Content saved with ID: ${scrapedContent.id}`);
+      console.log(`💾 Saved ${scrapedContent.length} chunks`);
 
-      // Generate embeddings for the content
-      try {
-        await this.embeddingsService.generateEmbeddingsForContent(
-          scrapedContent.id,
-          botId,
-        );
-        console.log(`🧠 Embeddings generated for content ${scrapedContent.id}`);
-      } catch (embError) {
-        console.error(`⚠️ Failed to generate embeddings:`, embError.message);
-        // Don't fail the entire job if embeddings fail
+      // Generate embeddings for each chunk
+      let embeddingsGenerated = 0;
+      for (const chunk of scrapedContent) {
+        try {
+          await this.embeddingsService.generateEmbeddingsForContent(
+            chunk.id,
+            botId,
+          );
+          embeddingsGenerated++;
+        } catch (embError) {
+          console.error(`⚠️ Failed to generate embedding for chunk ${chunk.id}:`, embError.message);
+          // Continue with other chunks even if one fails
+        }
       }
+
+      console.log(`🧠 Generated embeddings for ${embeddingsGenerated}/${scrapedContent.length} chunks`);
+
 
       // Update job status to completed
       await supabase

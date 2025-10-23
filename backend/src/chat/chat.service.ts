@@ -145,11 +145,11 @@ export class ChatService {
     await this.saveMessage(chat.id, 'user', userMessage);
 
     // Search for relevant context using RAG
-    // Lower threshold for better recall (0.3 = more results, 0.7 = only very similar)
+    // Lower threshold for better recall (0.1 = more results, 0.7 = only very similar)
     const context = await this.embeddingsService.searchSimilarContent(
       userMessage,
       botId,
-      0.3, // Lowered from 0.7 to get more relevant results
+      0.1, // Lowered to 0.1 to catch more potential matches
       5,
     );
 

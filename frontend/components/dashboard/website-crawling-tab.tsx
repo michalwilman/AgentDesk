@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Globe, Lock, RefreshCw, AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { Globe, Lock, RefreshCw, AlertCircle, CheckCircle, Clock, XCircle, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -150,6 +150,32 @@ export default function WebsiteCrawlingTab({
       setError(err.response?.data?.message || err.message || 'Failed to start scan')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleDelete = async (jobId: string) => {
+    if (!confirm(isHebrew ? 'האם למחוק משימה זו?' : 'Delete this scan job?')) {
+      return
+    }
+
+    try {
+      const supabase = createClient()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session) {
+        throw new Error('Not authenticated')
+      }
+
+      await siteScanApi.deleteSiteScanJob(jobId, botId, session.access_token)
+
+      setSuccess(isHebrew ? 'המשימה נמחקה בהצלחה' : 'Job deleted successfully')
+
+      // Reload jobs
+      loadJobs()
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || 'Failed to delete job')
     }
   }
 
@@ -404,7 +430,18 @@ export default function WebsiteCrawlingTab({
                     )}
                   </div>
 
-                  <div className="flex-shrink-0">{getStatusBadge(job.status)}</div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {getStatusBadge(job.status)}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(job.id)}
+                      className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                      title={isHebrew ? 'מחק משימה' : 'Delete job'}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}

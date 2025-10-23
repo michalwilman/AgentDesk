@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsUrl, ValidateIf } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, Matches } from 'class-validator';
 
 /**
  * DTO for starting a new site scan job
@@ -8,13 +8,15 @@ export class StartSiteScanDto {
   @IsNotEmpty()
   botId: string;
 
-  @IsUrl({}, { message: 'startUrlAfterLogin must be a valid URL' })
+  @IsString()
   @IsNotEmpty()
+  @Matches(/^https?:\/\/.+/, { message: 'startUrlAfterLogin must be a valid URL starting with http:// or https://' })
   startUrlAfterLogin: string;
 
   // Optional fields for protected sites requiring login
   @IsOptional()
-  @IsUrl({}, { message: 'loginUrl must be a valid URL' })
+  @IsString()
+  @Matches(/^https?:\/\/.+/, { message: 'loginUrl must be a valid URL starting with http:// or https://' })
   loginUrl?: string;
 
   @IsOptional()

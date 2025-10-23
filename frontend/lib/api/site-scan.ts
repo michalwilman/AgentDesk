@@ -63,7 +63,7 @@ export const siteScanApi = {
     token: string,
   ): Promise<StartSiteScanResponse> {
     const response = await axios.post(
-      `${API_BASE_URL}/scraper/scan/start`,
+      `${API_BASE_URL}/api/scraper/scan/start`,
       data,
       {
         headers: {
@@ -83,7 +83,7 @@ export const siteScanApi = {
     token: string,
   ): Promise<SiteScanJobsListResponse> {
     const response = await axios.get(
-      `${API_BASE_URL}/scraper/scan/jobs/${botId}`,
+      `${API_BASE_URL}/api/scraper/scan/jobs/${botId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -102,7 +102,7 @@ export const siteScanApi = {
     token: string,
   ): Promise<SiteScanJob> {
     const response = await axios.get(
-      `${API_BASE_URL}/scraper/scan/job/${jobId}/${botId}`,
+      `${API_BASE_URL}/api/scraper/scan/job/${jobId}/${botId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -110,6 +110,21 @@ export const siteScanApi = {
       },
     );
     return response.data;
+  },
+
+  async deleteSiteScanJob(
+    jobId: string,
+    botId: string,
+    token: string,
+  ): Promise<void> {
+    await axios.delete(
+      `${API_BASE_URL}/api/scraper/scan/job/${jobId}/${botId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
   },
 };
 

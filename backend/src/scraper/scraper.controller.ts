@@ -138,5 +138,23 @@ export class ScraperController {
 
     return await this.scraperService.getSiteScanJob(jobId, botId);
   }
+
+  @Delete('scan/job/:jobId/:botId')
+  async deleteSiteScanJob(
+    @Headers('authorization') authorization: string,
+    @Param('jobId') jobId: string,
+    @Param('botId') botId: string,
+  ) {
+    const user = await this.validateAuth(authorization);
+    
+    // Verify bot ownership
+    await this.botsService.findOne(botId, user.id);
+
+    await this.scraperService.deleteSiteScanJob(jobId, botId);
+
+    return {
+      message: 'Scan job deleted successfully',
+    };
+  }
 }
 
