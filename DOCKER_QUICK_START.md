@@ -101,6 +101,11 @@ docker system prune -a
 
 ## 🐛 פתרון בעיות מהיר
 
+### ⚠️ Build נכשל ב-Render/Railway?
+אם אתה רואה שגיאה של `npm ci requires package-lock.json`:
+- ✅ **זה כבר תוקן!** כל ה-Dockerfiles משתמשים ב-`npm install`
+- ראה: [DOCKER_KNOWN_ISSUES.md](./DOCKER_KNOWN_ISSUES.md) למידע מלא
+
 ### Container לא עולה?
 ```bash
 docker logs agentdesk-backend-prod
