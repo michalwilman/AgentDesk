@@ -158,5 +158,26 @@ export class BotsService {
 
     return data;
   }
+
+  async hasKnowledge(botId: string, userId: string): Promise<boolean> {
+    const supabase = this.supabaseService.getClient();
+
+    // Verify bot ownership first
+    await this.findOne(botId, userId);
+
+    // Check if there are any embeddings for this bot
+    const { data, error } = await supabase
+      .from('knowledge_embeddings')
+      .select('id')
+      .eq('bot_id', botId)
+      .limit(1);
+
+    if (error) {
+      console.error(`Failed to check knowledge: ${error.message}`);
+      return false;
+    }
+
+    return data && data.length > 0;
+  }
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,7 @@ import KnowledgeBaseTab from '@/components/dashboard/knowledge-base-tab'
 
 export default function EditBotPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<'settings' | 'knowledge'>('settings')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -44,6 +45,14 @@ export default function EditBotPage({ params }: { params: { id: string } }) {
     updated[index] = value
     setWelcomeMessages(updated)
   }
+
+  // Check for tab parameter in URL
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab === 'knowledge') {
+      setActiveTab('knowledge')
+    }
+  }, [searchParams])
 
   useEffect(() => {
     const fetchBot = async () => {

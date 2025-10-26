@@ -81,6 +81,18 @@ export class BotsController {
     return this.botsService.delete(id, user.id);
   }
 
+  @Get(':id/has-knowledge')
+  async hasKnowledge(
+    @Headers('authorization') authorization: string,
+    @Param('id') id: string,
+  ) {
+    const user = await this.validateAuth(authorization);
+    const hasTrained = await this.botsService.hasKnowledge(id, user.id);
+    return {
+      hasTrained,
+    };
+  }
+
   @Get('config/:token')
   async getPublicConfig(@Param('token') token: string) {
     const bot = await this.botsService.findByApiToken(token);

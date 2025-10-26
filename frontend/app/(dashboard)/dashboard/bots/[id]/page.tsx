@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CopyButton } from '@/components/dashboard/copy-button'
 import { DeleteBotButton } from '@/components/dashboard/delete-bot-button'
 import { ChannelConnections } from '@/components/dashboard/channel-connections'
+import { TrainedStatus } from '@/components/dashboard/trained-status'
 import { ArrowLeft, Code, Pencil } from 'lucide-react'
 
 export default async function BotDetailPage({ params }: { params: { id: string } }) {
@@ -86,15 +87,7 @@ export default async function BotDetailPage({ params }: { params: { id: string }
               <div>
                 <label className="text-sm font-medium text-[#666666]">Trained</label>
                 <p className="mt-1">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      bot.is_trained
-                        ? 'bg-primary/20 text-primary border border-primary/20'
-                        : 'bg-dark-100 text-dark-800 border border-dark-100'
-                    }`}
-                  >
-                    {bot.is_trained ? 'Yes' : 'No'}
-                  </span>
+                  <TrainedStatus botId={bot.id} />
                 </p>
               </div>
             </div>
