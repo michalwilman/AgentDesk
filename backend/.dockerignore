@@ -1,15 +1,16 @@
-# Dependencies
+# Dependencies (will be installed in container)
 node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
 
-# Build outputs
+# Build outputs (will be built in container)
 dist
 build
 *.tsbuildinfo
 
-# Environment files
+# Environment files (configured in Railway)
 .env
 .env.local
 .env.*.local
@@ -19,7 +20,6 @@ build
 # Development files
 .git
 .gitignore
-README.md
 .vscode
 .idea
 .editorconfig
@@ -30,6 +30,11 @@ README.md
 coverage
 .nyc_output
 test
+
+# Documentation (not needed in container)
+README.md
+DOCKER_README.md
+*.md
 
 # OS files
 .DS_Store
@@ -46,4 +51,9 @@ logs
 tmp
 temp
 .tmp
+
+# Docker files (not needed inside container)
+Dockerfile
+.dockerignore
+docker-compose*.yml
 

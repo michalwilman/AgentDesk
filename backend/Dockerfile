@@ -12,14 +12,21 @@ RUN apk add --no-cache \
     make \
     g++
 
-# Copy package files
+# Copy package files first (for better caching)
 COPY package*.json ./
 
-# Install ALL dependencies (including dev dependencies for build)
-RUN npm install
+# Use npm ci for faster, reproducible installs
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy TypeScript config
+COPY tsconfig*.json ./
+COPY nest-cli.json ./
 
 # Copy source code
-COPY . .
+COPY src ./src
+
+# Install dev dependencies only for build
+RUN npm install --only=development
 
 # Build the NestJS application
 RUN npm run build
@@ -49,18 +56,21 @@ ENV NODE_ENV=production
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm install --production
+# Use npm ci for faster production installs
+RUN npm ci --only=production && npm cache clean --force
 
-# Copy built application from builder stage
+# Copy built application from builder stage (includes widget-standalone.js)
 COPY --from=builder /app/dist ./dist
 
-# Expose the port
+# Copy public folder if it exists
+COPY --from=builder /app/public ./public 2>/dev/null || true
+
+# Expose the port (Railway will override this with PORT env var)
 EXPOSE 3001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/api', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)}).on('error', () => process.exit(1))"
+  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 3001) + '/api', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)}).on('error', () => process.exit(1))"
 
 # Start the application
 CMD ["node", "dist/main.js"]
