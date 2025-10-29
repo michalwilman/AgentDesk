@@ -1,0 +1,181 @@
+/**
+ * AgentDesk Admin Styles
+ */
+
+.agentdesk-settings {
+    max-width: 1200px;
+}
+
+.agentdesk-settings h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #1d2327;
+}
+
+.agentdesk-settings h1 .dashicons {
+    color: #00E0C6;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.agentdesk-settings .notice {
+    border-left-color: #00E0C6;
+}
+
+.agentdesk-settings .notice.notice-warning h3 {
+    margin-top: 0;
+    color: #856404;
+}
+
+.agentdesk-settings .notice.notice-warning ol {
+    margin: 12px 0 12px 20px;
+    line-height: 1.8;
+}
+
+.agentdesk-settings .notice.notice-success {
+    background: #f0fdf4;
+    border-left-color: #10b981;
+}
+
+.agentdesk-settings .form-table th {
+    width: 200px;
+    padding: 20px 10px 20px 0;
+    vertical-align: top;
+}
+
+.agentdesk-settings .form-table td {
+    padding: 20px 10px;
+}
+
+.agentdesk-settings .form-table td .description {
+    margin-top: 8px;
+    color: #646970;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.agentdesk-settings input[type="text"].regular-text {
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    box-shadow: 0 0 0 transparent;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.agentdesk-settings input[type="text"].regular-text:focus {
+    border-color: #00E0C6;
+    box-shadow: 0 0 0 1px #00E0C6;
+    outline: none;
+}
+
+.agentdesk-settings select {
+    padding: 6px 10px;
+    font-size: 14px;
+    border-radius: 4px;
+    min-width: 200px;
+}
+
+.agentdesk-settings input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0 8px 0 0;
+    vertical-align: middle;
+}
+
+.agentdesk-settings .submit {
+    padding: 0;
+    margin-top: 30px;
+}
+
+.agentdesk-settings .submit .button-primary {
+    background: #00E0C6;
+    border-color: #00E0C6;
+    color: #000;
+    font-weight: 600;
+    padding: 10px 24px;
+    height: auto;
+    font-size: 14px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 224, 198, 0.3);
+    transition: all 0.2s ease;
+}
+
+.agentdesk-settings .submit .button-primary:hover {
+    background: #00c9b3;
+    border-color: #00c9b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 224, 198, 0.4);
+}
+
+.agentdesk-settings hr {
+    border: none;
+    border-top: 1px solid #dcdcde;
+    margin: 40px 0;
+}
+
+.agentdesk-settings h2 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+.agentdesk-settings ul {
+    margin: 15px 0;
+    line-height: 2;
+}
+
+.agentdesk-settings a {
+    color: #00E0C6;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.agentdesk-settings a:hover {
+    color: #00c9b3;
+    text-decoration: underline;
+}
+
+.agentdesk-settings .button-secondary {
+    margin-right: 10px;
+    padding: 8px 16px;
+    height: auto;
+    border-radius: 6px;
+}
+
+/* Success checkmark animation */
+.agentdesk-settings .notice.notice-success.inline::before {
+    content: '✓';
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 20px;
+    color: #10b981;
+    animation: checkmark 0.5s ease;
+}
+
+@keyframes checkmark {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Responsive styles */
+@media screen and (max-width: 782px) {
+    .agentdesk-settings .form-table th,
+    .agentdesk-settings .form-table td {
+        display: block;
+        width: 100%;
+        padding: 15px 0;
+    }
+    
+    .agentdesk-settings input[type="text"].regular-text {
+        width: 100%;
+    }
+}
+

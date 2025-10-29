@@ -9,6 +9,7 @@ import { ChatModule } from './chat/chat.module';
 import { KnowledgeModule } from './knowledge/knowledge.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { DocumentsModule } from './documents/documents.module';
+import { WidgetModule } from './widget/widget.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -34,6 +35,7 @@ import { AppController } from './app.controller';
     KnowledgeModule,
     WebhooksModule,
     DocumentsModule,
+    WidgetModule,
   ],
   controllers: [AppController],
 })
