@@ -15,8 +15,8 @@ RUN apk add --no-cache \
 # Copy package files first (for better caching)
 COPY package*.json ./
 
-# Use npm ci for faster, reproducible installs
-RUN npm ci --only=production && npm cache clean --force
+# Install ALL dependencies (including dev for build)
+RUN npm install
 
 # Copy TypeScript config
 COPY tsconfig*.json ./
@@ -24,9 +24,6 @@ COPY nest-cli.json ./
 
 # Copy source code
 COPY src ./src
-
-# Install dev dependencies only for build
-RUN npm install --only=development
 
 # Build the NestJS application
 RUN npm run build
@@ -56,8 +53,8 @@ ENV NODE_ENV=production
 # Copy package files
 COPY package*.json ./
 
-# Use npm ci for faster production installs
-RUN npm ci --only=production && npm cache clean --force
+# Install only production dependencies
+RUN npm install --production && npm cache clean --force
 
 # Copy built application from builder stage (includes widget-standalone.js)
 COPY --from=builder /app/dist ./dist
