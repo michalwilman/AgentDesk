@@ -17,11 +17,12 @@ RUN apk add --no-cache \
 # Copy only package files for better caching
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm install --production && npm cache clean --force
+# Install ALL dependencies (needed for build)
+RUN npm install && npm cache clean --force
 
-# Copy the rest of the source code
-COPY . .
+# Copy source files needed for build
+COPY tsconfig*.json nest-cli.json ./
+COPY src ./src
 
 # Build the TypeScript code
 RUN npm run build
@@ -37,10 +38,14 @@ WORKDIR /app
 RUN apk add --no-cache \
   python3
 
-# Copy node_modules and built files from builder
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
+# Copy package files
 COPY package*.json ./
+
+# Install ONLY production dependencies
+RUN npm install --production && npm cache clean --force
+
+# Copy built files from builder
+COPY --from=builder /app/dist ./dist
 
 # Expose default port used by Railway
 ENV PORT=8080
