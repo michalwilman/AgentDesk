@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Lazy initialize OpenAI client (only when API is called)
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured')
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+}
 
 // Rate limiting storage (in-memory, simple implementation)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
@@ -120,6 +125,7 @@ Remember: Every response must end with an active link for a call-to-action!`
     const timeoutId = setTimeout(() => controller.abort(), 18000) // 18 second timeout
 
     try {
+      const openai = getOpenAIClient() // Initialize here, not at module load
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: openaiMessages,
