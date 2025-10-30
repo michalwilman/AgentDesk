@@ -52,6 +52,13 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const port = process.env.PORT || 3001;
+  
+  // Debug: Log all important environment variables
+  console.log('🔍 Environment Check:');
+  console.log(`   PORT: ${process.env.PORT || 'not set (using 3001)'}`);
+  console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
+  console.log(`   HOST: ${process.env.HOST || 'not set'}`);
+  
   await app.listen(port, '0.0.0.0');
 
   console.log(`🚀 AgentDesk Backend running on: http://0.0.0.0:${port}`);
