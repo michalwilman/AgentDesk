@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ChatWidget } from '@/components/chat-widget'
 
-export default function WidgetPage() {
+function WidgetContent() {
   const searchParams = useSearchParams()
   const [botToken, setBotToken] = useState<string | null>(null)
 
@@ -27,5 +27,19 @@ export default function WidgetPage() {
   }
 
   return <ChatWidget botToken={botToken} />
+}
+
+export default function WidgetPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="text-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <WidgetContent />
+    </Suspense>
+  )
 }
 
