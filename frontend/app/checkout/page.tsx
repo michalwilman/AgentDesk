@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -38,7 +38,7 @@ const PLAN_DETAILS: Record<string, PlanDetails> = {
   }
 }
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [plan, setPlan] = useState<string>('pro')
@@ -334,6 +334,18 @@ export default function CheckoutPage() {
         </div>
       </div>
     </PayPalScriptProvider>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-dark">
+        <Bot className="h-12 w-12 text-primary animate-pulse" />
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   )
 }
 
