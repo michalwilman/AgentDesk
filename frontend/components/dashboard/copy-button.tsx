@@ -5,7 +5,7 @@ import { Copy } from 'lucide-react'
 
 interface CopyButtonProps {
   text: string
-  variant?: 'default' | 'outline' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   className?: string
 }
