@@ -24,6 +24,21 @@ async function bootstrap() {
     }),
   );
 
+  // Health check endpoint at root for Railway (before global prefix)
+  app.use('/', (req, res, next) => {
+    if (req.path === '/' || req.path === '/health') {
+      return res.json({
+        status: 'ok',
+        service: 'AgentDesk Backend',
+        version: '1.0.0',
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString(),
+        api: '/api'
+      });
+    }
+    next();
+  });
+
   // Serve static files from dist folder (where webpack puts widget-standalone.js)
   app.use(express.static(join(__dirname), {
     setHeaders: (res) => {
@@ -39,7 +54,9 @@ async function bootstrap() {
   const port = process.env.PORT || 3001;
   await app.listen(port, '0.0.0.0');
 
-  console.log(`🚀 AgentDesk Backend running on: http://0.0.0.0:${port}/api`);
+  console.log(`🚀 AgentDesk Backend running on: http://0.0.0.0:${port}`);
+  console.log(`📍 Health check: http://0.0.0.0:${port}/ and http://0.0.0.0:${port}/health`);
+  console.log(`🔗 API endpoints: http://0.0.0.0:${port}/api`);
 }
 
 bootstrap();
