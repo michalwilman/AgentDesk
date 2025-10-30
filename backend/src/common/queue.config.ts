@@ -3,10 +3,38 @@ import { ConnectionOptions } from 'bullmq';
 
 /**
  * Creates Redis connection configuration for BullMQ
+ * Supports both REDIS_URL (Railway) and individual REDIS_HOST/PORT/PASSWORD
  * @param configService - NestJS ConfigService instance
  * @returns Redis connection options
  */
 export function getQueueConfig(configService: ConfigService): ConnectionOptions {
+  const redisUrl = configService.get<string>('REDIS_URL');
+  
+  // If REDIS_URL is provided (Railway style), parse it
+  if (redisUrl) {
+    try {
+      const url = new URL(redisUrl);
+      const connection: ConnectionOptions = {
+        host: url.hostname,
+        port: parseInt(url.port) || 6379,
+        maxRetriesPerRequest: null, // Required for BullMQ
+        enableReadyCheck: false,
+      };
+      
+      // Extract password from URL if present
+      if (url.password) {
+        connection.password = url.password;
+      }
+      
+      console.log(`✅ Redis connected via REDIS_URL: ${url.hostname}:${connection.port}`);
+      return connection;
+    } catch (error) {
+      console.error('❌ Failed to parse REDIS_URL:', error.message);
+      console.log('⚠️ Falling back to individual REDIS_HOST/PORT/PASSWORD');
+    }
+  }
+  
+  // Fallback to individual environment variables
   const host = configService.get<string>('REDIS_HOST', 'localhost');
   const port = parseInt(configService.get<string>('REDIS_PORT', '6379'), 10);
   const password = configService.get<string>('REDIS_PASSWORD');
@@ -23,6 +51,7 @@ export function getQueueConfig(configService: ConfigService): ConnectionOptions 
     connection.password = password;
   }
 
+  console.log(`✅ Redis connected: ${host}:${port}`);
   return connection;
 }
 
