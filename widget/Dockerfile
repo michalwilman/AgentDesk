@@ -2,7 +2,7 @@
 # Multi-stage build for optimal production image
 
 # Stage 1: Dependencies
-FROM node:18-alpine AS deps
+FROM node:20-alpine AS deps
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN npm install
 
 # Stage 2: Build
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -30,7 +30,7 @@ ENV NODE_ENV=production
 RUN npm run build
 
 # Stage 3: Production
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
