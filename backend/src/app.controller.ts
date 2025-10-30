@@ -3,7 +3,7 @@ import { Controller, Get } from '@nestjs/common';
 @Controller()
 export class AppController {
   @Get()
-  getRoot() {
+  getApiInfo() {
     return {
       name: 'AgentDesk API',
       version: '1.0.0',
@@ -19,19 +19,12 @@ export class AppController {
         knowledge: '/api/knowledge',
         scraper: '/api/scraper',
         webhooks: '/api/webhooks',
-        health: '/api/health',
+      },
+      health: {
+        root: '/',
+        health: '/health',
       },
       docs: 'See API.md for detailed documentation',
-    };
-  }
-
-  @Get('health')
-  getHealth() {
-    return {
-      status: 'ok',
-      uptime: process.uptime(),
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
     };
   }
 }

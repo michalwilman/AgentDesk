@@ -31,13 +31,12 @@ RUN npm run build
 # Remove dev dependencies after build
 RUN npm prune --production
 
-# Expose port (Railway will override with PORT variable)
-ENV PORT=3081
+# Expose port (Railway will set PORT via environment variable)
 EXPOSE 3081
 
-# Health check
+# Health check - use PORT env var at runtime, fallback to 3081
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
-  CMD node -e "require('http').get('http://localhost:3081/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)}).on('error', () => process.exit(1))"
+  CMD node -e "const port=process.env.PORT||3081;require('http').get('http://localhost:'+port+'/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)}).on('error', () => process.exit(1))"
 
 # Start server
 CMD ["node", "dist/main.js"]
