@@ -510,7 +510,6 @@ export function ChatWidget({ botToken }: { botToken: string }) {
                 placeholder={isRtl ? 'הקלד הודעה...' : 'Type your message...'}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
                 style={{ 
-                  focusRingColor: primaryColor,
                   boxShadow: input ? `0 0 0 2px ${primaryColor}20` : undefined 
                 }}
                 disabled={loading}
