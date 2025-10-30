@@ -24,21 +24,6 @@ async function bootstrap() {
     }),
   );
 
-  // Health check endpoint at root for Railway (before global prefix)
-  app.use('/', (req, res, next) => {
-    if (req.path === '/' || req.path === '/health') {
-      return res.json({
-        status: 'ok',
-        service: 'AgentDesk Backend',
-        version: '1.0.0',
-        uptime: process.uptime(),
-        timestamp: new Date().toISOString(),
-        api: '/api'
-      });
-    }
-    next();
-  });
-
   // Serve static files from dist folder (where webpack puts widget-standalone.js)
   app.use(express.static(join(__dirname), {
     setHeaders: (res) => {
@@ -48,8 +33,10 @@ async function bootstrap() {
     }
   }));
 
-  // Global prefix for API routes
-  app.setGlobalPrefix('api');
+  // Global prefix for API routes (exclude RootController for health checks)
+  app.setGlobalPrefix('api', {
+    exclude: ['/', 'health'],
+  });
 
   const port = process.env.PORT || 3001;
   await app.listen(port, '0.0.0.0');

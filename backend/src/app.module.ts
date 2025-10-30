@@ -11,6 +11,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
 import { DocumentsModule } from './documents/documents.module';
 import { WidgetModule } from './widget/widget.module';
 import { AppController } from './app.controller';
+import { RootController } from './root.controller';
 
 @Module({
   imports: [
@@ -37,7 +38,7 @@ import { AppController } from './app.controller';
     DocumentsModule,
     WidgetModule,
   ],
-  controllers: [AppController],
+  controllers: [RootController, AppController],
 })
 export class AppModule {}
 
