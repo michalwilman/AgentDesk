@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { createClient } from '@/lib/supabase/server'
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Lazy initialize OpenAI client (only when API is called)
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured')
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -90,6 +95,7 @@ export async function POST(request: NextRequest) {
     // 🔍 RAG: Search for relevant context from knowledge base
     let knowledgeContext = ''
     try {
+      const openai = getOpenAIClient() // Initialize here, not at module load
       // Generate embedding for the user's message
       const embeddingResponse = await openai.embeddings.create({
         model: 'text-embedding-3-small',
@@ -142,6 +148,7 @@ export async function POST(request: NextRequest) {
     ]
 
     // Call OpenAI API
+    const openai = getOpenAIClient() // Initialize here too
     const completion = await openai.chat.completions.create({
       model: bot.model || 'gpt-4o-mini',
       messages: openaiMessages,
