@@ -71,35 +71,48 @@ export default function PricingPage() {
       {/* Pricing Cards */}
       <section className="py-24 bg-dark">
         <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-6 max-w-7xl mx-auto">
             
             {/* Starter Plan */}
             <div className="bg-dark-50 p-8 rounded-3xl border border-primary/20 shadow-glow hover-lift animate-fade-in delay-100">
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-bold mb-2 text-white">Starter</h3>
-                <div className="text-sm text-dark-800 mb-4">Free Trial</div>
+                <div className="text-sm text-dark-800 mb-4">Ideal for small businesses focused on enhancing customer satisfaction via live chat support.</div>
+                <div className="text-xs text-dark-700 mb-2">Starts at</div>
                 <div className="text-5xl font-bold mb-2">
-                  <span className="text-primary text-glow">₪0</span>
+                  <span className="text-primary text-glow">$24.17</span>
                 </div>
-                <div className="text-dark-800">for 7 days</div>
+                <div className="text-dark-800">/mo</div>
               </div>
               
-              <ul className="space-y-4 mb-8">
+              <ul className="space-y-3 mb-8">
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">1 bot</span>
+                  <span className="text-dark-800">100 billable conversations</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">500 messages per month</span>
+                  <span className="text-dark-800">Basic analytics</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Basic features</span>
+                  <span className="text-dark-800">Live visitors list</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Email support</span>
+                  <span className="text-dark-800">Operating hours</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">AI Copilot</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">50 AI conversations (one-time)</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">100 flow visitors reached</span>
                 </li>
               </ul>
               
@@ -110,7 +123,7 @@ export default function PricingPage() {
               </Link>
             </div>
 
-            {/* Pro Plan - Highlighted */}
+            {/* Growth Plan - Highlighted */}
             <div className="bg-dark-50 p-8 rounded-3xl border-2 border-primary shadow-glow-lg hover-lift animate-fade-in delay-200 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-gradient-cyan text-dark px-6 py-2 rounded-full text-sm font-semibold shadow-glow">
@@ -119,85 +132,168 @@ export default function PricingPage() {
               </div>
               
               <div className="text-center mb-8 mt-4">
-                <h3 className="text-2xl font-bold mb-2 text-white">Pro</h3>
-                <div className="text-sm text-dark-800 mb-4">For growing businesses</div>
+                <h3 className="text-2xl font-bold mb-2 text-white">Growth</h3>
+                <div className="text-sm text-dark-800 mb-4">Ideal for growing teams looking to boost customer engagement and automation.</div>
+                <div className="text-xs text-dark-700 mb-2">Starts at</div>
                 <div className="text-5xl font-bold mb-2">
-                  <span className="text-primary text-glow">₪89</span>
+                  <span className="text-primary text-glow">$49.17</span>
                 </div>
-                <div className="text-dark-800">per month</div>
+                <div className="text-dark-800">/mo</div>
               </div>
               
-              <ul className="space-y-4 mb-8">
+              <ul className="space-y-3 mb-8">
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">3 bots</span>
+                  <span className="text-dark-800">250 billable conversations</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">10,000 messages per month</span>
+                  <span className="text-dark-800">Advanced analytics</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">WordPress integration</span>
+                  <span className="text-dark-800">Power features</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Elementor integration</span>
+                  <span className="text-dark-800">No branding option</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Priority support</span>
+                  <span className="text-dark-800">Permissions</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">50 AI conversations (one-time)</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">100 flow visitors reached</span>
                 </li>
               </ul>
               
-              <Link href="/checkout?plan=pro" className="block">
+              <Link href="/checkout?plan=growth" className="block">
                 <Button className="w-full bg-gradient-cyan hover:shadow-glow-lg transition-smooth rounded-full py-6 text-dark font-semibold">
                   Get Started
                 </Button>
               </Link>
             </div>
 
-            {/* Business Plan */}
+            {/* Plus Plan */}
             <div className="bg-dark-50 p-8 rounded-3xl border border-primary/20 shadow-glow hover-lift animate-fade-in delay-300">
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold mb-2 text-white">Business</h3>
-                <div className="text-sm text-dark-800 mb-4">For enterprises</div>
+                <h3 className="text-2xl font-bold mb-2 text-white">Plus</h3>
+                <div className="text-sm text-dark-800 mb-4">For businesses needing higher limits, advanced tools, integrations & support.</div>
+                <div className="text-xs text-dark-700 mb-2">Starts at</div>
                 <div className="text-5xl font-bold mb-2">
-                  <span className="text-primary text-glow">₪249</span>
+                  <span className="text-primary text-glow">$749</span>
                 </div>
-                <div className="text-dark-800">per month</div>
+                <div className="text-dark-800">/mo</div>
               </div>
               
-              <ul className="space-y-4 mb-8">
+              <ul className="space-y-3 mb-8">
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Unlimited bots</span>
+                  <span className="text-dark-800">Custom billable quota</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Unlimited messages</span>
+                  <span className="text-dark-800">Dedicated success manager</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">CRM integration</span>
+                  <span className="text-dark-800">Custom branding</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">ERP integration</span>
+                  <span className="text-dark-800">Multiple projects</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Dedicated support</span>
+                  <span className="text-dark-800">Departments</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Custom integrations</span>
+                  <span className="text-dark-800">Multilanguage</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">OpenAPI</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Live chat human support</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">From 300 AI conversations</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Custom flow limits</span>
                 </li>
               </ul>
               
-              <Link href="/checkout?plan=business" className="block">
+              <Link href="/checkout?plan=plus" className="block">
                 <Button className="w-full bg-gradient-cyan hover:shadow-glow-lg transition-smooth rounded-full py-6 text-dark font-semibold">
                   Get Started
+                </Button>
+              </Link>
+            </div>
+
+            {/* Premium Plan */}
+            <div className="bg-dark-50 p-8 rounded-3xl border border-primary/20 shadow-glow hover-lift animate-fade-in delay-400">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold mb-2 text-white">Premium</h3>
+                <div className="text-sm text-dark-800 mb-4">Managed AI agent with premium support and advanced features.</div>
+                <div className="text-4xl font-bold mb-2 mt-6">
+                  <span className="text-primary text-glow">Custom</span>
+                </div>
+                <div className="text-dark-800">pricing</div>
+              </div>
+              
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Managed AI agent</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">50% resolution guarantee</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Pay per resolution</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Mobile SDK</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Priority support + premium</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Super admin</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Analytics & monitoring</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">From 3000 AI conversations</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Expanded flow limits</span>
+                </li>
+              </ul>
+              
+              <Link href="/contact" className="block">
+                <Button className="w-full bg-gradient-cyan hover:shadow-glow-lg transition-smooth rounded-full py-6 text-dark font-semibold">
+                  Contact Sales
                 </Button>
               </Link>
             </div>
