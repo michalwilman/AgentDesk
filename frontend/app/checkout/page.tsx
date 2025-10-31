@@ -69,12 +69,6 @@ function CheckoutContent() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       
-      if (!user) {
-        // Redirect to register with plan parameter
-        router.push(`/register?plan=${planParam}`)
-        return
-      }
-      
       setUser(user)
       setLoading(false)
     }
@@ -151,6 +145,72 @@ function CheckoutContent() {
         <div className="text-center">
           <Bot className="h-12 w-12 text-primary animate-pulse mx-auto mb-4" />
           <p className="text-dark-800">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // If user is not authenticated, show sign-in prompt
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-dark py-12 px-4">
+        <div className="container mx-auto max-w-2xl">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <Link href="/" className="inline-flex items-center space-x-2 mb-6">
+              <div className="bg-gradient-cyan p-2 rounded-xl shadow-glow">
+                <Bot className="h-8 w-8 text-dark" />
+              </div>
+              <span className="text-3xl font-bold text-primary text-glow">AgentDesk</span>
+            </Link>
+            <h1 className="text-4xl font-bold text-white mb-2">Complete Your Purchase</h1>
+            <p className="text-dark-800">Please sign in to continue with your purchase</p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">Selected Plan: {planDetails.name}</CardTitle>
+              <CardDescription>Sign in or create an account to proceed</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="p-4 bg-dark-50 rounded-xl border border-primary/20">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-white">{planDetails.name} Plan</h3>
+                    <p className="text-sm text-dark-800">Monthly subscription</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-primary text-glow">
+                      ${planDetails.price}
+                    </div>
+                    <p className="text-xs text-dark-800">per month</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-center text-dark-800 mb-4">
+                  You need to be signed in to complete your purchase
+                </p>
+                <Link href={`/register?plan=${plan}`} className="block">
+                  <Button className="w-full bg-gradient-cyan hover:shadow-glow-lg transition-smooth rounded-full py-6 text-dark font-semibold text-lg">
+                    Create Account & Continue
+                  </Button>
+                </Link>
+                <Link href={`/login?redirect=/checkout?plan=${plan}`} className="block">
+                  <Button variant="outline" className="w-full rounded-full py-6 text-white font-semibold text-lg border-primary/30 hover:border-primary/60">
+                    Sign In to Existing Account
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="text-center">
+                <Link href="/pricing" className="text-primary hover:text-primary/80 transition-smooth text-sm">
+                  ← Back to Pricing
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )
