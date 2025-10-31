@@ -174,7 +174,7 @@ export default function PricingPage() {
               
               <Link href="/checkout?plan=growth" className="block">
                 <Button className="w-full bg-gradient-cyan hover:shadow-glow-lg transition-smooth rounded-full py-6 text-dark font-semibold">
-                  Get Started
+                  Select plan
                 </Button>
               </Link>
             </div>
@@ -236,7 +236,7 @@ export default function PricingPage() {
               
               <Link href="/checkout?plan=plus" className="block">
                 <Button className="w-full bg-gradient-cyan hover:shadow-glow-lg transition-smooth rounded-full py-6 text-dark font-semibold">
-                  Get Started
+                  Select plan
                 </Button>
               </Link>
             </div>
