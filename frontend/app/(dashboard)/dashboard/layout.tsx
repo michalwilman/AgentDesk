@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardNav } from '@/components/dashboard/dashboard-nav'
+import { TrialBanner, TrialExpiredModal } from '@/components/subscription/trial-banner'
 
 export default async function DashboardLayout({
   children,
@@ -20,9 +21,11 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen bg-dark">
       <DashboardNav user={user} />
+      <TrialBanner />
       <main className="container mx-auto px-4 py-8">
         {children}
       </main>
+      <TrialExpiredModal />
     </div>
   )
 }

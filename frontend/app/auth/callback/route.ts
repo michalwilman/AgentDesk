@@ -51,6 +51,9 @@ export async function GET(request: Request) {
       // Create profile if it doesn't exist
       if (!existingProfile) {
         const userData = data.user.user_metadata || {}
+        const now = new Date()
+        const trialEndDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+        
         await supabase.from('users').insert([
           {
             id: data.user.id,
@@ -58,6 +61,10 @@ export async function GET(request: Request) {
             full_name: userData.full_name || userData.name || '',
             company_name: '',
             avatar_url: userData.avatar_url || userData.picture || null,
+            trial_start_date: now.toISOString(),
+            trial_end_date: trialEndDate.toISOString(),
+            subscription_status: 'trial',
+            subscription_tier: 'free'
           },
         ])
       }
@@ -89,12 +96,19 @@ export async function GET(request: Request) {
         // Create profile if it doesn't exist
         if (!existingProfile) {
           const userData = user.user_metadata || {}
+          const now = new Date()
+          const trialEndDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+          
           await supabase.from('users').insert([
             {
               id: user.id,
               email: user.email,
               full_name: userData.full_name || '',
               company_name: userData.company_name || '',
+              trial_start_date: now.toISOString(),
+              trial_end_date: trialEndDate.toISOString(),
+              subscription_status: 'trial',
+              subscription_tier: 'free'
             },
           ])
         }
