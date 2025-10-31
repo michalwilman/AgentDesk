@@ -81,4 +81,27 @@ temp/
 
 backups/
 
+# Private documentation and demos
 private_docs/
+widget-demo.html
+*.demo.html
+
+# Hide all guide/documentation MD files (keep README.md)
+*_GUIDE.md
+*_STEPS.md
+*_DEPLOY*.md
+*_FIX*.md
+*_SUMMARY.md
+*_TESTING*.md
+*_SETUP*.md
+*_START*.md
+CLEAR_*.md
+EVERYTHING_*.md
+HOW_TO_*.md
+LOCAL_*.md
+NGROK_*.md
+PRODUCTION_*.md
+QUICK_*.md
+RAILWAY_*.md
+SETUP_*.md
+TROUBLESHOOTING_*.md
