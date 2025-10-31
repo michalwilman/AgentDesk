@@ -404,7 +404,7 @@ export default function SubscriptionPage() {
                   Keep Subscription
                 </Button>
                 <Button
-                  variant="destructive"
+                  variant="danger"
                   className="flex-1"
                   onClick={() => {
                     // TODO: Implement cancellation logic
