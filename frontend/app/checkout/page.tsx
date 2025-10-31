@@ -116,10 +116,15 @@ function CheckoutContent() {
         console.error('Error saving transaction:', insertError)
       }
 
-      // Update user subscription tier
+      // Update user subscription tier and status
+      const now = new Date()
       await supabase
         .from('users')
-        .update({ subscription_tier: plan })
+        .update({ 
+          subscription_tier: plan,
+          subscription_status: 'active',
+          subscription_start_date: now.toISOString()
+        })
         .eq('id', user.id)
 
       // Redirect to success page

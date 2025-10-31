@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Bot as BotIcon, MessageSquare } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
+import { SubscriptionBadge } from '@/components/subscription/subscription-badge'
 
 export default async function DashboardPage() {
   const supabase = createClient()
@@ -21,7 +22,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">My Bots</h1>
           <p className="text-dark-800 mt-1">Manage your AI chatbots</p>
@@ -34,6 +35,11 @@ export default async function DashboardPage() {
             </Button>
           </Link>
         )}
+      </div>
+
+      {/* Subscription Status Badge */}
+      <div className="mb-8">
+        <SubscriptionBadge variant="full" />
       </div>
 
       {!bots || bots.length === 0 ? (
