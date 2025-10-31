@@ -20,29 +20,35 @@ interface PlanDetails {
 const PLAN_DETAILS: Record<string, PlanDetails> = {
   starter: {
     name: 'Starter',
+    price: 24.17,
+    currency: 'USD',
+    features: ['100 billable conversations', 'Basic analytics', 'Live visitors list', 'Operating hours', 'AI Copilot', '50 AI conversations (one-time)', '100 flow visitors reached']
+  },
+  growth: {
+    name: 'Growth',
+    price: 49.17,
+    currency: 'USD',
+    features: ['250 billable conversations', 'Advanced analytics', 'Power features', 'No branding option', 'Permissions', '50 AI conversations (one-time)', '100 flow visitors reached']
+  },
+  plus: {
+    name: 'Plus',
+    price: 749,
+    currency: 'USD',
+    features: ['Custom billable quota', 'Dedicated success manager', 'Custom branding', 'Multiple projects', 'Departments', 'Multilanguage', 'OpenAPI', 'Live chat human support', 'From 300 AI conversations', 'Custom flow limits']
+  },
+  premium: {
+    name: 'Premium',
     price: 0,
-    currency: 'ILS',
-    features: ['1 bot', '500 messages per month', 'Basic features', 'Email support']
-  },
-  pro: {
-    name: 'Pro',
-    price: 89,
-    currency: 'ILS',
-    features: ['3 bots', '10,000 messages per month', 'WordPress integration', 'Elementor integration', 'Priority support']
-  },
-  business: {
-    name: 'Business',
-    price: 249,
-    currency: 'ILS',
-    features: ['Unlimited bots', 'Unlimited messages', 'CRM integration', 'ERP integration', 'Dedicated support', 'Custom integrations']
+    currency: 'USD',
+    features: ['Managed AI agent', '50% resolution guarantee', 'Pay per resolution', 'Mobile SDK', 'Priority support + premium', 'Super admin', 'Analytics & monitoring', 'From 3000 AI conversations', 'Expanded flow limits']
   }
 }
 
 function CheckoutContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [plan, setPlan] = useState<string>('pro')
-  const [planDetails, setPlanDetails] = useState<PlanDetails>(PLAN_DETAILS.pro)
+  const [plan, setPlan] = useState<string>('growth')
+  const [planDetails, setPlanDetails] = useState<PlanDetails>(PLAN_DETAILS.growth)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -54,9 +60,9 @@ function CheckoutContent() {
   const [cardCvv, setCardCvv] = useState('')
 
   useEffect(() => {
-    const planParam = searchParams.get('plan') || 'pro'
+    const planParam = searchParams.get('plan') || 'growth'
     setPlan(planParam)
-    setPlanDetails(PLAN_DETAILS[planParam] || PLAN_DETAILS.pro)
+    setPlanDetails(PLAN_DETAILS[planParam] || PLAN_DETAILS.growth)
 
     // Check if user is authenticated
     const checkUser = async () => {
@@ -188,7 +194,7 @@ function CheckoutContent() {
                     </div>
                     <div className="text-right">
                       <div className="text-3xl font-bold text-primary text-glow">
-                        ₪{planDetails.price}
+                        ${planDetails.price}
                       </div>
                       <p className="text-xs text-dark-800">per month</p>
                     </div>
@@ -212,15 +218,15 @@ function CheckoutContent() {
                   <div className="pt-4 border-t border-dark-100">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-dark-800">Subtotal</span>
-                      <span className="text-white">₪{planDetails.price}</span>
+                      <span className="text-white">${planDetails.price}</span>
                     </div>
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-dark-800">VAT (17%)</span>
-                      <span className="text-white">₪{(planDetails.price * 0.17).toFixed(2)}</span>
+                      <span className="text-white">${(planDetails.price * 0.17).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span className="text-white">Total</span>
-                      <span className="text-primary text-glow">₪{(planDetails.price * 1.17).toFixed(2)}</span>
+                      <span className="text-primary text-glow">${(planDetails.price * 1.17).toFixed(2)}</span>
                     </div>
                   </div>
                 </CardContent>
