@@ -12,7 +12,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-14.0-black)](https://nextjs.org/)
 [![API Docs](https://img.shields.io/badge/API-Documentation-green)](API.md)
 
-[Live Demo](#) • [Documentation](#) • [API Reference](API.md) • [Support](#)
+[Live Demo](https://agentdesk-frontend-production.up.railway.app/) • [Documentation](#-documentation) • [API Reference](API.md) • [Quick Start](#-quick-start)
 
 </div>
 
@@ -52,6 +52,7 @@ AgentDesk is a **production-ready SaaS platform** that empowers businesses to cr
 
 ### 🔗 Multi-Channel Integration
 - **Web Widget** - Customizable floating chat widget for any website
+- **WordPress Plugin** - Ready-to-use plugin with full Hebrew/RTL support
 - **Telegram Bots** - Connect to Telegram with one-click setup
 - **WhatsApp Business** - Integrate with WhatsApp via Twilio
 - **Unified Knowledge Base** - Same bot, multiple channels
@@ -266,10 +267,20 @@ AgentDesk/
 │
 ├── supabase/                   # Database & Migrations
 │   ├── schema.sql             # Initial schema
-│   ├── migration_add_external_channels.sql
-│   └── migration_add_welcome_messages.sql
+│   ├── migrations/
+│   │   ├── add_external_channels.sql
+│   │   ├── add_welcome_messages.sql
+│   │   └── add_trial_tracking.sql  # 7-day trial system
+│   └── README.md
 │
-├── docker-compose.yml          # Local PostgreSQL setup
+├── wordpress-plugin/           # WordPress Integration
+│   ├── agentdesk-chatbot.php  # Main plugin file
+│   ├── includes/              # Plugin core functionality
+│   ├── assets/                # CSS & JS files
+│   ├── languages/             # Hebrew translations (he_IL)
+│   └── readme.txt             # WordPress plugin readme
+│
+├── docker-compose.yml          # Local development setup
 └── package.json               # Root workspace
 ```
 
@@ -345,6 +356,23 @@ npm run dev
 
 ---
 
+## 🔌 WordPress Integration
+
+AgentDesk includes a ready-to-use WordPress plugin with full Hebrew and RTL support.
+
+### Quick Install
+
+1. Download the plugin from `wordpress-plugin/` directory
+2. Upload to WordPress: **Plugins → Add New → Upload Plugin**
+3. Activate the plugin
+4. Go to **Settings → AgentDesk**
+5. Enter your Bot Token (from AgentDesk dashboard)
+6. Save settings - your chatbot is now live!
+
+📚 **Complete WordPress guide**: See [wordpress-plugin/README.md](./wordpress-plugin/README.md)
+
+---
+
 ## 💼 Use Cases
 
 ### E-Commerce Support
@@ -366,7 +394,7 @@ Property inquiries, viewing bookings, virtual assistance
 
 ## 🗺️ Roadmap
 
-### ✅ Completed (v1.0)
+### ✅ Completed (v1.0 - Production Ready)
 - ✅ Core RAG engine with OpenAI GPT-4o-mini
 - ✅ pgvector semantic search
 - ✅ Multi-tenant architecture with RLS
@@ -377,6 +405,9 @@ Property inquiries, viewing bookings, virtual assistance
 - ✅ Conversation history & analytics
 - ✅ Multiple welcome messages
 - ✅ Multilingual support (EN/HE)
+- ✅ WordPress plugin with RTL support
+- ✅ 7-day free trial system
+- ✅ Railway deployment ready
 
 ### 🚧 In Progress (Q4 2025)
 - 🔨 Document upload (PDF, DOCX, TXT)
@@ -476,8 +507,10 @@ Property inquiries, viewing bookings, virtual assistance
 - 🔧 **[Backend Guide](./backend/README.md)** - Backend development & architecture
 - 🎨 **[Frontend Guide](./frontend/README.md)** - Dashboard development
 - 🪟 **[Widget Integration](./widget/README.md)** - Embed on your site
-- 🔗 **[External Channels Setup](./EXTERNAL_CHANNELS_SETUP.md)** - Telegram & WhatsApp
+- 🔗 **[External Channels Setup](./private_docs/EXTERNAL_CHANNELS_SETUP.md)** - Telegram & WhatsApp
 - 🗄️ **[Database Schema](./supabase/README.md)** - Database structure
+- 🔌 **[WordPress Plugin Guide](./wordpress-plugin/README.md)** - WordPress integration
+- 🎁 **[Trial System](./TRIAL_IMPLEMENTATION.md)** - 7-day trial implementation
 
 ---
 
@@ -558,7 +591,7 @@ If you find AgentDesk useful, please consider giving us a ⭐ on GitHub!
 
 **Built with ❤️ by developers, for businesses worldwide**
 
-[Get Started](#-quick-start) • [Live Demo](#) • [Documentation](#)
+[Get Started](#-quick-start) • [Live Demo](https://agentdesk-frontend-production.up.railway.app/) • [Documentation](#-documentation)
 
 © 2025 AgentDesk. All rights reserved.
 
