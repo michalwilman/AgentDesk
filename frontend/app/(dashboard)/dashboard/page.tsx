@@ -102,7 +102,7 @@ export default async function DashboardPage() {
       .select('*', { count: 'exact', head: true })
       .eq('bot_id', bot.id)
     
-    botTrainingStatus[bot.id] = embeddingsCount && embeddingsCount > 0
+    botTrainingStatus[bot.id] = !!(embeddingsCount && embeddingsCount > 0)
   }
 
   // Get bots performance data
