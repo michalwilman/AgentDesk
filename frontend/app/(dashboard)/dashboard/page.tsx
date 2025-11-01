@@ -48,16 +48,23 @@ export default async function DashboardPage() {
     botIdsLength: botIds.length
   })
 
+  // DEBUG: Check total conversations without filter
+  const { count: totalConvsInDB } = await supabase
+    .from('conversations')
+    .select('*', { count: 'exact', head: true })
+  
+  console.log('🔍 Total conversations in DB (no filter):', totalConvsInDB)
+
   // Get total conversations count
   let totalChats = 0
   if (botIds.length > 0) {
-    const { count, error } = await supabase
+    const { count, error, data } = await supabase
       .from('conversations')
-      .select('*', { count: 'exact', head: true })
+      .select('bot_id', { count: 'exact' })
       .in('bot_id', botIds)
     
-    console.log('📊 Conversations query:', { count, error, botIds })
-    totalChats = count || 0
+    console.log('📊 Conversations query:', { count, error, botIds, sampleData: data?.slice(0, 3) })
+    totalChats = count ?? 0  // Use nullish coalescing operator
   }
 
   // Get total messages count
@@ -69,7 +76,7 @@ export default async function DashboardPage() {
       .in('bot_id', botIds)
     
     console.log('💬 Messages query:', { count, error, botIds })
-    totalMessages = count || 0
+    totalMessages = count ?? 0  // Use nullish coalescing operator
   }
 
   // Get average satisfaction from bot_analytics
