@@ -177,24 +177,22 @@ export default async function BotDetailPage({ params }: { params: { id: string }
                     </div>
                   </div>
                   <div className="flex gap-2 mt-4">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      asChild
-                    >
-                      <Link href="/wordpress-plugin">
+                    <Link href="/wordpress-plugin">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                      >
                         Download Plugin
-                      </Link>
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      asChild
-                    >
-                      <Link href="/wordpress-plugin">
+                      </Button>
+                    </Link>
+                    <Link href="/wordpress-plugin">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                      >
                         View Instructions
-                      </Link>
-                    </Button>
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>
