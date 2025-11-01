@@ -3,7 +3,7 @@
  * Plugin Name: AgentDesk AI Chatbot
  * Plugin URI: https://agentdesk.com/wordpress
  * Description: Add intelligent AI chatbot to your WordPress site. Trained on your content, powered by GPT-4.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Requires at least: 5.8
  * Requires PHP: 7.4
  * Author: AgentDesk
@@ -20,26 +20,32 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin constants
-define('AGENTDESK_VERSION', '1.0.0');
+define('AGENTDESK_VERSION', '1.1.0');
 define('AGENTDESK_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AGENTDESK_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('AGENTDESK_CDN_URL', 'https://cdn.agentdesk.com/widget-standalone.js');
-define('AGENTDESK_API_URL', 'https://api.agentdesk.com');
+define('AGENTDESK_CDN_URL', 'https://agentdesk-widget-production.up.railway.app/widget.js');
+define('AGENTDESK_API_URL', 'https://agentdesk-backend-production.up.railway.app/api');
 
 // Load dependencies with error checking
 $required_files = [
-    'includes/class-agentdesk-admin.php',
-    'includes/class-agentdesk-widget.php',
-    'includes/class-agentdesk-api.php',
+    'includes' . DIRECTORY_SEPARATOR . 'class-agentdesk-validator.php',
+    'includes' . DIRECTORY_SEPARATOR . 'class-agentdesk-updater.php',
+    'includes' . DIRECTORY_SEPARATOR . 'class-agentdesk-heartbeat.php',
+    'includes' . DIRECTORY_SEPARATOR . 'class-agentdesk-admin.php',
+    'includes' . DIRECTORY_SEPARATOR . 'class-agentdesk-widget.php',
+    'includes' . DIRECTORY_SEPARATOR . 'class-agentdesk-api.php',
 ];
 
 foreach ($required_files as $file) {
     $file_path = AGENTDESK_PLUGIN_DIR . $file;
+    // Normalize path separators for cross-platform compatibility
+    $file_path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $file_path);
+    
     if (file_exists($file_path)) {
         require_once $file_path;
     } else {
-        add_action('admin_notices', function() use ($file) {
-            echo '<div class="error"><p>AgentDesk Error: Missing file - ' . esc_html($file) . '</p></div>';
+        add_action('admin_notices', function() use ($file, $file_path) {
+            echo '<div class="error"><p>AgentDesk Error: Missing file - ' . esc_html($file) . '<br>Looking for: ' . esc_html($file_path) . '</p></div>';
         });
         return;
     }
@@ -51,6 +57,14 @@ foreach ($required_files as $file) {
 function agentdesk_init() {
     // Load translations
     load_plugin_textdomain('agentdesk-chatbot', false, dirname(plugin_basename(__FILE__)) . '/languages');
+    
+    // Initialize auto-updater
+    if (is_admin()) {
+        new AgentDesk_Updater(plugin_basename(__FILE__), AGENTDESK_VERSION);
+    }
+    
+    // Initialize heartbeat (runs on both admin and frontend)
+    new AgentDesk_Heartbeat();
     
     // Initialize admin panel
     if (is_admin()) {
@@ -87,7 +101,11 @@ function agentdesk_activate() {
  */
 register_deactivation_hook(__FILE__, 'agentdesk_deactivate');
 function agentdesk_deactivate() {
-    // Optional: cleanup temporary data
+    // Clear scheduled heartbeat event
+    $timestamp = wp_next_scheduled('agentdesk_heartbeat_event');
+    if ($timestamp) {
+        wp_unschedule_event($timestamp, 'agentdesk_heartbeat_event');
+    }
 }
 
 /**
@@ -101,6 +119,14 @@ function agentdesk_uninstall() {
     delete_option('agentdesk_enabled');
     delete_option('agentdesk_display_pages');
     delete_option('agentdesk_custom_pages');
+    delete_option('agentdesk_bot_info');
+    delete_option('agentdesk_last_heartbeat');
+    
+    // Clear scheduled events
+    $timestamp = wp_next_scheduled('agentdesk_heartbeat_event');
+    if ($timestamp) {
+        wp_unschedule_event($timestamp, 'agentdesk_heartbeat_event');
+    }
 }
 
 /**
