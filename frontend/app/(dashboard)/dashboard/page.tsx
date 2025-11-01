@@ -42,42 +42,23 @@ export default async function DashboardPage() {
   const hasExistingBot = totalBots > 0
   const botIds = bots?.map(b => b.id) || []
 
-  console.log('🔍 Dashboard Debug:', {
-    totalBots,
-    botIds,
-    botIdsLength: botIds.length
-  })
-
-  // Get total conversations count for ALL user's bots
+  // Get analytics data from bot_analytics table (pre-aggregated)
   let totalChats = 0
-  if (botIds.length > 0) {
-    // Query each bot separately and sum the results
-    const conversationCounts = await Promise.all(
-      botIds.map(async (botId) => {
-        const { count } = await supabase
-          .from('conversations')
-          .select('*', { count: 'exact', head: true })
-          .eq('bot_id', botId)
-        return count || 0
-      })
-    )
-    totalChats = conversationCounts.reduce((sum, count) => sum + count, 0)
-  }
-
-  // Get total messages count for ALL user's bots
   let totalMessages = 0
+  
   if (botIds.length > 0) {
-    // Query each bot separately and sum the results
-    const messageCounts = await Promise.all(
-      botIds.map(async (botId) => {
-        const { count } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('bot_id', botId)
-        return count || 0
-      })
-    )
-    totalMessages = messageCounts.reduce((sum, count) => sum + count, 0)
+    for (const botId of botIds) {
+      const { data: analytics } = await supabase
+        .from('bot_analytics')
+        .select('total_chats, total_messages')
+        .eq('bot_id', botId)
+        .single()
+      
+      if (analytics) {
+        totalChats += analytics.total_chats || 0
+        totalMessages += analytics.total_messages || 0
+      }
+    }
   }
 
   // Get average satisfaction from bot_analytics for ALL user's bots
@@ -379,18 +360,31 @@ export default async function DashboardPage() {
         </Card>
       )}
 
-      {/* DEBUG INFO */}
-      <Card className="bg-yellow-500/10 border-yellow-500">
-        <CardContent className="pt-6">
-          <h3 className="text-yellow-500 font-bold mb-2">🔍 DEBUG INFO:</h3>
-          <div className="text-white text-sm space-y-1">
-            <p>Total Bots: {totalBots}</p>
-            <p>Bot IDs: {JSON.stringify(botIds)}</p>
-            <p>Total Chats: {totalChats}</p>
-            <p>Total Messages: {totalMessages}</p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Overview Stats - Quick Summary */}
+      {bots && bots.length > 0 && (
+        <Card className="bg-gradient-to-r from-primary/10 to-transparent border-primary/30">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div>
+                <div className="text-sm text-dark-800 mb-1">Total Bots</div>
+                <div className="text-3xl font-bold text-white">{totalBots}</div>
+              </div>
+              <div>
+                <div className="text-sm text-dark-800 mb-1">Active Bots</div>
+                <div className="text-3xl font-bold text-primary">{activeBots}</div>
+              </div>
+              <div>
+                <div className="text-sm text-dark-800 mb-1">Total Conversations</div>
+                <div className="text-3xl font-bold text-white">{totalChats}</div>
+              </div>
+              <div>
+                <div className="text-sm text-dark-800 mb-1">Total Messages</div>
+                <div className="text-3xl font-bold text-white">{totalMessages}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Hero Card with Circular Display + Stats Grid */}
       {bots && bots.length > 0 && (
