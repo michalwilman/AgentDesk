@@ -11,7 +11,7 @@ export function DashboardQuickActions() {
       label: 'Create New Bot',
       icon: Plus,
       href: '/dashboard/bots/new',
-      variant: 'default' as const,
+      variant: 'primary' as const,
       description: 'Set up a new AI chatbot',
     },
     {
