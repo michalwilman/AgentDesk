@@ -48,47 +48,54 @@ export default async function DashboardPage() {
     botIdsLength: botIds.length
   })
 
-  // DEBUG: Check total conversations without filter
-  const { count: totalConvsInDB } = await supabase
-    .from('conversations')
-    .select('*', { count: 'exact', head: true })
-  
-  console.log('🔍 Total conversations in DB (no filter):', totalConvsInDB)
-
-  // Get total conversations count
+  // Get total conversations count for ALL user's bots
   let totalChats = 0
   if (botIds.length > 0) {
-    const { count, error, data } = await supabase
-      .from('conversations')
-      .select('bot_id', { count: 'exact' })
-      .in('bot_id', botIds)
-    
-    console.log('📊 Conversations query:', { count, error, botIds, sampleData: data?.slice(0, 3) })
-    totalChats = count ?? 0  // Use nullish coalescing operator
+    // Query each bot separately and sum the results
+    const conversationCounts = await Promise.all(
+      botIds.map(async (botId) => {
+        const { count } = await supabase
+          .from('conversations')
+          .select('*', { count: 'exact', head: true })
+          .eq('bot_id', botId)
+        return count || 0
+      })
+    )
+    totalChats = conversationCounts.reduce((sum, count) => sum + count, 0)
   }
 
-  // Get total messages count
+  // Get total messages count for ALL user's bots
   let totalMessages = 0
   if (botIds.length > 0) {
-    const { count, error } = await supabase
-      .from('messages')
-      .select('*', { count: 'exact', head: true })
-      .in('bot_id', botIds)
-    
-    console.log('💬 Messages query:', { count, error, botIds })
-    totalMessages = count ?? 0  // Use nullish coalescing operator
+    // Query each bot separately and sum the results
+    const messageCounts = await Promise.all(
+      botIds.map(async (botId) => {
+        const { count } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('bot_id', botId)
+        return count || 0
+      })
+    )
+    totalMessages = messageCounts.reduce((sum, count) => sum + count, 0)
   }
 
-  // Get average satisfaction from bot_analytics
+  // Get average satisfaction from bot_analytics for ALL user's bots
   let avgSatisfaction = null
   if (botIds.length > 0) {
-    const { data: analyticsData } = await supabase
-      .from('bot_analytics')
-      .select('avg_satisfaction')
-      .in('bot_id', botIds)
-    
-    avgSatisfaction = analyticsData && analyticsData.length > 0
-      ? analyticsData.reduce((sum, item) => sum + (item.avg_satisfaction || 0), 0) / analyticsData.length
+    const satisfactionValues = await Promise.all(
+      botIds.map(async (botId) => {
+        const { data } = await supabase
+          .from('bot_analytics')
+          .select('avg_satisfaction')
+          .eq('bot_id', botId)
+          .single()
+        return data?.avg_satisfaction || null
+      })
+    )
+    const validSatisfactions = satisfactionValues.filter(v => v !== null)
+    avgSatisfaction = validSatisfactions.length > 0
+      ? validSatisfactions.reduce((sum, val) => sum + val, 0) / validSatisfactions.length
       : null
   }
 
@@ -102,19 +109,30 @@ export default async function DashboardPage() {
   let messagesData: any[] = []
   
   if (botIds.length > 0) {
-    const { data: convData } = await supabase
-      .from('conversations')
-      .select('created_at')
-      .in('bot_id', botIds)
-      .gte('created_at', subDays(new Date(), 7).toISOString())
-    conversationsData = convData || []
+    // Query each bot separately and combine results
+    const allConversations = await Promise.all(
+      botIds.map(async (botId) => {
+        const { data } = await supabase
+          .from('conversations')
+          .select('created_at')
+          .eq('bot_id', botId)
+          .gte('created_at', subDays(new Date(), 7).toISOString())
+        return data || []
+      })
+    )
+    conversationsData = allConversations.flat()
 
-    const { data: msgData } = await supabase
-      .from('messages')
-      .select('created_at')
-      .in('bot_id', botIds)
-      .gte('created_at', subDays(new Date(), 7).toISOString())
-    messagesData = msgData || []
+    const allMessages = await Promise.all(
+      botIds.map(async (botId) => {
+        const { data } = await supabase
+          .from('messages')
+          .select('created_at')
+          .eq('bot_id', botId)
+          .gte('created_at', subDays(new Date(), 7).toISOString())
+        return data || []
+      })
+    )
+    messagesData = allMessages.flat()
   }
 
   // Aggregate data by day
@@ -167,16 +185,25 @@ export default async function DashboardPage() {
     })
   )
 
-  // Get recent activity
+  // Get recent activity from ALL user's bots
   let recentConversations: any[] = []
   if (botIds.length > 0) {
-    const { data } = await supabase
-      .from('conversations')
-      .select('id, created_at, bot_id')
-      .in('bot_id', botIds)
-      .order('created_at', { ascending: false })
-      .limit(5)
-    recentConversations = data || []
+    const allRecentConversations = await Promise.all(
+      botIds.map(async (botId) => {
+        const { data } = await supabase
+          .from('conversations')
+          .select('id, created_at, bot_id')
+          .eq('bot_id', botId)
+          .order('created_at', { ascending: false })
+          .limit(5)
+        return data || []
+      })
+    )
+    // Flatten, sort by date, and take top 5
+    recentConversations = allRecentConversations
+      .flat()
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 5)
   }
 
   const recentActivity = (recentConversations || []).map(conv => {
@@ -351,6 +378,19 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* DEBUG INFO */}
+      <Card className="bg-yellow-500/10 border-yellow-500">
+        <CardContent className="pt-6">
+          <h3 className="text-yellow-500 font-bold mb-2">🔍 DEBUG INFO:</h3>
+          <div className="text-white text-sm space-y-1">
+            <p>Total Bots: {totalBots}</p>
+            <p>Bot IDs: {JSON.stringify(botIds)}</p>
+            <p>Total Chats: {totalChats}</p>
+            <p>Total Messages: {totalMessages}</p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Hero Card with Circular Display + Stats Grid */}
       {bots && bots.length > 0 && (
