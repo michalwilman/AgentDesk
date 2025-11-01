@@ -40,28 +40,40 @@ export default async function DashboardPage() {
   const activeBots = bots?.filter(bot => bot.is_active).length || 0
   const totalBots = bots?.length || 0
   const hasExistingBot = totalBots > 0
+  const botIds = bots?.map(b => b.id) || []
 
   // Get total conversations count
-  const { count: totalChats } = await supabase
-    .from('conversations')
-    .select('*', { count: 'exact', head: true })
-    .in('bot_id', bots?.map(b => b.id) || [])
+  let totalChats = 0
+  if (botIds.length > 0) {
+    const { count } = await supabase
+      .from('conversations')
+      .select('*', { count: 'exact', head: true })
+      .in('bot_id', botIds)
+    totalChats = count || 0
+  }
 
   // Get total messages count
-  const { count: totalMessages } = await supabase
-    .from('messages')
-    .select('*', { count: 'exact', head: true })
-    .in('bot_id', bots?.map(b => b.id) || [])
+  let totalMessages = 0
+  if (botIds.length > 0) {
+    const { count } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .in('bot_id', botIds)
+    totalMessages = count || 0
+  }
 
   // Get average satisfaction from bot_analytics
-  const { data: analyticsData } = await supabase
-    .from('bot_analytics')
-    .select('avg_satisfaction')
-    .in('bot_id', bots?.map(b => b.id) || [])
-
-  const avgSatisfaction = analyticsData && analyticsData.length > 0
-    ? analyticsData.reduce((sum, item) => sum + (item.avg_satisfaction || 0), 0) / analyticsData.length
-    : null
+  let avgSatisfaction = null
+  if (botIds.length > 0) {
+    const { data: analyticsData } = await supabase
+      .from('bot_analytics')
+      .select('avg_satisfaction')
+      .in('bot_id', botIds)
+    
+    avgSatisfaction = analyticsData && analyticsData.length > 0
+      ? analyticsData.reduce((sum, item) => sum + (item.avg_satisfaction || 0), 0) / analyticsData.length
+      : null
+  }
 
   // Get activity data for chart (last 7 days)
   const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -69,17 +81,24 @@ export default async function DashboardPage() {
     return format(date, 'MMM dd')
   })
 
-  const { data: conversationsData } = await supabase
-    .from('conversations')
-    .select('created_at')
-    .in('bot_id', bots?.map(b => b.id) || [])
-    .gte('created_at', subDays(new Date(), 7).toISOString())
+  let conversationsData: any[] = []
+  let messagesData: any[] = []
+  
+  if (botIds.length > 0) {
+    const { data: convData } = await supabase
+      .from('conversations')
+      .select('created_at')
+      .in('bot_id', botIds)
+      .gte('created_at', subDays(new Date(), 7).toISOString())
+    conversationsData = convData || []
 
-  const { data: messagesData } = await supabase
-    .from('messages')
-    .select('created_at')
-    .in('bot_id', bots?.map(b => b.id) || [])
-    .gte('created_at', subDays(new Date(), 7).toISOString())
+    const { data: msgData } = await supabase
+      .from('messages')
+      .select('created_at')
+      .in('bot_id', botIds)
+      .gte('created_at', subDays(new Date(), 7).toISOString())
+    messagesData = msgData || []
+  }
 
   // Aggregate data by day
   const activityData = last7Days.map(date => {
@@ -132,12 +151,16 @@ export default async function DashboardPage() {
   )
 
   // Get recent activity
-  const { data: recentConversations } = await supabase
-    .from('conversations')
-    .select('id, created_at, bot_id')
-    .in('bot_id', bots?.map(b => b.id) || [])
-    .order('created_at', { ascending: false })
-    .limit(5)
+  let recentConversations: any[] = []
+  if (botIds.length > 0) {
+    const { data } = await supabase
+      .from('conversations')
+      .select('id, created_at, bot_id')
+      .in('bot_id', botIds)
+      .order('created_at', { ascending: false })
+      .limit(5)
+    recentConversations = data || []
+  }
 
   const recentActivity = (recentConversations || []).map(conv => {
     const bot = bots?.find(b => b.id === conv.bot_id)
