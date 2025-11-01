@@ -26,20 +26,21 @@ export default async function KnowledgePage({ params }: { params: { id: string }
     notFound()
   }
 
-  // Get documents count
-  const { data: documents, count: documentsCount } = await supabase
+  // Get all content (documents + website crawls)
+  const { data: allContent, count: totalCount } = await supabase
     .from('scraped_content')
     .select('*', { count: 'exact' })
     .eq('bot_id', params.id)
-    .eq('source_url', 'document')
-
-  // Get total characters from all content
-  const { data: allContent } = await supabase
-    .from('scraped_content')
-    .select('content')
-    .eq('bot_id', params.id)
 
   const totalCharacters = allContent?.reduce((sum, item) => sum + (item.content?.length || 0), 0) || 0
+  
+  // Check if bot is actually trained (has embeddings)
+  const { count: embeddingsCount } = await supabase
+    .from('knowledge_embeddings')
+    .select('*', { count: 'exact', head: true })
+    .eq('bot_id', params.id)
+
+  const isTrained = !!(embeddingsCount && embeddingsCount > 0)
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -65,24 +66,29 @@ export default async function KnowledgePage({ params }: { params: { id: string }
             <div>
               <div className="text-sm text-dark-800 mb-1">Training Status</div>
               <div className="flex items-center gap-2">
-                {bot.is_trained ? (
+                {isTrained ? (
                   <>
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/20 text-primary border border-primary/20">
                       ✅ Trained
                     </span>
                   </>
                 ) : (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-dark-100 text-dark-800 border border-dark-100">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-500/20 text-yellow-500 border border-yellow-500/20">
                     ⚠️ Not Trained
                   </span>
                 )}
               </div>
+              {!isTrained && totalCount && totalCount > 0 && (
+                <p className="text-xs text-dark-800 mt-2">
+                  Content uploaded but not trained yet. Click &quot;Train Bot&quot; below.
+                </p>
+              )}
             </div>
             <div>
-              <div className="text-sm text-dark-800 mb-1">Documents</div>
+              <div className="text-sm text-dark-800 mb-1">Total Content Items</div>
               <div className="text-2xl font-bold text-white flex items-center gap-2">
                 <FileText className="h-5 w-5 text-primary" />
-                {documentsCount || 0}
+                {totalCount || 0}
               </div>
             </div>
             <div>
@@ -125,7 +131,7 @@ export default async function KnowledgePage({ params }: { params: { id: string }
       </Card>
 
       {/* Website Crawling */}
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
@@ -139,6 +145,33 @@ export default async function KnowledgePage({ params }: { params: { id: string }
           <KnowledgeWebsiteCrawling botId={params.id} />
         </CardContent>
       </Card>
+
+      {/* Train Bot Button */}
+      {totalCount && totalCount > 0 && (
+        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  Ready to train your bot?
+                </h3>
+                <p className="text-sm text-dark-800">
+                  {isTrained 
+                    ? 'Retrain your bot with the latest content to improve responses'
+                    : 'Train your bot to start answering questions based on your content'
+                  }
+                </p>
+              </div>
+              <Link href={`/dashboard/bots/${params.id}`}>
+                <Button size="lg" className="gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  {isTrained ? 'Retrain Bot' : 'Train Bot'}
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
