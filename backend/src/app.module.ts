@@ -10,6 +10,7 @@ import { KnowledgeModule } from './knowledge/knowledge.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { DocumentsModule } from './documents/documents.module';
 import { WidgetModule } from './widget/widget.module';
+import { WordpressModule } from './wordpress/wordpress.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { WidgetModule } from './widget/widget.module';
     WebhooksModule,
     DocumentsModule,
     WidgetModule,
+    WordpressModule,
   ],
   controllers: [],
 })

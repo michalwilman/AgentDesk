@@ -179,5 +179,35 @@ export class BotsService {
 
     return data && data.length > 0;
   }
+
+  async updateWordPressConnection(
+    apiToken: string,
+    connectionData: {
+      site_url: string;
+      plugin_version: string;
+      wp_version?: string;
+      is_active: boolean;
+    },
+  ) {
+    const supabase = this.supabaseService.getClient();
+
+    const { data, error } = await supabase
+      .from('bots')
+      .update({
+        wordpress_connected: connectionData.is_active,
+        wordpress_site_url: connectionData.site_url,
+        wordpress_plugin_version: connectionData.plugin_version,
+        wordpress_last_activity: new Date().toISOString(),
+      })
+      .eq('api_token', apiToken)
+      .select()
+      .single();
+
+    if (error || !data) {
+      throw new Error('Failed to update WordPress connection');
+    }
+
+    return data;
+  }
 }
 

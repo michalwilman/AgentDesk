@@ -106,5 +106,57 @@ export class BotsController {
       position: bot.position,
     };
   }
+
+  @Post('validate')
+  async validateToken(@Body() body: { apiToken: string }) {
+    try {
+      const bot = await this.botsService.findByApiToken(body.apiToken);
+      return {
+        valid: true,
+        bot: {
+          id: bot.id,
+          name: bot.name,
+          is_active: bot.is_active,
+          is_trained: bot.is_trained,
+          language: bot.language,
+        },
+      };
+    } catch (error) {
+      return {
+        valid: false,
+        message: 'Invalid or inactive bot token',
+      };
+    }
+  }
+
+  @Post('wordpress-heartbeat')
+  async wordpressHeartbeat(
+    @Headers('x-bot-token') botToken: string,
+    @Body()
+    body: {
+      site_url: string;
+      plugin_version: string;
+      wp_version?: string;
+      is_active: boolean;
+    },
+  ) {
+    try {
+      // Validate bot token first
+      await this.botsService.findByApiToken(botToken);
+
+      // Update WordPress connection data
+      await this.botsService.updateWordPressConnection(botToken, body);
+
+      return {
+        success: true,
+        message: 'WordPress connection updated successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Failed to update WordPress connection',
+      };
+    }
+  }
 }
 
