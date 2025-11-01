@@ -12,6 +12,7 @@ interface DashboardQuickActionsProps {
 
 export function DashboardQuickActions({ hasExistingBot = false }: DashboardQuickActionsProps) {
   const [showBotLimitAlert, setShowBotLimitAlert] = useState(false)
+  
   const actions = [
     {
       label: 'Create New Bot',
