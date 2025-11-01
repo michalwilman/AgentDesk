@@ -42,23 +42,33 @@ export default async function DashboardPage() {
   const hasExistingBot = totalBots > 0
   const botIds = bots?.map(b => b.id) || []
 
+  console.log('🔍 Dashboard Debug:', {
+    totalBots,
+    botIds,
+    botIdsLength: botIds.length
+  })
+
   // Get total conversations count
   let totalChats = 0
   if (botIds.length > 0) {
-    const { count } = await supabase
+    const { count, error } = await supabase
       .from('conversations')
       .select('*', { count: 'exact', head: true })
       .in('bot_id', botIds)
+    
+    console.log('📊 Conversations query:', { count, error, botIds })
     totalChats = count || 0
   }
 
   // Get total messages count
   let totalMessages = 0
   if (botIds.length > 0) {
-    const { count } = await supabase
+    const { count, error } = await supabase
       .from('messages')
       .select('*', { count: 'exact', head: true })
       .in('bot_id', botIds)
+    
+    console.log('💬 Messages query:', { count, error, botIds })
     totalMessages = count || 0
   }
 
