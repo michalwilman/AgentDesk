@@ -147,21 +147,70 @@ class AgentDesk_Admin {
             </h1>
             
             <?php if (!$has_token): ?>
-            <div class="notice notice-warning">
-                <h3><?php _e('🚀 Get Started with AgentDesk', 'agentdesk-chatbot'); ?></h3>
-                <p>
-                    <?php _e('To use AgentDesk AI Chatbot, you need to:', 'agentdesk-chatbot'); ?>
+            <div class="notice notice-info" style="border-left-color: #00d4aa; background: #f0fdf9;">
+                <h2 style="color: #1a1a1a; margin-top: 0.5em;">
+                    🎉 <?php _e('Welcome to AgentDesk!', 'agentdesk-chatbot'); ?>
+                </h2>
+                <p style="font-size: 16px; line-height: 1.6;">
+                    <?php _e('Get started in just 3 simple steps:', 'agentdesk-chatbot'); ?>
                 </p>
-                <ol>
-                    <li><?php _e('Your AgentDesk backend must be running (locally or on server)', 'agentdesk-chatbot'); ?></li>
-                    <li><?php _e('Get your Bot API Token from the AgentDesk dashboard', 'agentdesk-chatbot'); ?></li>
-                    <li><?php _e('If using localhost, you need ngrok or deploy to production', 'agentdesk-chatbot'); ?></li>
-                    <li><?php _e('Paste the token in the field below', 'agentdesk-chatbot'); ?></li>
-                </ol>
-                <p>
-                    <strong><?php _e('Note:', 'agentdesk-chatbot'); ?></strong>
-                    <?php _e('Make sure your backend is accessible from the internet!', 'agentdesk-chatbot'); ?>
-                </p>
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <ol style="font-size: 15px; line-height: 1.8; margin: 0;">
+                        <li>
+                            <strong><?php _e('Create a FREE account', 'agentdesk-chatbot'); ?></strong>
+                            <br>
+                            <span style="color: #666;">
+                                <?php _e('Get 7 days free trial - No credit card required!', 'agentdesk-chatbot'); ?>
+                            </span>
+                        </li>
+                        <li>
+                            <strong><?php _e('Create your first AI chatbot', 'agentdesk-chatbot'); ?></strong>
+                            <br>
+                            <span style="color: #666;">
+                                <?php _e('Takes just 2 minutes. Train it on your website content.', 'agentdesk-chatbot'); ?>
+                            </span>
+                        </li>
+                        <li>
+                            <strong><?php _e('Get your Bot Token', 'agentdesk-chatbot'); ?></strong>
+                            <br>
+                            <span style="color: #666;">
+                                <?php _e('Copy the token from your dashboard and paste it below.', 'agentdesk-chatbot'); ?>
+                            </span>
+                        </li>
+                    </ol>
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px; align-items: center;">
+                    <a href="https://agentdesk-frontend-production.up.railway.app/register" 
+                       target="_blank" 
+                       class="button button-primary button-hero"
+                       style="background: linear-gradient(135deg, #00d4aa 0%, #00a887 100%); border: none; text-shadow: none; box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3); height: auto; padding: 12px 30px; font-size: 16px;">
+                        <span class="dashicons dashicons-admin-users" style="margin-top: 3px;"></span>
+                        <?php _e('Create Free Account', 'agentdesk-chatbot'); ?>
+                    </a>
+                    
+                    <a href="https://agentdesk-frontend-production.up.railway.app/login" 
+                       target="_blank" 
+                       class="button button-secondary button-hero"
+                       style="height: auto; padding: 12px 30px; font-size: 16px;">
+                        <span class="dashicons dashicons-lock" style="margin-top: 3px;"></span>
+                        <?php _e('I Already Have an Account', 'agentdesk-chatbot'); ?>
+                    </a>
+                    
+                    <a href="https://github.com/michalwilman/AgentDesk#-quick-start" 
+                       target="_blank" 
+                       style="margin-left: auto; color: #00d4aa; text-decoration: none; font-size: 14px;">
+                        <span class="dashicons dashicons-book" style="vertical-align: middle;"></span>
+                        <?php _e('View Documentation', 'agentdesk-chatbot'); ?>
+                    </a>
+                </div>
+                
+                <div style="margin-top: 15px; padding: 12px; background: #e8f8f4; border-radius: 6px; border-left: 3px solid #00d4aa;">
+                    <strong style="color: #00a887;">💡 <?php _e('Pro Tip:', 'agentdesk-chatbot'); ?></strong>
+                    <span style="color: #333;">
+                        <?php _e('Your chatbot learns from your website automatically. Just provide your URL during bot creation!', 'agentdesk-chatbot'); ?>
+                    </span>
+                </div>
             </div>
             <?php endif; ?>
             

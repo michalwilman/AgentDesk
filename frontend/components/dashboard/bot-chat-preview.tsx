@@ -134,28 +134,30 @@ export function BotChatPreview({
     setLoading(true)
 
     try {
-      const response = await fetch('/api/chat', {
+      // Use backend API instead of frontend API route for security
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+      const response = await fetch(`${apiUrl}/chat/message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Bot-Token': botToken,
         },
         body: JSON.stringify({
           message: userMessage,
           sessionId: sessionId,
-          botId: botId,
         }),
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to send message')
+        throw new Error(errorData.error || errorData.message || 'Failed to send message')
       }
 
       const data = await response.json()
 
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: data.message },
+        { role: 'assistant', content: data.reply || data.message },
       ])
     } catch (error: any) {
       console.error('Failed to send message:', error)
