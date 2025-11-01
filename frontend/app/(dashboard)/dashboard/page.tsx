@@ -483,7 +483,7 @@ export default async function DashboardPage() {
       )}
 
       {/* Quick Actions */}
-      <DashboardQuickActions />
+      <DashboardQuickActions hasExistingBot={hasExistingBot} />
     </div>
   )
 }
