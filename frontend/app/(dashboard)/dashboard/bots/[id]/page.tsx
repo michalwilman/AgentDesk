@@ -67,12 +67,24 @@ export default async function BotDetailPage({ params }: { params: { id: string }
                 <CardTitle>Bot Configuration</CardTitle>
                 <CardDescription>Current bot settings</CardDescription>
               </div>
-              <Link href={`/dashboard/bots/${bot.id}/edit`}>
-                <Button variant="outline" size="sm">
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit Bot
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href={`/dashboard/bots/${bot.id}/knowledge`}>
+                  <Button variant="outline" size="sm">
+                    Manage Knowledge
+                  </Button>
+                </Link>
+                <Link href={`/dashboard/bots/${bot.id}/analytics`}>
+                  <Button variant="outline" size="sm">
+                    View Analytics
+                  </Button>
+                </Link>
+                <Link href={`/dashboard/bots/${bot.id}/edit`}>
+                  <Button variant="outline" size="sm">
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit Bot
+                  </Button>
+                </Link>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -258,20 +270,6 @@ export default async function BotDetailPage({ params }: { params: { id: string }
             <ChannelConnections bot={bot} />
           </CardContent>
         </Card>
-
-        {/* Actions */}
-        <div className="flex items-center space-x-4">
-          <Link href={`/dashboard/bots/${bot.id}/knowledge`} className="flex-1">
-            <Button variant="outline" className="w-full">
-              Manage Knowledge
-            </Button>
-          </Link>
-          <Link href={`/dashboard/bots/${bot.id}/analytics`} className="flex-1">
-            <Button variant="outline" className="w-full">
-              View Analytics
-            </Button>
-          </Link>
-        </div>
 
         {/* Delete Bot */}
         <Card className="border-red-200">
