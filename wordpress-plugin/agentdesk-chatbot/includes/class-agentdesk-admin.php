@@ -154,6 +154,8 @@ class AgentDesk_Admin {
                 <?php echo esc_html(get_admin_page_title()); ?>
             </h1>
             
+            <?php settings_errors(); ?>
+            
             <?php if (!$has_token): ?>
             <div class="notice notice-info" style="border-left-color: #00d4aa; background: #f0fdf9;">
                 <h2 style="color: #1a1a1a; margin-top: 0.5em;">
@@ -417,7 +419,7 @@ class AgentDesk_Admin {
                     <a href="<?php echo home_url(); ?>" class="button button-secondary" target="_blank">
                         <?php _e('View Site', 'agentdesk-chatbot'); ?> →
                     </a>
-                    <a href="http://localhost:3000" class="button button-secondary" target="_blank">
+                    <a href="https://agentdesk-frontend-production.up.railway.app/dashboard" class="button button-secondary" target="_blank">
                         <?php _e('Open AgentDesk Dashboard', 'agentdesk-chatbot'); ?> →
                     </a>
                 </p>

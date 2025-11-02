@@ -3,7 +3,7 @@ Contributors: agentdesk
 Tags: chatbot, ai, live chat, customer support, gpt-4, openai, chatgpt, conversational ai, support
 Requires at least: 5.8
 Tested up to: 6.4
-Stable tag: 1.0.0
+Stable tag: 1.2.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -245,6 +245,21 @@ We're here to help!
 8. Custom branding options - match your brand identity
 
 == Changelog ==
+
+= 1.2.0 - 2025-11-02 =
+* 🔄 One-click updates - Update plugin without deactivation
+* 🔐 Enhanced security and validation
+* 🌐 Improved multi-language support
+* 🚀 Performance optimizations
+* ✅ Full compatibility with WordPress 6.4+
+* 🔧 Bug fixes and improvements
+
+= 1.1.0 - 2025-10-30 =
+* 🚀 Automatic plugin updates
+* 💓 WordPress heartbeat integration
+* 🔄 One-click update from WordPress dashboard
+* ✅ Settings preserved during updates
+* 📝 Changelog display in WordPress
 
 = 1.0.0 - 2025-10-28 =
 * Initial release

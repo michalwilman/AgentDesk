@@ -7,7 +7,7 @@ export class WordpressService {
    * Get current plugin version and update info
    */
   getPluginUpdate() {
-    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.0.0';
+    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.2.0';
     
     return {
       name: 'AgentDesk AI Chatbot',
@@ -66,6 +66,31 @@ export class WordpressService {
           <li>🌍 Multi-language support (Hebrew & English)</li>
         </ul>
       `,
+      '1.2.0': `
+        <h4>1.2.0 - Enhanced Update System</h4>
+        <ul>
+          <li>🔄 One-click updates - Update plugin without deactivation</li>
+          <li>🔐 Enhanced security and validation</li>
+          <li>🌐 Improved multi-language support</li>
+          <li>🚀 Performance optimizations</li>
+          <li>✅ Full compatibility with WordPress 6.4+</li>
+          <li>🔧 Bug fixes and improvements</li>
+        </ul>
+        
+        <h4>1.1.0 - Auto-Update System</h4>
+        <ul>
+          <li>🚀 Automatic plugin updates</li>
+          <li>💓 WordPress heartbeat integration</li>
+          <li>🔄 One-click update from WordPress dashboard</li>
+        </ul>
+        
+        <h4>1.0.0 - Initial Release</h4>
+        <ul>
+          <li>✨ AI Chatbot integration with GPT-4</li>
+          <li>🎨 Customizable widget position and colors</li>
+          <li>🌍 Multi-language support</li>
+        </ul>
+      `,
     };
 
     return changelogs[version] || changelogs['1.0.0'];
@@ -78,7 +103,7 @@ export class WordpressService {
     return {
       name: 'AgentDesk AI Chatbot',
       slug: 'agentdesk-chatbot',
-      version: process.env.WP_PLUGIN_VERSION || '1.0.0',
+      version: process.env.WP_PLUGIN_VERSION || '1.2.0',
       author: 'AgentDesk',
       author_profile: 'https://agentdesk.com',
       homepage: 'https://agentdesk.com/wordpress-plugin',

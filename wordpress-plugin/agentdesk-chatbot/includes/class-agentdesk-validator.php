@@ -62,10 +62,14 @@ class AgentDesk_Validator {
         $data = json_decode($body, true);
 
         // Handle API response
-        if ($status_code !== 200) {
+        if ($status_code !== 200 && $status_code !== 201) {
             return [
                 'valid' => false,
-                'message' => __('API connection failed. Please try again.', 'agentdesk-chatbot'),
+                'message' => sprintf(
+                    __('API connection failed (Status: %d). Response: %s', 'agentdesk-chatbot'),
+                    $status_code,
+                    substr($body, 0, 200)
+                ),
             ];
         }
 
