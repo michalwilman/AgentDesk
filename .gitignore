@@ -86,7 +86,7 @@ private_docs/
 widget-demo.html
 *.demo.html
 
-# Hide all guide/documentation MD files (keep README.md)
+# Hide all guide/documentation MD files (keep README.md and main docs)
 *_GUIDE.md
 *_STEPS.md
 *_DEPLOY*.md
@@ -105,3 +105,36 @@ QUICK_*.md
 RAILWAY_*.md
 SETUP_*.md
 TROUBLESHOOTING_*.md
+ARCHITECTURE_*.md
+BOT_ACTIONS_*.md
+DEPLOYMENT_*.md
+IMPLEMENTATION_*.md
+WORDPRESS_INTEGRATION_*.md
+
+# ZIP files and archives (except WordPress plugin)
+*.zip
+*.rar
+*.7z
+*.tar.gz
+!wordpress-plugin/agentdesk-chatbot.zip
+
+# Windows utilities (zip.exe, etc.) 
+bin/
+contrib/
+man/
+manifest/
+
+# Build and test scripts
+*.bat
+*.sh
+*.ps1
+!docker-deploy.sh
+!start-backend.sh
+CHECK_SYSTEM.bat
+RESTART_*.bat
+START_*.bat
+start-*.sh
+start-*.bat
+test-*.ps1
+test-*.sh
+create-plugin-zip.sh

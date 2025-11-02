@@ -2,37 +2,38 @@
 
 # 🤖 AgentDesk
 
-### Enterprise AI Customer Service Platform
+### **Enterprise AI Agent Platform - Not Just a Chatbot!**
 
-**Build intelligent chatbots that learn from your content and engage customers across multiple channels**
+**Build intelligent AI agents that learn, act, and engage customers across every channel**
 
+[![Live Demo](https://img.shields.io/badge/Demo-Live-success)](https://agentdesk-frontend-production.up.railway.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-10.0-red)](https://nestjs.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-14.0-black)](https://nextjs.org/)
-[![API Docs](https://img.shields.io/badge/API-Documentation-green)](API.md)
 
-[Live Demo](https://agentdesk-frontend-production.up.railway.app/) • [Documentation](#-documentation) • [API Reference](API.md) • [Quick Start](#-quick-start)
+[🚀 Live Demo](https://agentdesk-frontend-production.up.railway.app/) • [📚 Documentation](#-documentation) • [⚡ Quick Start](#-quick-start)
 
 </div>
 
 ---
 
-<img width="1703" height="856" alt="image" src="https://github.com/user-attachments/assets/73341bc0-c7c5-452f-9cf7-89446a21e9b1" />
-
+<img width="1703" height="856" alt="AgentDesk Dashboard" src="https://github.com/user-attachments/assets/73341bc0-c7c5-452f-9cf7-89446a21e9b1" />
 
 ## 🎯 What is AgentDesk?
 
-AgentDesk is a **production-ready SaaS platform** that empowers businesses to create AI-powered customer service agents without code. Built on cutting-edge RAG (Retrieval-Augmented Generation) technology, AgentDesk enables your chatbots to learn from your website, documents, and knowledge base to provide accurate, contextual responses 24/7.
+AgentDesk is not just another chatbot platform. It's a **production-ready AI Agent system** that empowers businesses to create intelligent customer service agents that don't just answer questions—they take action.
 
-### Why AgentDesk?
+### Why AI Agent, Not Just a Bot?
 
-- 🚀 **Deploy in Minutes** - No coding required, embed on any website
-- 🧠 **Learns from Your Content** - Web scraping, document ingestion, RAG-powered responses
-- 🌍 **Multi-Channel Support** - Web widget, Telegram, WhatsApp integration
-- 🔒 **Enterprise Security** - Multi-tenant architecture, RLS policies, encrypted data
-- 📊 **Analytics Dashboard** - Track conversations, user satisfaction, and bot performance
-- 🌐 **Multilingual** - Full support for English, Hebrew, and more languages
+- 🧠 **Learns** from your website, documents, and knowledge base using RAG
+- 💪 **Acts** - Books appointments, captures leads, sends emails automatically
+- 🤔 **Thinks** - Context-aware responses with conversation memory
+- 🌍 **Connects** - WordPress, Telegram, WhatsApp, and any website
+- 🎨 **Adapts** - Hebrew, English, RTL support, fully customizable
+- 🔐 **Scales** - Enterprise-grade security, multi-tenant architecture
+
+**It's an AI agent that works for you 24/7, not just a scripted chatbot!** ✨
 
 ---
 
@@ -40,52 +41,59 @@ AgentDesk is a **production-ready SaaS platform** that empowers businesses to cr
 
 ### 🧠 AI-Powered Intelligence
 - **RAG (Retrieval-Augmented Generation)** - Contextual responses based on your content
-- **OpenAI Integration** - GPT-4o-mini for natural conversations
-- **Vector Search** - pgvector embeddings for semantic similarity matching
-- **Conversation Memory** - Context-aware responses with session history
+- **OpenAI GPT-4o-mini** - Natural, human-like conversations
+- **pgvector Semantic Search** - Find relevant information instantly with vector embeddings
+- **Conversation Memory** - Context-aware responses with full session history
+- **Multi-turn Conversations** - Maintains context across entire conversation
+
+### 🚀 AI Agent Actions & Automation
+- **📅 Appointment Scheduling** - Direct Google Calendar integration with smart booking
+- **📧 Email Automation** - Confirmation emails and notifications via Resend
+- **🎯 Lead Capture** - Automatic lead collection with validation and follow-ups
+- **✅ Smart Validation** - Email format checking and detail confirmation
+- **🔧 Extensible Actions** - Add custom actions via OpenAI Function Calling
+- **🤖 Multi-step Workflows** - Complex task automation with user confirmation
 
 ### 📚 Knowledge Management
-- **Website Crawler** - Automatically scrape and index your website content
-- **Document Ingestion** - Upload PDFs, text files, and documents
-- **Manual Content** - Add custom FAQs and knowledge snippets
-- **Automatic Chunking** - Intelligent text segmentation for optimal retrieval
+- **🔍 Website Crawler** - Automatically scrape and index your website content
+- **📄 Document Ingestion** - Upload PDFs, text files, and documents _(coming soon)_
+- **✍️ Manual Content** - Add custom FAQs and knowledge snippets
+- **🔄 Automatic Chunking** - Intelligent text segmentation for optimal retrieval
+- **🔄 Auto-sync** - Keep knowledge base updated with content changes
 
-### 🔗 Multi-Channel Integration
-- **Web Widget** - Customizable floating chat widget for any website
-- **WordPress Plugin v1.1.0** - One-click installation with real-time status tracking
-  - Heartbeat sync every 5 minutes
-  - Auto-updates from server
+### 🌐 Multi-Channel Integration
+- **🌐 Web Widget** - Customizable floating chat widget for any website
+- **🔌 WordPress Plugin v1.2.0** - One-click installation with auto-updates
+  - Real-time update notifications
+  - One-click updates without plugin deactivation
   - Full Hebrew/RTL support
-  - Display rules per page
   - Connection status in dashboard
-- **Telegram Bots** - Connect to Telegram with one-click setup
-- **WhatsApp Business** - Integrate with WhatsApp via Twilio
-- **Unified Knowledge Base** - Same bot, multiple channels
+  - Bot training status display
+- **📱 Telegram Bots** - Connect to Telegram with one-click setup
+- **💬 WhatsApp Business** - Integrate with WhatsApp via Twilio
+- **🔗 Unified Knowledge Base** - Same agent, multiple channels
 
 ### 🎨 Full Customization
-- **Brand Colors** - Match your brand identity
-- **Custom Personality** - Define tone and style
-- **Multiple Welcome Messages** - Rotate greetings for variety
-- **Multilingual UI** - RTL support for Hebrew and Arabic
+- **🎨 Brand Colors** - Match your brand identity perfectly
+- **🗣️ Custom Personality** - Define tone, style, and behavior
+- **💬 Multiple Welcome Messages** - Rotate greetings for variety and engagement
+- **🌍 Multilingual UI** - Full RTL support for Hebrew and Arabic
+- **📍 Widget Positioning** - Choose where the widget appears on your site
 
 ### 🔐 Enterprise-Grade Security
-- **Multi-Tenant Architecture** - Complete data isolation per tenant
-- **Row Level Security (RLS)** - Database-level access control
-- **API Token Authentication** - Secure bot-to-channel communication
-- **Encrypted Storage** - AES-256 encryption at rest
+- **🔒 Multi-Tenant Architecture** - Complete data isolation per tenant
+- **🛡️ Row Level Security (RLS)** - Database-level access control
+- **🔑 API Token Authentication** - Secure bot-to-channel communication
+- **🌐 Domain Validation** - Restrict bot usage to authorized domains only
+- **🔐 Encrypted Storage** - AES-256 encryption at rest
+- **📊 Audit Logs** - Track all bot interactions and changes
 
 ### 📊 Analytics & Insights
-- **Conversation Tracking** - Full chat history and analytics
-- **User Metrics** - Track engagement and satisfaction
-- **Knowledge Performance** - Identify gaps in your content
-- **Real-Time Dashboard** - Monitor all bots from one place
-
-### 🎯 Bot Actions & Automation
-- **Appointment Scheduling** - Book meetings directly in chat with Google Calendar sync
-- **Lead Capture** - Automatic lead creation and management
-- **Email Notifications** - Automated confirmation emails via Resend
-- **Smart Validation** - Email format checking and detail confirmation
-- **Function Calling** - Extensible action system powered by OpenAI
+- **💬 Conversation Tracking** - Full chat history and analytics
+- **👥 User Metrics** - Track engagement and satisfaction
+- **📈 Knowledge Performance** - Identify gaps in your content
+- **🎯 Real-Time Dashboard** - Monitor all bots from one place
+- **📉 Response Quality** - Measure accuracy and user satisfaction
 
 ---
 
@@ -101,70 +109,79 @@ graph TB
         A[Web Browser]
         B[Telegram]
         C[WhatsApp]
+        D[WordPress Site]
     end
     
     subgraph "Frontend Layer"
-        D[Next.js Dashboard<br/>Port 3000]
-        E[Chat Widget<br/>Port 3002]
+        E[Next.js Dashboard<br/>Port 3000]
+        F[Chat Widget<br/>Railway]
     end
     
     subgraph "Backend Layer - NestJS API"
-        F[API Gateway<br/>Port 3001]
-        G[Auth Module]
-        H[Bot Management]
-        I[Chat Service<br/>RAG Engine]
-        J[Webhook Service]
-        K[Scraper Service]
-        L[Knowledge Service]
-        M[Embeddings Service]
+        G[API Gateway<br/>Railway]
+        H[Auth Module]
+        I[Bot Management]
+        J[Chat Service<br/>RAG Engine]
+        K[Webhook Service]
+        L[Scraper Service]
+        M[Knowledge Service]
+        N[Embeddings Service]
+        O[Actions Service]
     end
     
     subgraph "AI Layer"
-        N[OpenAI GPT-4o-mini]
-        O[OpenAI Embeddings<br/>text-embedding-3-small]
+        P[OpenAI GPT-4o-mini]
+        Q[OpenAI Embeddings<br/>text-embedding-3-small]
     end
     
     subgraph "Data Layer"
-        P[(Supabase PostgreSQL<br/>+ pgvector)]
-        Q[Supabase Auth]
+        R[(Supabase PostgreSQL<br/>+ pgvector)]
+        S[Supabase Auth]
     end
     
     subgraph "External Services"
-        R[Telegram Bot API]
-        S[Twilio WhatsApp API]
+        T[Telegram Bot API]
+        U[Twilio WhatsApp API]
+        V[Google Calendar API]
+        W[Resend Email API]
     end
     
-    A -->|HTTPS| D
-    A -->|Embed Script| E
-    B -->|Webhook| J
-    C -->|Webhook| J
+    A -->|HTTPS| E
+    A -->|Embed Script| F
+    B -->|Webhook| K
+    C -->|Webhook| K
+    D -->|WordPress Plugin| F
     
-    D -->|REST API| F
-    E -->|REST API| F
+    E -->|REST API| G
+    F -->|REST API| G
     
-    F --> G
-    F --> H
-    F --> I
-    F --> J
-    F --> K
-    F --> L
-    F --> M
+    G --> H
+    G --> I
+    G --> J
+    G --> K
+    G --> L
+    G --> M
+    G --> N
+    G --> O
     
-    G -.->|Auth| Q
-    H -.->|CRUD| P
-    I -.->|Chat Context| P
-    I -->|Generate Response| N
-    K -.->|Store Content| P
-    L -.->|Manage KB| P
-    M -->|Generate Vectors| O
-    M -.->|Store Embeddings| P
+    H -.->|Auth| S
+    I -.->|CRUD| R
+    J -.->|Chat Context| R
+    J -->|Generate Response| P
+    L -.->|Store Content| R
+    M -.->|Manage KB| R
+    N -->|Generate Vectors| Q
+    N -.->|Store Embeddings| R
+    O -->|Schedule| V
+    O -->|Send Email| W
     
-    J -->|Send Message| R
-    J -->|Send Message| S
+    K -->|Send Message| T
+    K -->|Send Message| U
     
-    style I fill:#00d4aa
-    style N fill:#10a37f
-    style P fill:#3ecf8e
+    style J fill:#00d4aa
+    style P fill:#10a37f
+    style R fill:#3ecf8e
+    style O fill:#ffa500
 ```
 
 ### RAG Pipeline Flow
@@ -176,9 +193,10 @@ sequenceDiagram
     participant ChatService
     participant VectorDB
     participant OpenAI
+    participant Actions
     participant Database
     
-    User->>Widget: Send message: "What are your hours?"
+    User->>Widget: "I'd like to book a consultation"
     Widget->>ChatService: POST /chat/message
     
     ChatService->>OpenAI: Generate query embedding
@@ -190,13 +208,19 @@ sequenceDiagram
     ChatService->>Database: Fetch conversation history
     Database-->>ChatService: Last 10 messages
     
-    ChatService->>OpenAI: Generate response with context
-    Note over ChatService,OpenAI: Context = relevant chunks + history + personality
-    OpenAI-->>ChatService: "We're open Mon-Fri, 9 AM to 5 PM"
+    ChatService->>OpenAI: Generate response with context + actions
+    Note over ChatService,OpenAI: Context = KB + history + personality + available actions
+    OpenAI-->>ChatService: Action: book_appointment
     
-    ChatService->>Database: Save message to history
-    ChatService-->>Widget: Return response
-    Widget-->>User: Display response
+    ChatService->>Actions: Execute book_appointment
+    Actions->>User: Collect details (name, email, date)
+    User->>Actions: Provide information
+    Actions->>Actions: Validate & confirm
+    Actions-->>ChatService: Appointment booked
+    
+    ChatService->>Database: Save conversation
+    ChatService-->>Widget: "✅ Appointment confirmed!"
+    Widget-->>User: Display confirmation
 ```
 
 ---
@@ -207,6 +231,7 @@ sequenceDiagram
 - **Framework**: Next.js 14 (App Router)
 - **UI Library**: React 18
 - **Styling**: Tailwind CSS 3
+- **Components**: shadcn/ui
 - **State Management**: React Hooks
 - **Authentication**: Supabase Auth
 - **Deployment**: Vercel
@@ -217,25 +242,25 @@ sequenceDiagram
 - **API**: REST
 - **Validation**: class-validator, class-transformer
 - **Scraping**: Cheerio, Puppeteer
-- **Deployment**: Render, Railway
+- **Deployment**: Railway
 
 ### Database
 - **Primary Database**: PostgreSQL (via Supabase)
 - **Vector Search**: pgvector extension
 - **Auth Provider**: Supabase Auth
-- **Real-time**: Supabase Realtime (future)
+- **Real-time**: Supabase Realtime
 
 ### AI & ML
 - **LLM**: OpenAI GPT-4o-mini
-- **Embeddings**: OpenAI text-embedding-3-small
-- **Vector Dimensions**: 1536
-- **Similarity**: Cosine similarity
+- **Embeddings**: OpenAI text-embedding-3-small (1536 dimensions)
+- **Vector Similarity**: Cosine similarity
+- **Function Calling**: OpenAI Function Calling for actions
 
 ### External Integrations
 - **Messaging**: Telegram Bot API, Twilio (WhatsApp)
 - **Calendar**: Google Calendar API (OAuth 2.0)
-- **Email**: Resend API (100 emails/day free)
-- **Payments**: (Coming Soon)
+- **Email**: Resend API (100 emails/day free tier)
+- **WordPress**: Custom plugin with auto-update system
 
 ---
 
@@ -246,26 +271,26 @@ AgentDesk/
 ├── backend/                    # NestJS REST API
 │   ├── src/
 │   │   ├── auth/              # Supabase Auth integration
-│   │   ├── bots/              # Bot CRUD operations
-│   │   ├── chat/              # RAG chat engine
+│   │   ├── bots/              # Bot CRUD operations & config
+│   │   ├── chat/              # RAG chat engine with GPT-4o
 │   │   ├── actions/           # Bot actions & integrations
 │   │   │   ├── integrations/  # Calendar, Email services
-│   │   │   └── function-definitions.ts  # OpenAI function calling
+│   │   │   └── function-definitions.ts
 │   │   ├── embeddings/        # Vector embedding generation
 │   │   ├── knowledge/         # Knowledge base management
 │   │   ├── scraper/           # Web scraping (Cheerio + Puppeteer)
 │   │   ├── webhooks/          # Telegram & WhatsApp webhooks
+│   │   ├── wordpress/         # WordPress plugin update API
 │   │   └── common/            # Shared services (Supabase client)
-│   └── package.json
+│   └── migrations/            # SQL migrations
 │
 ├── frontend/                   # Next.js Dashboard
 │   ├── app/
-│   │   ├── (auth)/            # Login & registration
+│   │   ├── (auth)/            # Login & registration pages
 │   │   ├── (dashboard)/       # Protected dashboard routes
 │   │   │   └── dashboard/
 │   │   │       ├── bots/      # Bot management UI
 │   │   │       └── page.tsx   # Dashboard home
-│   │   ├── api/               # Next.js API routes
 │   │   ├── pricing/           # Pricing page
 │   │   └── about/             # About page
 │   ├── components/
@@ -283,27 +308,30 @@ AgentDesk/
 │       └── widget.js          # Embed script
 │
 ├── supabase/                   # Database & Migrations
-│   ├── schema.sql             # Initial schema
-│   ├── migrations/
-│   │   ├── add_external_channels.sql
-│   │   ├── add_welcome_messages.sql
-│   │   └── add_trial_tracking.sql  # 7-day trial system
-│   └── README.md
+│   ├── schema.sql             # Initial schema with RLS
+│   └── migrations/
+│       ├── add_external_channels.sql
+│       ├── add_welcome_messages.sql
+│       ├── add_trial_tracking.sql
+│       └── add_actions_system.sql
 │
 ├── wordpress-plugin/           # WordPress Integration
-│   ├── agentdesk-chatbot.php  # Main plugin file
+│   ├── agentdesk-chatbot.php  # Main plugin file (v1.2.0)
 │   ├── includes/              # Plugin core functionality
+│   │   ├── class-agentdesk-admin.php
+│   │   ├── class-agentdesk-widget.php
+│   │   ├── class-agentdesk-validator.php
+│   │   └── class-agentdesk-updater.php  # Auto-update system
 │   ├── assets/                # CSS & JS files
 │   ├── languages/             # Hebrew translations (he_IL)
-│   └── readme.txt             # WordPress plugin readme
+│   └── readme.txt             # WordPress.org plugin readme
 │
-├── docker-compose.yml          # Local development setup
-└── package.json               # Root workspace
+└── private_docs/              # Private documentation (not in repo)
 ```
 
 ---
 
-## 🚀 Quick Start
+## ⚡ Quick Start
 
 ### Prerequisites
 
@@ -319,8 +347,10 @@ AgentDesk/
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/your-org/agentdesk.git
+git clone https://github.com/michalwilman/AgentDesk.git
 cd AgentDesk
+
+# Install all dependencies
 npm install
 npm run install:all
 ```
@@ -331,7 +361,7 @@ npm run install:all
 # Copy environment template
 cp env.example .env
 
-# Edit .env with your credentials
+# Edit with your credentials
 nano .env
 ```
 
@@ -354,11 +384,12 @@ RESEND_API_KEY=re_your_api_key
 ### 3. Set Up Database
 
 1. Create a project at [supabase.com](https://supabase.com)
-2. Enable the **pgvector** extension
+2. Enable the **pgvector** extension in SQL Editor:
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS vector;
+   ```
 3. Run `supabase/schema.sql` in SQL Editor
-4. Apply migrations:
-   - `migration_add_external_channels.sql`
-   - `migration_add_welcome_messages.sql`
+4. Apply migrations from `supabase/migrations/`
 
 ### 4. Start Development
 
@@ -372,39 +403,47 @@ npm run dev
 # - Widget:    http://localhost:3002
 ```
 
-### 5. Create Your First Bot
+### 5. Create Your First AI Agent
 
 1. Visit `http://localhost:3000`
 2. Register a new account
 3. Click **Create Bot**
 4. Add knowledge from your website or documents
-5. Test your bot in the preview
-6. Get embed code and add to your site!
-
-📚 **Full setup guide**: See [SETUP_GUIDE.md](./SETUP_GUIDE.md)
+5. Enable actions (appointments, leads)
+6. Test your agent in the preview
+7. Get embed code and add to your site!
 
 ---
 
 ## 🔌 WordPress Integration
 
-AgentDesk includes a ready-to-use WordPress plugin with full Hebrew and RTL support.
+AgentDesk includes a production-ready WordPress plugin with full Hebrew and RTL support.
 
 ### Quick Install
 
-1. Download the plugin from `wordpress-plugin/` directory
+1. Download `wordpress-plugin/agentdesk-chatbot.zip`
 2. Upload to WordPress: **Plugins → Add New → Upload Plugin**
 3. Activate the plugin
 4. Go to **Settings → AgentDesk**
 5. Enter your Bot Token (from AgentDesk dashboard)
-6. Save settings - your chatbot is now live!
+6. Save settings - your AI agent is now live! ✅
 
-📚 **Complete WordPress guide**: See [wordpress-plugin/README.md](./wordpress-plugin/README.md)
+### Features
+
+- ✅ **One-click auto-updates** - Update plugin without deactivation
+- ✅ **Real-time status** - See bot connection and training status
+- ✅ **Full Hebrew & RTL support** - Perfect for Hebrew websites
+- ✅ **No coding required** - Configure everything in WordPress admin
+- ✅ **Domain security** - Restrict bot usage to your domain
+- ✅ **Display rules** - Control where the widget appears
+
+**Plugin version:** 1.2.0 (November 2025)
 
 ---
 
-## 🎯 Bot Actions Setup
+## 🎯 AI Agent Actions Setup
 
-Enable your bots to perform real actions like scheduling appointments and capturing leads.
+Enable your AI agent to perform real actions like scheduling appointments and capturing leads.
 
 ### Appointment Scheduling (Google Calendar)
 
@@ -431,7 +470,7 @@ GOOGLE_REDIRECT_URI=https://your-backend.com/api/google-oauth/callback
 - Toggle "Enable Appointments"
 - Click "Connect Google Calendar"
 - Authorize access
-- ✅ Your bot can now schedule appointments!
+- ✅ Your agent can now schedule appointments!
 
 ### Email Notifications (Resend)
 
@@ -451,73 +490,74 @@ RESEND_API_KEY=re_your_api_key_here
 DEFAULT_FROM_EMAIL=onboarding@resend.dev
 ```
 
-**4. Verify Domain (Optional)**
-- For production: Add and verify your domain in Resend
-- For testing: Use `onboarding@resend.dev`
-
 ### Example Conversation Flow
 
 ```
 Customer: "I'd like to book a consultation"
-Bot: "I'd be happy to help! What's your full name?"
-Customer: "Sarah Johnson"
-Bot: "Great! What's your email address?"
+Agent: "I'd be happy to help! What's your full name?"
+Customer: "Sarah Cohen"
+Agent: "Great! What's your email address?"
 Customer: "sarah@example.com"
-Bot: "And your phone number?"
-Customer: "+1-555-0123"
-Bot: "When would you like to schedule it?"
+Agent: "And your phone number?"
+Customer: "+972-50-123-4567"
+Agent: "When would you like to schedule it?"
 Customer: "Tomorrow at 2pm"
-Bot: "Perfect! Let me confirm:
-     - Name: Sarah Johnson
+Agent: "Perfect! Let me confirm:
+     - Name: Sarah Cohen
      - Email: sarah@example.com
-     - Phone: +1-555-0123
-     - Date: November 3, 2025 at 2:00 PM
+     - Phone: +972-50-123-4567
+     - Date: November 4, 2025 at 2:00 PM
      Are these details correct?"
 Customer: "Yes"
-Bot: "✅ Your appointment has been scheduled!
+Agent: "✅ Your appointment has been scheduled!
      The event has been added to the calendar, and
      you'll receive a confirmation email shortly."
 ```
-
-📚 **Backend setup guide**: See [backend/README.md](./backend/README.md)
 
 ---
 
 ## 💼 Use Cases
 
 ### E-Commerce Support
-Automate order status, shipping info, and product recommendations
+Automate order status, shipping info, and product recommendations with smart product search
 
 ### SaaS Customer Success
-Onboard users, answer product questions, reduce support tickets
+Onboard users, answer product questions, schedule demos, reduce support tickets by 70%
 
 ### Healthcare
-Appointment scheduling, FAQ automation, patient pre-screening
+Appointment scheduling, FAQ automation, patient pre-screening, HIPAA-compliant conversations
 
 ### Education
-Student support, course information, enrollment assistance
+Student support, course information, enrollment assistance, 24/7 availability for students
 
 ### Real Estate
-Property inquiries, viewing bookings, virtual assistance
+Property inquiries, viewing bookings, virtual assistance, lead qualification and nurturing
+
+### Professional Services
+Consultation booking, service inquiries, client intake, automated follow-ups
 
 ---
 
 ## 🗺️ Roadmap
 
-### ✅ Completed (v1.0 - Production Ready)
+### ✅ Completed (v1.2.0 - Production Ready)
 - ✅ Core RAG engine with OpenAI GPT-4o-mini
-- ✅ pgvector semantic search
-- ✅ Multi-tenant architecture with RLS
+- ✅ pgvector semantic search with 1536-dim embeddings
+- ✅ Multi-tenant architecture with RLS policies
 - ✅ Web scraping (Cheerio + Puppeteer)
-- ✅ Embeddable chat widget
-- ✅ Dashboard with bot management
+- ✅ Embeddable chat widget with customization
+- ✅ Next.js dashboard with bot management
 - ✅ Telegram & WhatsApp integration
 - ✅ Conversation history & analytics
 - ✅ Multiple welcome messages
-- ✅ Multilingual support (EN/HE)
-- ✅ WordPress plugin with RTL support
+- ✅ Multilingual support (EN/HE with RTL)
+- ✅ WordPress plugin v1.2.0 with auto-updates
+- ✅ AI Agent Actions (Calendar, Email, Leads)
+- ✅ Google Calendar OAuth integration
+- ✅ Resend email notifications
+- ✅ Domain security validation
+- ✅ Railway + Vercel deployment
 - ✅ 7-day free trial system
-- ✅ Railway deployment ready
 
 ### 🚧 In Progress (Q4 2025)
 - 🔨 Document upload (PDF, DOCX, TXT)
@@ -536,14 +576,14 @@ Property inquiries, viewing bookings, virtual assistance
 - 📅 **Q2 2026**
   - Voice assistant integration
   - Multi-bot orchestration
-  - Advanced conversation flows
+  - Advanced conversation flows with branches
   - Team collaboration features
   
 - 📅 **Q3 2026**
   - Mobile apps (iOS & Android)
-  - White-label solution
+  - White-label solution for agencies
   - Enterprise SSO (SAML, OIDC)
-  - Custom deployment options
+  - Custom deployment options (on-premise)
 
 - 📅 **Q4 2026**
   - AI agent marketplace
@@ -564,27 +604,29 @@ Property inquiries, viewing bookings, virtual assistance
 - Web widget only
 
 ### 💎 Pro Plan
-**For Growing Businesses**
+**$49/month - For Growing Businesses**
 - Everything in Free Trial
 - Unlimited messages
 - Up to 5 bots
 - All channel integrations (Telegram, WhatsApp)
+- AI Agent Actions (Calendar, Email)
 - Advanced analytics
 - Priority email support
 - Custom branding
 
-### 🏢 Business Plan
-**For Enterprises**
+### 🏢 Enterprise Plan
+**Custom Pricing - For Large Organizations**
 - Everything in Pro
 - Unlimited bots
 - Dedicated account manager
 - Custom AI model training
-- SLA guarantee
+- SLA guarantee (99.9% uptime)
 - API access
 - White-label option
 - Priority phone support
+- Custom deployment options
 
-**[Contact Sales](#) for custom enterprise pricing**
+**[Contact Sales](mailto:sales@agentdesk.com) for custom enterprise pricing**
 
 ---
 
@@ -593,34 +635,35 @@ Property inquiries, viewing bookings, virtual assistance
 ### Data Protection
 - **Encryption at Rest**: AES-256 encryption for all stored data
 - **Encryption in Transit**: TLS 1.3 for all connections
-- **Database Security**: Row Level Security (RLS) policies
-- **API Security**: Token-based authentication per bot
+- **Database Security**: Row Level Security (RLS) policies in PostgreSQL
+- **API Security**: Token-based authentication per bot with domain validation
 
 ### Privacy
 - **Multi-Tenant Isolation**: Complete data separation between tenants
 - **Data Ownership**: You own all your data and conversations
 - **GDPR Compliant**: Data deletion and export capabilities
+- **Data Retention**: Configurable retention policies
 - **SOC 2 Type II**: (In Progress)
 
 ### Infrastructure
-- **Hosted on Supabase**: Enterprise-grade PostgreSQL
-- **CDN**: Global edge network for low latency
-- **Backups**: Daily automated backups with point-in-time recovery
-- **Monitoring**: 24/7 uptime monitoring and alerting
+- **Hosted on Supabase**: Enterprise-grade PostgreSQL with 99.9% uptime
+- **CDN**: Global edge network for low latency widget delivery
+- **Backups**: Daily automated backups with 30-day retention
+- **Monitoring**: 24/7 uptime monitoring with alerting
+- **DDoS Protection**: Cloudflare protection on all endpoints
 
 ---
 
 ## 📚 Documentation
 
-- 📖 **[Complete Setup Guide](./SETUP_GUIDE.md)** - Step-by-step installation
-- 🔌 **[API Documentation](./API.md)** - Complete REST API reference with examples
-- 🔧 **[Backend Guide](./backend/README.md)** - Backend development & architecture
-- 🎨 **[Frontend Guide](./frontend/README.md)** - Dashboard development
-- 🪟 **[Widget Integration](./widget/README.md)** - Embed on your site
-- 🔗 **[External Channels Setup](./private_docs/EXTERNAL_CHANNELS_SETUP.md)** - Telegram & WhatsApp
-- 🗄️ **[Database Schema](./supabase/README.md)** - Database structure
-- 🔌 **[WordPress Plugin Guide](./wordpress-plugin/README.md)** - WordPress integration
-- 🎁 **[Trial System](./TRIAL_IMPLEMENTATION.md)** - 7-day trial implementation
+- 📖 [Backend Guide](./backend/README.md) - Backend development & architecture
+- 🎨 [Frontend Guide](./frontend/README.md) - Dashboard development
+- 🪟 [Widget Integration](./widget/README.md) - Embed widget on your site
+- 🗄️ [Database Schema](./supabase/README.md) - Database structure & migrations
+- 🔌 [WordPress Plugin Guide](./wordpress-plugin/README.md) - WordPress integration
+
+**Private Documentation** (for contributors):
+- See `private_docs/` for setup guides, deployment instructions, and troubleshooting
 
 ---
 
@@ -643,25 +686,51 @@ npm run test
 
 ### Recommended Stack
 
-- **Backend**: [Render](https://render.com) or [Railway](https://railway.app)
-- **Frontend**: [Vercel](https://vercel.com)
-- **Widget**: [Vercel](https://vercel.com) or CDN
+- **Backend**: [Railway](https://railway.app) (currently deployed)
+- **Frontend**: [Vercel](https://vercel.com) (currently deployed)
+- **Widget**: Railway (currently deployed)
 - **Database**: [Supabase](https://supabase.com) (managed PostgreSQL)
+
+### Current Production URLs
+
+- **Dashboard**: https://agentdesk-frontend-production.up.railway.app/
+- **Backend API**: https://agentdesk-backend-production.up.railway.app/api
+- **Widget**: https://agentdesk-widget-production.up.railway.app/
+- **Demo Bot**: Visit [tirufai.com](https://tirufai.com) to see it in action
 
 ### Environment Variables (Production)
 
-Update all `.env` files with production URLs:
-- `NEXT_PUBLIC_API_URL` → Your backend URL
-- `CORS_ORIGIN` → Your frontend domain
-- Set `NODE_ENV=production`
+Key production environment variables:
+```env
+NODE_ENV=production
+NEXT_PUBLIC_API_URL=https://agentdesk-backend-production.up.railway.app/api
+FRONTEND_URL=https://agentdesk-frontend-production.up.railway.app
+WP_PLUGIN_VERSION=1.2.0
+```
 
-📚 **Detailed deployment guide**: See [DEPLOYMENT.md](#) (coming soon)
+---
+
+## 🌟 Live Demo
+
+### Try it Now
+
+**Dashboard**: [https://agentdesk-frontend-production.up.railway.app/](https://agentdesk-frontend-production.up.railway.app/)
+
+**See it in Action**: Visit [tirufai.com](https://tirufai.com) to interact with a live AI agent powered by AgentDesk!
+
+### What You Can Test
+
+- 💬 Natural conversation with RAG-powered responses
+- 🇮🇱 Hebrew language support with RTL layout
+- 🎨 Custom branding and colors
+- 📅 Appointment booking (if enabled)
+- 🔍 Knowledge base search and retrieval
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Whether it's bug fixes, new features, or documentation improvements.
 
 ### Development Workflow
 
@@ -671,23 +740,11 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 4. Push to branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
----
+### Code Style
 
-## 📧 Support & Contact
-
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/your-org/agentdesk/issues)
-- 💬 **Discord Community**: [Join our Discord](#)
-- 📧 **Email Support**: support@agentdesk.com
-- 📚 **Documentation**: [docs.agentdesk.com](#)
-- 🐦 **Twitter**: [@AgentDeskAI](#)
-
----
-
-## 📄 License
-
-AgentDesk is distributed under the MIT License. This means you are free to use, modify, and distribute this software for any purpose, including commercial applications, as long as you include the original copyright notice.
-
-For complete license terms, see the [LICENSE](LICENSE) file.
+- TypeScript with strict mode
+- ESLint + Prettier for formatting
+- Conventional commits for commit messages
 
 ---
 
@@ -695,13 +752,51 @@ For complete license terms, see the [LICENSE](LICENSE) file.
 
 If you find AgentDesk useful, please consider giving us a ⭐ on GitHub!
 
+**Why star us?**
+- 🚀 Helps others discover the project
+- 💪 Motivates continued development
+- 🎯 Shows community support
+- 📈 Contributes to open-source AI ecosystem
+
+[![Star History Chart](https://api.star-history.com/svg?repos=michalwilman/AgentDesk&type=Date)](https://star-history.com/#michalwilman/AgentDesk&Date)
+
+---
+
+## 📄 License
+
+AgentDesk is distributed under the **MIT License**. This means you are free to use, modify, and distribute this software for any purpose, including commercial applications, as long as you include the original copyright notice.
+
+### What this means for you:
+
+- ✅ **Commercial Use** - Use in commercial projects without restrictions
+- ✅ **Modification** - Modify and customize freely
+- ✅ **Distribution** - Distribute and sell your modifications
+- ✅ **Private Use** - Use privately in your organization
+- ℹ️ **Attribution Required** - Must include license and copyright notice
+- ℹ️ **No Liability** - Provided "as is" without warranty
+
+For complete license terms, see the [LICENSE](LICENSE) file.
+
+---
+
+## 📧 Support & Contact
+
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/michalwilman/AgentDesk/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/michalwilman/AgentDesk/discussions)
+- 📧 **Email Support**: support@agentdesk.com
+- 🐦 **Twitter**: [@AgentDeskAI](https://twitter.com/AgentDeskAI)
+
+**For Enterprise inquiries**: [sales@agentdesk.com](mailto:sales@agentdesk.com)
+
 ---
 
 <div align="center">
 
-**Built with ❤️ by developers, for businesses worldwide**
+**Built with ❤️ in Israel**
 
-[Get Started](#-quick-start) • [Live Demo](https://agentdesk-frontend-production.up.railway.app/) • [Documentation](#-documentation)
+**AgentDesk - Where AI Meets Action** 🚀
+
+[Get Started](#-quick-start) • [Live Demo](https://agentdesk-frontend-production.up.railway.app/) • [⭐ Star on GitHub](https://github.com/michalwilman/AgentDesk)
 
 © 2025 AgentDesk. All rights reserved.
 
