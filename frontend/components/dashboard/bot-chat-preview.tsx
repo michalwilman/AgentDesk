@@ -8,6 +8,77 @@ interface Message {
   content: string
 }
 
+// Function to parse URLs in text and convert them to clickable links
+function parseMessageWithLinks(text: string) {
+  // Regex to match URLs (http/https)
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  const parts: Array<{ type: 'text' | 'link'; content: string }> = []
+  let lastIndex = 0
+  let match
+
+  while ((match = urlRegex.exec(text)) !== null) {
+    // Add text before the URL
+    if (match.index > lastIndex) {
+      parts.push({
+        type: 'text',
+        content: text.substring(lastIndex, match.index),
+      })
+    }
+
+    // Add the URL
+    parts.push({
+      type: 'link',
+      content: match[0],
+    })
+
+    lastIndex = match.index + match[0].length
+  }
+
+  // Add remaining text after the last URL
+  if (lastIndex < text.length) {
+    parts.push({
+      type: 'text',
+      content: text.substring(lastIndex),
+    })
+  }
+
+  // If no URLs were found, return the original text as a single part
+  if (parts.length === 0) {
+    parts.push({
+      type: 'text',
+      content: text,
+    })
+  }
+
+  return parts
+}
+
+// Component to render message content with clickable links
+function MessageContent({ content }: { content: string }) {
+  const parts = parseMessageWithLinks(content)
+
+  return (
+    <p className="text-sm whitespace-pre-wrap leading-relaxed break-words">
+      {parts.map((part, index) => {
+        if (part.type === 'link') {
+          return (
+            <a
+              key={index}
+              href={part.content}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline hover:no-underline break-all"
+            >
+              {part.content}
+            </a>
+          )
+        }
+        return <span key={index}>{part.content}</span>
+      })}
+    </p>
+  )
+}
+
 interface BotChatPreviewProps {
   botId: string
   botName: string
@@ -407,9 +478,7 @@ export function BotChatPreview({
                     : {}
                 }
               >
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {message.content}
-                </p>
+                <MessageContent content={message.content} />
               </div>
               
               {/* Copy Button for Bot Messages */}

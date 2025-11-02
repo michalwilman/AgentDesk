@@ -7,7 +7,8 @@ import { CopyButton } from '@/components/dashboard/copy-button'
 import { DeleteBotButton } from '@/components/dashboard/delete-bot-button'
 import { ChannelConnections } from '@/components/dashboard/channel-connections'
 import { TrainedStatus } from '@/components/dashboard/trained-status'
-import { ArrowLeft, Code, Pencil, Globe, CheckCircle2, XCircle, Clock } from 'lucide-react'
+import { GoogleCalendarStatus } from '@/components/dashboard/google-calendar-status'
+import { ArrowLeft, Code, Pencil, Globe, CheckCircle2, XCircle, Clock, Zap, UserPlus, Calendar } from 'lucide-react'
 
 function formatTimeAgo(dateString: string | null): string {
   if (!dateString) return 'Never'
@@ -42,6 +43,15 @@ export default async function BotDetailPage({ params }: { params: { id: string }
     notFound()
   }
 
+  // Fetch Google Calendar connection status
+  const { data: actionConfig } = await supabase
+    .from('bot_actions_config')
+    .select('google_calendar_access_token, google_calendar_refresh_token, appointments_enabled')
+    .eq('bot_id', params.id)
+    .single()
+
+  const isGoogleCalendarConnected = !!(actionConfig?.google_calendar_access_token || actionConfig?.google_calendar_refresh_token)
+
   const embedCode = `<script src="${process.env.NEXT_PUBLIC_WIDGET_URL}/widget.js" data-bot-token="${bot.api_token}"></script>`
 
   return (
@@ -68,6 +78,24 @@ export default async function BotDetailPage({ params }: { params: { id: string }
                 <CardDescription>Current bot settings</CardDescription>
               </div>
               <div className="flex items-center gap-2">
+                <Link href={`/dashboard/bots/${bot.id}/actions`}>
+                  <Button variant="outline" size="sm">
+                    <Zap className="h-4 w-4 mr-2" />
+                    Actions
+                  </Button>
+                </Link>
+                <Link href={`/dashboard/leads?bot_id=${bot.id}`}>
+                  <Button variant="outline" size="sm">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Leads
+                  </Button>
+                </Link>
+                <Link href={`/dashboard/appointments?bot_id=${bot.id}`}>
+                  <Button variant="outline" size="sm">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Appointments
+                  </Button>
+                </Link>
                 <Link href={`/dashboard/bots/${bot.id}/knowledge`}>
                   <Button variant="outline" size="sm">
                     Manage Knowledge
@@ -209,6 +237,13 @@ export default async function BotDetailPage({ params }: { params: { id: string }
                 </div>
               </div>
             )}
+
+            {/* Google Calendar Integration Status */}
+            <GoogleCalendarStatus
+              botId={bot.id}
+              isConnected={isGoogleCalendarConnected}
+              appointmentsEnabled={actionConfig?.appointments_enabled || false}
+            />
           </CardContent>
         </Card>
 

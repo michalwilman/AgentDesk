@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, BarChart3, Settings, HelpCircle, CreditCard, FileText } from 'lucide-react'
+import { Plus, BarChart3, Settings, HelpCircle, CreditCard, FileText, UserPlus, Calendar } from 'lucide-react'
 import Link from 'next/link'
 
 interface DashboardQuickActionsProps {
@@ -20,6 +20,20 @@ export function DashboardQuickActions({ hasExistingBot = false }: DashboardQuick
       href: '/dashboard/bots/new',
       variant: 'primary' as const,
       description: 'Set up a new AI chatbot',
+    },
+    {
+      label: 'View Leads',
+      icon: UserPlus,
+      href: '/dashboard/leads',
+      variant: 'outline' as const,
+      description: 'See all captured leads',
+    },
+    {
+      label: 'Appointments',
+      icon: Calendar,
+      href: '/dashboard/appointments',
+      variant: 'outline' as const,
+      description: 'Manage scheduled meetings',
     },
     {
       label: 'View Analytics',
@@ -80,7 +94,7 @@ export function DashboardQuickActions({ hasExistingBot = false }: DashboardQuick
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
           {actions.map((action) => {
             const Icon = action.icon
             const isCreateBot = action.label === 'Create New Bot'

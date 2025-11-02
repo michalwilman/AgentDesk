@@ -52,7 +52,12 @@ AgentDesk is a **production-ready SaaS platform** that empowers businesses to cr
 
 ### 🔗 Multi-Channel Integration
 - **Web Widget** - Customizable floating chat widget for any website
-- **WordPress Plugin** - Ready-to-use plugin with full Hebrew/RTL support
+- **WordPress Plugin v1.1.0** - One-click installation with real-time status tracking
+  - Heartbeat sync every 5 minutes
+  - Auto-updates from server
+  - Full Hebrew/RTL support
+  - Display rules per page
+  - Connection status in dashboard
 - **Telegram Bots** - Connect to Telegram with one-click setup
 - **WhatsApp Business** - Integrate with WhatsApp via Twilio
 - **Unified Knowledge Base** - Same bot, multiple channels
@@ -74,6 +79,13 @@ AgentDesk is a **production-ready SaaS platform** that empowers businesses to cr
 - **User Metrics** - Track engagement and satisfaction
 - **Knowledge Performance** - Identify gaps in your content
 - **Real-Time Dashboard** - Monitor all bots from one place
+
+### 🎯 Bot Actions & Automation
+- **Appointment Scheduling** - Book meetings directly in chat with Google Calendar sync
+- **Lead Capture** - Automatic lead creation and management
+- **Email Notifications** - Automated confirmation emails via Resend
+- **Smart Validation** - Email format checking and detail confirmation
+- **Function Calling** - Extensible action system powered by OpenAI
 
 ---
 
@@ -221,6 +233,8 @@ sequenceDiagram
 
 ### External Integrations
 - **Messaging**: Telegram Bot API, Twilio (WhatsApp)
+- **Calendar**: Google Calendar API (OAuth 2.0)
+- **Email**: Resend API (100 emails/day free)
 - **Payments**: (Coming Soon)
 
 ---
@@ -234,6 +248,9 @@ AgentDesk/
 │   │   ├── auth/              # Supabase Auth integration
 │   │   ├── bots/              # Bot CRUD operations
 │   │   ├── chat/              # RAG chat engine
+│   │   ├── actions/           # Bot actions & integrations
+│   │   │   ├── integrations/  # Calendar, Email services
+│   │   │   └── function-definitions.ts  # OpenAI function calling
 │   │   ├── embeddings/        # Vector embedding generation
 │   │   ├── knowledge/         # Knowledge base management
 │   │   ├── scraper/           # Web scraping (Cheerio + Puppeteer)
@@ -295,6 +312,10 @@ AgentDesk/
 - **OpenAI API Key** ([Get one here](https://platform.openai.com))
 - **Docker** (optional, for local database)
 
+**Optional (for bot actions):**
+- **Google Cloud Account** (for Calendar integration)
+- **Resend Account** (for email notifications - 100/day free)
+
 ### 1. Clone & Install
 
 ```bash
@@ -316,10 +337,18 @@ nano .env
 
 Required variables:
 ```env
+# Database
 SUPABASE_URL=https://xxxxx.supabase.co
 SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-key
+
+# AI
 OPENAI_API_KEY=sk-your-key
+
+# Optional: Bot Actions
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+RESEND_API_KEY=re_your_api_key
 ```
 
 ### 3. Set Up Database
@@ -370,6 +399,87 @@ AgentDesk includes a ready-to-use WordPress plugin with full Hebrew and RTL supp
 6. Save settings - your chatbot is now live!
 
 📚 **Complete WordPress guide**: See [wordpress-plugin/README.md](./wordpress-plugin/README.md)
+
+---
+
+## 🎯 Bot Actions Setup
+
+Enable your bots to perform real actions like scheduling appointments and capturing leads.
+
+### Appointment Scheduling (Google Calendar)
+
+**1. Create Google Cloud Project**
+- Visit [Google Cloud Console](https://console.cloud.google.com)
+- Create new project
+- Enable Google Calendar API
+
+**2. Create OAuth Credentials**
+- Go to APIs & Services → Credentials
+- Create OAuth 2.0 Client ID (Web application)
+- Add authorized redirect URI: `https://your-backend.com/api/google-oauth/callback`
+
+**3. Configure Backend**
+```bash
+# Add to backend/.env
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URI=https://your-backend.com/api/google-oauth/callback
+```
+
+**4. Connect in Dashboard**
+- Go to Bot Settings → Actions
+- Toggle "Enable Appointments"
+- Click "Connect Google Calendar"
+- Authorize access
+- ✅ Your bot can now schedule appointments!
+
+### Email Notifications (Resend)
+
+**1. Sign Up for Resend**
+- Visit [resend.com](https://resend.com)
+- Create free account (100 emails/day)
+
+**2. Get API Key**
+- Go to API Keys in dashboard
+- Create new API key
+- Copy the key (starts with `re_`)
+
+**3. Configure Backend**
+```bash
+# Add to backend/.env
+RESEND_API_KEY=re_your_api_key_here
+DEFAULT_FROM_EMAIL=onboarding@resend.dev
+```
+
+**4. Verify Domain (Optional)**
+- For production: Add and verify your domain in Resend
+- For testing: Use `onboarding@resend.dev`
+
+### Example Conversation Flow
+
+```
+Customer: "I'd like to book a consultation"
+Bot: "I'd be happy to help! What's your full name?"
+Customer: "Sarah Johnson"
+Bot: "Great! What's your email address?"
+Customer: "sarah@example.com"
+Bot: "And your phone number?"
+Customer: "+1-555-0123"
+Bot: "When would you like to schedule it?"
+Customer: "Tomorrow at 2pm"
+Bot: "Perfect! Let me confirm:
+     - Name: Sarah Johnson
+     - Email: sarah@example.com
+     - Phone: +1-555-0123
+     - Date: November 3, 2025 at 2:00 PM
+     Are these details correct?"
+Customer: "Yes"
+Bot: "✅ Your appointment has been scheduled!
+     The event has been added to the calendar, and
+     you'll receive a confirmation email shortly."
+```
+
+📚 **Backend setup guide**: See [backend/README.md](./backend/README.md)
 
 ---
 

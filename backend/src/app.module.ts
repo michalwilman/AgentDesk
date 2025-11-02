@@ -11,6 +11,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
 import { DocumentsModule } from './documents/documents.module';
 import { WidgetModule } from './widget/widget.module';
 import { WordpressModule } from './wordpress/wordpress.module';
+import { ActionsModule } from './actions/actions.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { WordpressModule } from './wordpress/wordpress.module';
     DocumentsModule,
     WidgetModule,
     WordpressModule,
+    ActionsModule,
   ],
   controllers: [],
 })

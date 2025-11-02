@@ -1,0 +1,861 @@
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { SupabaseService } from '../common/supabase.service';
+import { EmailService } from './integrations/email.service';
+import { CalendarService } from './integrations/calendar.service';
+import { PdfService } from './integrations/pdf.service';
+import { WebhookService } from './integrations/webhook.service';
+import { SaveLeadDto } from './dto/save-lead.dto';
+import { ScheduleAppointmentDto } from './dto/schedule-appointment.dto';
+import { SendEmailDto } from './dto/send-email.dto';
+import { CreatePdfDto } from './dto/create-pdf.dto';
+import { SendWhatsAppDto } from './dto/send-whatsapp.dto';
+import { TriggerWebhookDto } from './dto/trigger-webhook.dto';
+import { UpdateBotActionsConfigDto } from './dto/bot-actions-config.dto';
+
+@Injectable()
+export class ActionsService {
+  private readonly logger = new Logger(ActionsService.name);
+
+  constructor(
+    private supabaseService: SupabaseService,
+    private emailService: EmailService,
+    private calendarService: CalendarService,
+    private pdfService: PdfService,
+    private webhookService: WebhookService,
+  ) {}
+
+  /**
+   * Get bot actions configuration
+   */
+  async getBotActionsConfig(botId: string, userId: string) {
+    const supabase = this.supabaseService.getClient();
+
+    // Verify bot ownership
+    const { data: bot } = await supabase
+      .from('bots')
+      .select('id')
+      .eq('id', botId)
+      .eq('user_id', userId)
+      .single();
+
+    if (!bot) {
+      throw new NotFoundException('Bot not found');
+    }
+
+    // Get or create actions config
+    let { data: config } = await supabase
+      .from('bot_actions_config')
+      .select('*')
+      .eq('bot_id', botId)
+      .single();
+
+    if (!config) {
+      // Create default config
+      const { data: newConfig } = await supabase
+        .from('bot_actions_config')
+        .insert([{ bot_id: botId }])
+        .select()
+        .single();
+      config = newConfig;
+    }
+
+    return config;
+  }
+
+  /**
+   * Update bot actions configuration
+   */
+  async updateBotActionsConfig(
+    botId: string,
+    userId: string,
+    updateDto: UpdateBotActionsConfigDto,
+  ) {
+    const supabase = this.supabaseService.getClient();
+
+    // Verify bot ownership
+    const { data: bot } = await supabase
+      .from('bots')
+      .select('id')
+      .eq('id', botId)
+      .eq('user_id', userId)
+      .single();
+
+    if (!bot) {
+      throw new NotFoundException('Bot not found');
+    }
+
+    // Update or create config
+    const { data, error } = await supabase
+      .from('bot_actions_config')
+      .upsert([{ bot_id: botId, ...updateDto }], { onConflict: 'bot_id' })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update config: ${error.message}`);
+    }
+
+    this.logger.log(`Bot actions config updated for bot ${botId}`);
+    return data;
+  }
+
+  /**
+   * Save lead
+   */
+  async saveLead(
+    botId: string,
+    chatId: string,
+    leadDto: SaveLeadDto,
+  ): Promise<{ success: boolean; lead_id?: string; error?: string }> {
+    const startTime = Date.now();
+
+    try {
+      const supabase = this.supabaseService.getClient();
+
+      // Create lead
+      const { data: lead, error } = await supabase
+        .from('leads')
+        .insert([
+          {
+            bot_id: botId,
+            chat_id: chatId,
+            full_name: leadDto.full_name,
+            phone: leadDto.phone,
+            email: leadDto.email,
+            question: leadDto.question,
+            metadata: leadDto.metadata || {},
+            status: 'new',
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Log action
+      await this.logAction(
+        botId,
+        chatId,
+        'save_lead',
+        leadDto,
+        { lead_id: lead.id },
+        'success',
+        null,
+        Date.now() - startTime,
+      );
+
+      // Trigger webhooks
+      await this.triggerWebhooksForEvent(botId, 'lead_created', {
+        ...lead,
+        bot_name: await this.getBotName(botId),
+      });
+
+      this.logger.log(`Lead saved: ${lead.id}`);
+      return { success: true, lead_id: lead.id };
+    } catch (error) {
+      await this.logAction(
+        botId,
+        chatId,
+        'save_lead',
+        leadDto,
+        {},
+        'failed',
+        error instanceof Error ? error.message : 'Unknown error',
+        Date.now() - startTime,
+      );
+
+      this.logger.error('Failed to save lead:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Schedule appointment
+   */
+  async scheduleAppointment(
+    botId: string,
+    chatId: string,
+    appointmentDto: ScheduleAppointmentDto,
+  ): Promise<{
+    success: boolean;
+    appointment_id?: string;
+    calendar_event_id?: string;
+    event_link?: string;
+    error?: string;
+  }> {
+    const startTime = Date.now();
+
+    try {
+      const supabase = this.supabaseService.getClient();
+
+      // Get bot actions config
+      const { data: config } = await supabase
+        .from('bot_actions_config')
+        .select('*')
+        .eq('bot_id', botId)
+        .single();
+
+      // Auto-create lead from appointment
+      const leadResult = await this.saveLead(botId, chatId, {
+        full_name: appointmentDto.attendee_name,
+        email: appointmentDto.attendee_email,
+        phone: appointmentDto.attendee_phone,
+        question: `Appointment request: ${appointmentDto.notes || 'Meeting scheduled'}`,
+      });
+
+      const leadId = leadResult.lead_id;
+
+      // Create appointment record
+      const { data: appointment, error } = await supabase
+        .from('appointments')
+        .insert([
+          {
+            bot_id: botId,
+            chat_id: chatId,
+            lead_id: leadId || appointmentDto.lead_id,
+            scheduled_time: appointmentDto.scheduled_time,
+            duration_minutes: appointmentDto.duration_minutes || 30,
+            attendee_name: appointmentDto.attendee_name,
+            attendee_email: appointmentDto.attendee_email,
+            attendee_phone: appointmentDto.attendee_phone,
+            notes: appointmentDto.notes,
+            status: 'pending',
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      let calendarEventId: string | undefined;
+      let eventLink: string | undefined;
+
+      // Create calendar event if calendar is configured
+      if (config?.google_calendar_access_token && config?.google_calendar_refresh_token) {
+        const startTime = new Date(appointmentDto.scheduled_time);
+        const endTime = new Date(
+          startTime.getTime() + (appointmentDto.duration_minutes || 30) * 60000,
+        );
+
+        const calendarResult = await this.calendarService.createEvent(
+          {
+            access_token: config.google_calendar_access_token,
+            refresh_token: config.google_calendar_refresh_token,
+          },
+          config.google_calendar_id || 'primary',
+          {
+            summary: `Meeting with ${appointmentDto.attendee_name}`,
+            description: appointmentDto.notes,
+            startTime,
+            endTime,
+            attendees: appointmentDto.attendee_email
+              ? [appointmentDto.attendee_email]
+              : [],
+          },
+        );
+
+        if (calendarResult.success) {
+          calendarEventId = calendarResult.eventId;
+          eventLink = calendarResult.eventLink;
+
+          // Update appointment with calendar event ID
+          await supabase
+            .from('appointments')
+            .update({ calendar_event_id: calendarEventId, status: 'confirmed' })
+            .eq('id', appointment.id);
+        }
+      }
+
+      // Send confirmation email if email service is available
+      if (appointmentDto.attendee_email) {
+        const templates = this.emailService.getDefaultTemplates();
+        const scheduledDate = new Date(appointmentDto.scheduled_time);
+        const formattedDate = scheduledDate.toLocaleString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'UTC',
+        });
+
+        await this.emailService.sendEmailWithTemplate(
+          appointmentDto.attendee_email,
+          templates.appointment_confirmation,
+          {
+            attendee_name: appointmentDto.attendee_name,
+            scheduled_time: formattedDate,
+            duration: (appointmentDto.duration_minutes || 30).toString(),
+            company_name: await this.getBotName(botId),
+          },
+        );
+      }
+
+      // Log action
+      await this.logAction(
+        botId,
+        chatId,
+        'schedule_appointment',
+        appointmentDto,
+        { appointment_id: appointment.id, calendar_event_id: calendarEventId },
+        'success',
+        null,
+        Date.now() - startTime,
+      );
+
+      // Trigger webhooks
+      await this.triggerWebhooksForEvent(botId, 'appointment_scheduled', {
+        ...appointment,
+        bot_name: await this.getBotName(botId),
+        event_link: eventLink,
+      });
+
+      this.logger.log(`Appointment scheduled: ${appointment.id}`);
+      return {
+        success: true,
+        appointment_id: appointment.id,
+        calendar_event_id: calendarEventId,
+        event_link: eventLink,
+      };
+    } catch (error) {
+      await this.logAction(
+        botId,
+        chatId,
+        'schedule_appointment',
+        appointmentDto,
+        {},
+        'failed',
+        error instanceof Error ? error.message : 'Unknown error',
+        Date.now() - startTime,
+      );
+
+      this.logger.error('Failed to schedule appointment:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Send email
+   */
+  async sendEmail(
+    botId: string,
+    chatId: string,
+    emailDto: SendEmailDto,
+  ): Promise<{ success: boolean; message_id?: string; error?: string }> {
+    const startTime = Date.now();
+
+    try {
+      const supabase = this.supabaseService.getClient();
+
+      // Get bot actions config
+      const { data: config } = await supabase
+        .from('bot_actions_config')
+        .select('*')
+        .eq('bot_id', botId)
+        .single();
+
+      let result;
+
+      // Send with template if specified
+      if (emailDto.template_id && config?.email_templates?.[emailDto.template_id]) {
+        const template = config.email_templates[emailDto.template_id];
+        result = await this.emailService.sendEmailWithTemplate(
+          emailDto.to,
+          template,
+          emailDto.template_variables || {},
+          config.email_from_address,
+          config.email_from_name,
+        );
+      } else {
+        // Send direct email
+        result = await this.emailService.sendEmail(
+          emailDto.to,
+          emailDto.subject,
+          emailDto.content,
+          config?.email_from_address,
+          config?.email_from_name,
+          emailDto.reply_to,
+        );
+      }
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      // Log action
+      await this.logAction(
+        botId,
+        chatId,
+        'send_email',
+        emailDto,
+        { message_id: result.messageId },
+        'success',
+        null,
+        Date.now() - startTime,
+      );
+
+      // Trigger webhooks
+      await this.triggerWebhooksForEvent(botId, 'email_sent', {
+        to: emailDto.to,
+        subject: emailDto.subject,
+        message_id: result.messageId,
+        sent_at: new Date().toISOString(),
+      });
+
+      this.logger.log(`Email sent to ${emailDto.to}`);
+      return { success: true, message_id: result.messageId };
+    } catch (error) {
+      await this.logAction(
+        botId,
+        chatId,
+        'send_email',
+        emailDto,
+        {},
+        'failed',
+        error instanceof Error ? error.message : 'Unknown error',
+        Date.now() - startTime,
+      );
+
+      this.logger.error('Failed to send email:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Create PDF
+   */
+  async createPdf(
+    botId: string,
+    chatId: string,
+    pdfDto: CreatePdfDto,
+  ): Promise<{
+    success: boolean;
+    pdf_url?: string;
+    filename?: string;
+    error?: string;
+  }> {
+    const startTime = Date.now();
+
+    try {
+      const supabase = this.supabaseService.getClient();
+
+      // Get bot actions config
+      const { data: config } = await supabase
+        .from('bot_actions_config')
+        .select('*')
+        .eq('bot_id', botId)
+        .single();
+
+      // Get template
+      const template =
+        config?.pdf_templates?.[pdfDto.template_id] ||
+        this.pdfService.getDefaultTemplates()[pdfDto.template_id];
+
+      if (!template) {
+        throw new Error(`PDF template not found: ${pdfDto.template_id}`);
+      }
+
+      // Generate PDF
+      const pdfResult = await this.pdfService.generatePdf(template, pdfDto.data);
+
+      if (!pdfResult.success || !pdfResult.pdf) {
+        throw new Error(pdfResult.error);
+      }
+
+      // Upload to Supabase Storage
+      const filename =
+        pdfDto.filename || `${pdfDto.template_id}-${Date.now()}.pdf`;
+      const bucketName = config?.pdf_storage_bucket || 'bot-documents';
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(bucketName)
+        .upload(`${botId}/${filename}`, pdfResult.pdf, {
+          contentType: 'application/pdf',
+          upsert: true,
+        });
+
+      if (uploadError) {
+        throw new Error(`Failed to upload PDF: ${uploadError.message}`);
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(uploadData.path);
+
+      // Optionally send via email
+      if (pdfDto.send_to_email) {
+        await this.sendEmail(botId, chatId, {
+          to: pdfDto.send_to_email,
+          subject: `Your ${pdfDto.template_id} is ready`,
+          content: `Please find your ${pdfDto.template_id} attached. You can also download it from: ${urlData.publicUrl}`,
+        });
+      }
+
+      // Log action
+      await this.logAction(
+        botId,
+        chatId,
+        'create_pdf',
+        pdfDto,
+        { pdf_url: urlData.publicUrl, filename },
+        'success',
+        null,
+        Date.now() - startTime,
+      );
+
+      // Trigger webhooks
+      await this.triggerWebhooksForEvent(botId, 'pdf_generated', {
+        template_id: pdfDto.template_id,
+        filename,
+        download_url: urlData.publicUrl,
+        created_at: new Date().toISOString(),
+      });
+
+      this.logger.log(`PDF created: ${filename}`);
+      return { success: true, pdf_url: urlData.publicUrl, filename };
+    } catch (error) {
+      await this.logAction(
+        botId,
+        chatId,
+        'create_pdf',
+        pdfDto,
+        {},
+        'failed',
+        error instanceof Error ? error.message : 'Unknown error',
+        Date.now() - startTime,
+      );
+
+      this.logger.error('Failed to create PDF:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Send WhatsApp message
+   */
+  async sendWhatsApp(
+    botId: string,
+    chatId: string,
+    whatsappDto: SendWhatsAppDto,
+  ): Promise<{ success: boolean; message_sid?: string; error?: string }> {
+    const startTime = Date.now();
+
+    try {
+      const supabase = this.supabaseService.getClient();
+
+      // Get bot with WhatsApp credentials
+      const { data: bot } = await supabase
+        .from('bots')
+        .select('whatsapp_sid, whatsapp_auth_token, whatsapp_phone_number')
+        .eq('id', botId)
+        .single();
+
+      if (!bot?.whatsapp_sid || !bot?.whatsapp_auth_token) {
+        throw new Error('WhatsApp not configured for this bot');
+      }
+
+      // Send WhatsApp message using Twilio (from existing webhooks service)
+      const accountSid = bot.whatsapp_sid;
+      const authToken = bot.whatsapp_auth_token;
+      const fromNumber = bot.whatsapp_phone_number;
+
+      const twilio = require('twilio')(accountSid, authToken);
+
+      const message = await twilio.messages.create({
+        body: whatsappDto.message,
+        from: `whatsapp:${fromNumber}`,
+        to: `whatsapp:${whatsappDto.to}`,
+      });
+
+      // Log action
+      await this.logAction(
+        botId,
+        chatId,
+        'send_whatsapp',
+        whatsappDto,
+        { message_sid: message.sid },
+        'success',
+        null,
+        Date.now() - startTime,
+      );
+
+      // Trigger webhooks
+      await this.triggerWebhooksForEvent(botId, 'whatsapp_sent', {
+        to: whatsappDto.to,
+        message: whatsappDto.message,
+        message_sid: message.sid,
+        sent_at: new Date().toISOString(),
+      });
+
+      this.logger.log(`WhatsApp sent to ${whatsappDto.to}: ${message.sid}`);
+      return { success: true, message_sid: message.sid };
+    } catch (error) {
+      await this.logAction(
+        botId,
+        chatId,
+        'send_whatsapp',
+        whatsappDto,
+        {},
+        'failed',
+        error instanceof Error ? error.message : 'Unknown error',
+        Date.now() - startTime,
+      );
+
+      this.logger.error('Failed to send WhatsApp:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Trigger webhook
+   */
+  async triggerWebhook(
+    botId: string,
+    chatId: string,
+    webhookDto: TriggerWebhookDto,
+  ): Promise<{ success: boolean; error?: string }> {
+    const startTime = Date.now();
+
+    try {
+      // Use specific webhook URL or get from config
+      let webhookUrl = webhookDto.webhook_url;
+
+      if (!webhookUrl) {
+        const supabase = this.supabaseService.getClient();
+        const { data: config } = await supabase
+          .from('bot_actions_config')
+          .select('webhook_urls, webhook_secret')
+          .eq('bot_id', botId)
+          .single();
+
+        if (!config?.webhook_urls || config.webhook_urls.length === 0) {
+          throw new Error('No webhooks configured');
+        }
+
+        // Use first webhook URL (can be enhanced to support multiple)
+        webhookUrl = config.webhook_urls[0].url;
+      }
+
+      // Trigger webhook
+      const result = await this.webhookService.triggerWebhook(
+        webhookUrl,
+        webhookDto.event_type,
+        webhookDto.payload,
+      );
+
+      // Log action
+      await this.logAction(
+        botId,
+        chatId,
+        'trigger_webhook',
+        webhookDto,
+        { webhook_url: webhookUrl },
+        result.success ? 'success' : 'failed',
+        result.error,
+        Date.now() - startTime,
+      );
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      this.logger.log(`Webhook triggered: ${webhookDto.event_type}`);
+      return { success: true };
+    } catch (error) {
+      this.logger.error('Failed to trigger webhook:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Helper: Log action to database
+   */
+  private async logAction(
+    botId: string,
+    chatId: string,
+    actionType: string,
+    actionData: any,
+    resultData: any,
+    status: string,
+    errorMessage: string | null,
+    executionTimeMs: number,
+  ) {
+    try {
+      const supabase = this.supabaseService.getClient();
+      await supabase.from('action_logs').insert([
+        {
+          bot_id: botId,
+          chat_id: chatId,
+          action_type: actionType,
+          action_data: actionData,
+          result_data: resultData,
+          status,
+          error_message: errorMessage,
+          execution_time_ms: executionTimeMs,
+        },
+      ]);
+    } catch (error) {
+      this.logger.error('Failed to log action:', error);
+    }
+  }
+
+  /**
+   * Helper: Trigger webhooks for event
+   */
+  private async triggerWebhooksForEvent(
+    botId: string,
+    eventType: string,
+    payload: any,
+  ) {
+    try {
+      const supabase = this.supabaseService.getClient();
+      const { data: config } = await supabase
+        .from('bot_actions_config')
+        .select('webhook_urls, webhook_secret, webhooks_enabled')
+        .eq('bot_id', botId)
+        .single();
+
+      if (config?.webhooks_enabled && config.webhook_urls) {
+        await this.webhookService.triggerWebhooks(
+          config.webhook_urls,
+          eventType,
+          payload,
+        );
+      }
+    } catch (error) {
+      this.logger.error('Failed to trigger webhooks:', error);
+    }
+  }
+
+  /**
+   * Helper: Get bot name
+   */
+  private async getBotName(botId: string): Promise<string> {
+    try {
+      const supabase = this.supabaseService.getClient();
+      const { data } = await supabase
+        .from('bots')
+        .select('name')
+        .eq('id', botId)
+        .single();
+      return data?.name || 'Unknown Bot';
+    } catch {
+      return 'Unknown Bot';
+    }
+  }
+
+  /**
+   * Get leads for bot
+   */
+  async getLeads(botId: string, userId: string) {
+    const supabase = this.supabaseService.getClient();
+
+    // Verify bot ownership
+    const { data: bot } = await supabase
+      .from('bots')
+      .select('id')
+      .eq('id', botId)
+      .eq('user_id', userId)
+      .single();
+
+    if (!bot) {
+      throw new NotFoundException('Bot not found');
+    }
+
+    const { data, error } = await supabase
+      .from('leads')
+      .select('*')
+      .eq('bot_id', botId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch leads: ${error.message}`);
+    }
+
+    return data;
+  }
+
+  /**
+   * Get appointments for bot
+   */
+  async getAppointments(botId: string, userId: string) {
+    const supabase = this.supabaseService.getClient();
+
+    // Verify bot ownership
+    const { data: bot } = await supabase
+      .from('bots')
+      .select('id')
+      .eq('id', botId)
+      .eq('user_id', userId)
+      .single();
+
+    if (!bot) {
+      throw new NotFoundException('Bot not found');
+    }
+
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('bot_id', botId)
+      .order('scheduled_time', { ascending: true });
+
+    if (error) {
+      throw new Error(`Failed to fetch appointments: ${error.message}`);
+    }
+
+    return data;
+  }
+
+  /**
+   * Get action logs for bot
+   */
+  async getActionLogs(botId: string, userId: string, limit: number = 50) {
+    const supabase = this.supabaseService.getClient();
+
+    // Verify bot ownership
+    const { data: bot } = await supabase
+      .from('bots')
+      .select('id')
+      .eq('id', botId)
+      .eq('user_id', userId)
+      .single();
+
+    if (!bot) {
+      throw new NotFoundException('Bot not found');
+    }
+
+    const { data, error } = await supabase
+      .from('action_logs')
+      .select('*')
+      .eq('bot_id', botId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      throw new Error(`Failed to fetch action logs: ${error.message}`);
+    }
+
+    return data;
+  }
+}
+

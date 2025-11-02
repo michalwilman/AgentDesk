@@ -40,6 +40,15 @@ OPENAI_API_KEY=sk-your-key
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 
+# Email Service (Resend)
+RESEND_API_KEY=re_your_resend_api_key_here
+DEFAULT_FROM_EMAIL=noreply@yourdomain.com
+
+# Google OAuth (for Calendar integration)
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:3001/api/google-oauth/callback
+
 # CORS
 CORS_ORIGIN=http://localhost:3000,http://localhost:3002
 ```
@@ -273,6 +282,75 @@ CMD ["node", "dist/main"]
 - Track database query performance
 - Set up alerts for rate limits
 
+## 📧 Email Service Setup (Resend)
+
+### Getting Started with Resend
+
+1. **Sign up for Resend**:
+   - Go to [resend.com](https://resend.com)
+   - Create a free account (100 emails/day free)
+
+2. **Get your API Key**:
+   - Go to API Keys in your Resend dashboard
+   - Create a new API key
+   - Copy the key (starts with `re_`)
+
+3. **Add to .env file**:
+   ```env
+   RESEND_API_KEY=re_your_actual_api_key_here
+   DEFAULT_FROM_EMAIL=noreply@yourdomain.com
+   ```
+
+4. **Verify Domain (Optional but Recommended)**:
+   - For production: Verify your domain in Resend
+   - For testing: Use Resend's test domain
+
+### Email Features
+
+- **Appointment Confirmations**: Automatic emails when appointments are scheduled
+- **Lead Notifications**: Email sent to customers when they submit contact info
+- **Document Delivery**: Email documents to customers
+
+### Email Templates
+
+Default templates are available in `email.service.ts`:
+- `appointment_confirmation` - Sent when appointment is booked
+- `lead_confirmation` - Sent when lead is captured
+- `document_attached` - Sent when document is shared
+
+## 📅 Google Calendar Integration
+
+### Setup Instructions
+
+1. **Create Google Cloud Project**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com)
+   - Create a new project
+
+2. **Enable Google Calendar API**:
+   - In APIs & Services → Library
+   - Search for "Google Calendar API"
+   - Click Enable
+
+3. **Create OAuth Credentials**:
+   - Go to APIs & Services → Credentials
+   - Create OAuth 2.0 Client ID
+   - Application type: Web application
+   - Authorized redirect URIs: `http://localhost:3001/api/google-oauth/callback`
+
+4. **Add to .env**:
+   ```env
+   GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=your-client-secret
+   GOOGLE_REDIRECT_URI=http://localhost:3001/api/google-oauth/callback
+   ```
+
+### Features
+
+- Schedule appointments directly to Google Calendar
+- Sync with customer's calendar
+- Automatic calendar event creation
+- Email invitations to attendees
+
 ## 🐛 Troubleshooting
 
 ### Issue: "Supabase configuration missing"
@@ -281,11 +359,27 @@ CMD ["node", "dist/main"]
 ### Issue: "OpenAI API key is not configured"
 **Solution**: Add `OPENAI_API_KEY` to .env
 
+### Issue: "Email service not configured"
+**Solution**: Add valid `RESEND_API_KEY` to .env (get from resend.com)
+
+### Issue: "Failed to send email: API key is invalid"
+**Solution**: 
+- Check that your Resend API key is correct
+- Ensure it starts with `re_`
+- Verify the key is active in your Resend dashboard
+- Try regenerating the key
+
 ### Issue: Slow scraping
 **Solution**: Use Cheerio for static sites, increase timeout for complex sites
 
 ### Issue: Vector search not working
 **Solution**: Ensure pgvector extension is enabled and embeddings are generated
+
+### Issue: Google Calendar not creating events
+**Solution**: 
+- Verify Google OAuth credentials are correct
+- Check that Calendar API is enabled
+- Reconnect your Google Calendar in the dashboard
 
 ## 📚 Resources
 

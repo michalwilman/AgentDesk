@@ -3,6 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { SupabaseService } from '../common/supabase.service';
 import { EmbeddingsService } from '../embeddings/embeddings.service';
+import { ActionsService } from '../actions/actions.service';
+import {
+  getAvailableTools,
+  formatToolResult,
+} from '../actions/function-definitions';
 
 @Injectable()
 export class ChatService {
@@ -12,6 +17,7 @@ export class ChatService {
     private configService: ConfigService,
     private supabaseService: SupabaseService,
     private embeddingsService: EmbeddingsService,
+    private actionsService: ActionsService,
   ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
     
@@ -181,38 +187,160 @@ export class ChatService {
       },
     ];
 
-    // Get response from OpenAI
-    const completion = await this.openai.chat.completions.create({
+    // Get bot actions config to determine available tools
+    const { data: actionsConfig } = await supabase
+      .from('bot_actions_config')
+      .select('*')
+      .eq('bot_id', botId)
+      .single();
+
+    // Build tools array based on enabled actions
+    const tools =
+      actionsConfig
+        ? getAvailableTools({
+            lead_collection_enabled: actionsConfig.lead_collection_enabled || false,
+            appointments_enabled: actionsConfig.appointments_enabled || false,
+            email_enabled: actionsConfig.email_enabled || false,
+            pdf_enabled: actionsConfig.pdf_enabled || false,
+            whatsapp_enabled: actionsConfig.whatsapp_enabled || false,
+            webhooks_enabled: actionsConfig.webhooks_enabled || false,
+          })
+        : [];
+
+    // Get response from OpenAI with tools
+    let completion = await this.openai.chat.completions.create({
       model: bot.model || 'gpt-4o-mini',
       messages,
       temperature: bot.temperature || 0.7,
       max_tokens: bot.max_tokens || 500,
+      tools: tools.length > 0 ? tools : undefined,
+      tool_choice: tools.length > 0 ? 'auto' : undefined,
     });
 
-    const assistantMessage = completion.choices[0].message.content;
-    const tokensUsed = completion.usage?.total_tokens || 0;
+    let totalTokensUsed = completion.usage?.total_tokens || 0;
+    let assistantMessage = completion.choices[0].message;
+
+    // Handle tool calls if any
+    if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
+      console.log(`🔧 AI wants to execute ${assistantMessage.tool_calls.length} action(s)`);
+
+      // Add assistant message with tool calls to history
+      messages.push(assistantMessage);
+
+      // Execute each tool call
+      for (const toolCall of assistantMessage.tool_calls) {
+        const functionName = toolCall.function.name;
+        const functionArgs = JSON.parse(toolCall.function.arguments);
+
+        console.log(`⚡ Executing action: ${functionName}`, functionArgs);
+
+        let toolResult: string;
+
+        try {
+          // Execute the appropriate action
+          const result = await this.executeAction(
+            functionName,
+            functionArgs,
+            botId,
+            chat.id,
+          );
+
+          toolResult = formatToolResult(
+            functionName,
+            result.success,
+            result,
+            result.error,
+          );
+        } catch (error) {
+          console.error(`❌ Action failed: ${functionName}`, error);
+          toolResult = formatToolResult(
+            functionName,
+            false,
+            undefined,
+            error instanceof Error ? error.message : 'Unknown error',
+          );
+        }
+
+        // Add tool result to messages
+        messages.push({
+          role: 'tool',
+          tool_call_id: toolCall.id,
+          content: toolResult,
+        });
+      }
+
+      // Get final response from AI after tool execution
+      const finalCompletion = await this.openai.chat.completions.create({
+        model: bot.model || 'gpt-4o-mini',
+        messages,
+        temperature: bot.temperature || 0.7,
+        max_tokens: bot.max_tokens || 500,
+      });
+
+      assistantMessage = finalCompletion.choices[0].message;
+      totalTokensUsed += finalCompletion.usage?.total_tokens || 0;
+    }
+
+    const finalMessageContent = assistantMessage.content || 'I apologize, but I encountered an issue processing your request.';
 
     // Save assistant message
     await this.saveMessage(
       chat.id,
       'assistant',
-      assistantMessage,
+      finalMessageContent,
       context.map((c) => c.id),
-      tokensUsed,
+      totalTokensUsed,
     );
 
     return {
-      message: assistantMessage,
+      message: finalMessageContent,
       chatId: chat.id,
       sessionId: chat.session_id,
-      tokensUsed,
+      tokensUsed: totalTokensUsed,
     };
   }
 
+  /**
+   * Execute an action based on function call from OpenAI
+   */
+  private async executeAction(
+    functionName: string,
+    args: any,
+    botId: string,
+    chatId: string,
+  ): Promise<any> {
+    switch (functionName) {
+      case 'save_lead':
+        return await this.actionsService.saveLead(botId, chatId, args);
+
+      case 'schedule_appointment':
+        return await this.actionsService.scheduleAppointment(botId, chatId, args);
+
+      case 'send_email':
+        return await this.actionsService.sendEmail(botId, chatId, args);
+
+      case 'create_pdf':
+        return await this.actionsService.createPdf(botId, chatId, args);
+
+      case 'send_whatsapp':
+        return await this.actionsService.sendWhatsApp(botId, chatId, args);
+
+      case 'trigger_webhook':
+        return await this.actionsService.triggerWebhook(botId, chatId, args);
+
+      default:
+        throw new Error(`Unknown function: ${functionName}`);
+    }
+  }
+
   private buildSystemPrompt(bot: any, context: string): string {
+    const today = new Date();
+    const formattedToday = today.toISOString().split('T')[0]; // YYYY-MM-DD
+    
     const basePrompt = `You are ${bot.name}, an AI assistant for a business.
 Your personality: ${bot.personality || 'helpful and professional'}
 Language: ${bot.language === 'he' ? 'Hebrew' : 'English'}
+Current Date: ${formattedToday}
 
 ${context ? `Here is relevant information from the knowledge base to help answer questions:\n\n${context}\n\n` : ''}
 
@@ -221,7 +349,45 @@ Instructions:
 - If you don't know the answer based on the context, say so politely
 - Be helpful, friendly, and maintain the specified personality
 - Keep responses concise and relevant
-- Respond in ${bot.language === 'he' ? 'Hebrew' : 'English'}`;
+- Respond in ${bot.language === 'he' ? 'Hebrew' : 'English'}
+
+IMPORTANT - You have access to special functions to help customers:
+
+WHEN SCHEDULING APPOINTMENTS - YOU MUST follow this process:
+1. If customer wants to schedule a meeting/appointment, you MUST collect ALL information first:
+   - FULL NAME (attendee_name) - ASK if not provided
+   - EMAIL ADDRESS (attendee_email) - ASK if not provided, MUST contain @ symbol
+   - PHONE NUMBER (attendee_phone) - ASK if not provided
+   - DATE AND TIME (scheduled_time) - ASK if not clear
+
+2. VALIDATE the email format:
+   - Check that email contains @ symbol
+   - If email looks incorrect (missing @, typos), ASK customer to confirm or re-enter
+   - Example: If they say "gmail.con" instead of "gmail.com", ask them to verify
+
+3. CONFIRM all details BEFORE scheduling:
+   - Show customer ALL the information: name, email, phone, date, time
+   - Ask them to confirm: ${bot.language === 'he' ? '"האם כל הפרטים נכונים?"' : '"Are all these details correct?"'}
+   - Wait for their confirmation (yes/correct/כן/נכון)
+
+4. ONLY AFTER confirmation, USE the schedule_appointment function
+5. AFTER successfully scheduling:
+   - Confirm the appointment was created
+   - Remind them they will receive an email confirmation
+   - Mention the event was added to the calendar
+   - Do NOT include any calendar links in your response
+6. NEVER say you scheduled something without actually calling the function
+7. If any information is missing or incorrect, ASK for it before proceeding
+
+WHEN SAVING LEADS:
+- When a customer provides contact information or shows interest, USE the save_lead function
+- Always collect at least name and one contact method (email or phone)
+
+GENERAL RULES:
+- When customers mention dates like "tomorrow", "next week", calculate the actual date based on today's date (${formattedToday})
+- For appointment times, convert to ISO format: YYYY-MM-DDTHH:MM:00Z (use UTC timezone)
+- Always USE the available functions instead of just saying you will do something
+- Be conversational and friendly while collecting information`;
 
     return basePrompt;
   }
