@@ -68,34 +68,14 @@ class AgentDesk_Widget {
         $page_title = get_the_title();
         $page_url = get_permalink();
         
-        // Output widget configuration and script
+        // Output widget script with bot token
         ?>
         <!-- AgentDesk AI Chatbot -->
-        <script id="agentdesk-config">
-        (function() {
-            window.agentdeskConfig = {
-                botToken: <?php echo json_encode($api_token); ?>,
-                apiUrl: <?php echo json_encode(AGENTDESK_API_URL); ?>,
-                position: <?php echo json_encode($position); ?>,
-                source: 'wordpress',
-                metadata: {
-                    wpVersion: <?php echo json_encode(get_bloginfo('version')); ?>,
-                    pluginVersion: <?php echo json_encode(AGENTDESK_VERSION); ?>,
-                    siteUrl: <?php echo json_encode(home_url()); ?>,
-                    siteName: <?php echo json_encode(get_bloginfo('name')); ?>,
-                    pageTitle: <?php echo json_encode($page_title); ?>,
-                    pageUrl: <?php echo json_encode($page_url); ?>,
-                    language: <?php echo json_encode(get_bloginfo('language')); ?>
-                }
-            };
-            
-            // Load widget script
-            var script = document.createElement('script');
-            script.src = <?php echo json_encode(AGENTDESK_CDN_URL); ?>;
-            script.async = true;
-            script.defer = true;
-            document.body.appendChild(script);
-        })();
+        <script 
+            src="<?php echo esc_url(AGENTDESK_CDN_URL); ?>"
+            data-bot-token="<?php echo esc_attr($api_token); ?>"
+            async
+            defer>
         </script>
         <!-- End AgentDesk AI Chatbot -->
         <?php
