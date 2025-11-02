@@ -20,6 +20,8 @@ export class ChatController {
   @Post('message')
   async sendMessage(
     @Headers('x-bot-token') botToken: string,
+    @Headers('origin') origin: string,
+    @Headers('referer') referer: string,
     @Body() body: { sessionId: string; message: string; visitorMetadata?: any },
   ) {
     if (!botToken) {
@@ -29,12 +31,36 @@ export class ChatController {
     // Verify bot token
     const bot = await this.botsService.findByApiToken(botToken);
 
+    // Domain validation - check if request comes from allowed domain
+    if (bot.allowed_domains && bot.allowed_domains.length > 0) {
+      const requestDomain = this.extractDomain(origin || referer);
+      const isAllowed = bot.allowed_domains.some((domain: string) => 
+        requestDomain.includes(domain) || domain === '*'
+      );
+
+      if (!isAllowed) {
+        throw new UnauthorizedException(
+          `Domain ${requestDomain} is not authorized to use this bot`
+        );
+      }
+    }
+
     return await this.chatService.getResponse(
       bot.id,
       body.sessionId,
       body.message,
       body.visitorMetadata,
     );
+  }
+
+  private extractDomain(url: string): string {
+    if (!url) return '';
+    try {
+      const urlObj = new URL(url);
+      return urlObj.hostname;
+    } catch {
+      return url;
+    }
   }
 
   @Get('history/:botId/:sessionId')

@@ -94,8 +94,27 @@ export class BotsController {
   }
 
   @Get('config/:token')
-  async getPublicConfig(@Param('token') token: string) {
+  async getPublicConfig(
+    @Param('token') token: string,
+    @Headers('origin') origin: string,
+    @Headers('referer') referer: string,
+  ) {
     const bot = await this.botsService.findByApiToken(token);
+    
+    // Domain validation - check if request comes from allowed domain
+    if (bot.allowed_domains && bot.allowed_domains.length > 0) {
+      const requestDomain = this.extractDomain(origin || referer);
+      const isAllowed = bot.allowed_domains.some((domain: string) => 
+        requestDomain.includes(domain) || domain === '*'
+      );
+
+      if (!isAllowed) {
+        throw new UnauthorizedException(
+          `Domain ${requestDomain} is not authorized to use this bot`
+        );
+      }
+    }
+
     return {
       name: bot.name,
       avatar_url: bot.avatar_url,
@@ -105,6 +124,16 @@ export class BotsController {
       language: bot.language,
       position: bot.position,
     };
+  }
+
+  private extractDomain(url: string): string {
+    if (!url) return '';
+    try {
+      const urlObj = new URL(url);
+      return urlObj.hostname;
+    } catch {
+      return url;
+    }
   }
 
   @Post('validate')
