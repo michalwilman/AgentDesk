@@ -9,6 +9,13 @@ export class GoogleOAuthController {
   private oauth2Client;
 
   constructor(private supabaseService: SupabaseService) {
+    // Log environment variables for debugging
+    console.log('🔧 Google OAuth Config:', {
+      clientId: process.env.GOOGLE_CLIENT_ID ? '✅ Set' : '❌ Missing',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ? '✅ Set' : '❌ Missing',
+      redirectUri: process.env.GOOGLE_REDIRECT_URI || 'Using default',
+    });
+
     this.oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
