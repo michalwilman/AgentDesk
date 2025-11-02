@@ -337,10 +337,35 @@ export class ChatService {
     const today = new Date();
     const formattedToday = today.toISOString().split('T')[0]; // YYYY-MM-DD
     
+    // Get day of week and month name
+    const dayOfWeek = today.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
+    const monthName = today.toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' });
+    const dayOfMonth = today.getUTCDate();
+    const year = today.getUTCFullYear();
+    
+    // Calculate tomorrow and day after tomorrow
+    const tomorrow = new Date(today);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+    const tomorrowDay = tomorrow.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
+    const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
+    
+    const dayAfterTomorrow = new Date(today);
+    dayAfterTomorrow.setUTCDate(dayAfterTomorrow.getUTCDate() + 2);
+    const dayAfterTomorrowDay = dayAfterTomorrow.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
+    const dayAfterTomorrowFormatted = dayAfterTomorrow.toISOString().split('T')[0];
+    
     const basePrompt = `You are ${bot.name}, an AI assistant for a business.
 Your personality: ${bot.personality || 'helpful and professional'}
 Language: ${bot.language === 'he' ? 'Hebrew' : 'English'}
-Current Date: ${formattedToday}
+
+CURRENT DATE INFORMATION:
+- Today is: ${dayOfWeek}, ${monthName} ${dayOfMonth}, ${year} (${formattedToday})
+- Tomorrow is: ${tomorrowDay}, ${tomorrow.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })} (${tomorrowFormatted})
+- Day after tomorrow is: ${dayAfterTomorrowDay}, ${dayAfterTomorrow.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })} (${dayAfterTomorrowFormatted})
+
+IMPORTANT: When scheduling appointments, use the EXACT dates shown above. For example:
+- If customer says "tomorrow at 10:00", use date: ${tomorrowFormatted}T10:00:00Z
+- If customer says "מחר בשעה 10:00", use date: ${tomorrowFormatted}T10:00:00Z
 
 ${context ? `Here is relevant information from the knowledge base to help answer questions:\n\n${context}\n\n` : ''}
 
