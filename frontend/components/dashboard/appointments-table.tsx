@@ -226,15 +226,14 @@ export function AppointmentsTable({
                       </td>
                       <td className="py-3 px-4">
                         {appointment.calendar_event_id && (
-                          <Button variant="ghost" size="sm" asChild>
-                            <a
-                              href={`https://calendar.google.com/calendar/event?eid=${appointment.calendar_event_id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
-                          </Button>
+                          <a
+                            href={`https://calendar.google.com/calendar/event?eid=${appointment.calendar_event_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-gray-100 h-9 px-3"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
                         )}
                       </td>
                     </tr>
