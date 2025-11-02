@@ -45,8 +45,9 @@ export function ChatWidget({ botToken }: { botToken: string }) {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://agentdesk-backend-production.up.railway.app/api';
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/bots/config/${botToken}`
+          `${apiUrl}/bots/config/${botToken}`
         )
         setBotConfig(response.data)
       } catch (error) {
@@ -147,8 +148,9 @@ export function ChatWidget({ botToken }: { botToken: string }) {
     setLoading(true)
 
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://agentdesk-backend-production.up.railway.app/api';
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/chat/message`,
+        `${apiUrl}/chat/message`,
         {
           sessionId,
           message: userMessage,
