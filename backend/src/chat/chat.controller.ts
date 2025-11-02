@@ -34,15 +34,22 @@ export class ChatController {
     // Domain validation - check if request comes from allowed domain
     if (bot.allowed_domains && bot.allowed_domains.length > 0) {
       const requestDomain = this.extractDomain(origin || referer);
+      
+      // Debug logging
+      console.log(`🔒 Domain validation: origin=${origin}, referer=${referer}, extracted=${requestDomain}, allowed=${bot.allowed_domains}`);
+      
       const isAllowed = bot.allowed_domains.some((domain: string) => 
         requestDomain.includes(domain) || domain === '*'
       );
 
       if (!isAllowed) {
+        console.error(`❌ Domain ${requestDomain} is NOT authorized. Allowed: ${bot.allowed_domains}`);
         throw new UnauthorizedException(
           `Domain ${requestDomain} is not authorized to use this bot`
         );
       }
+      
+      console.log(`✅ Domain ${requestDomain} is authorized`);
     }
 
     return await this.chatService.getResponse(
