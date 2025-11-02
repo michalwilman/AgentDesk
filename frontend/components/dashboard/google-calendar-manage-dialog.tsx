@@ -203,7 +203,7 @@ export function GoogleCalendarManageDialog({
             Close
           </Button>
           <Button
-            variant="destructive"
+            variant="danger"
             onClick={handleDisconnect}
             disabled={disconnecting}
           >
