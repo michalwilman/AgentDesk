@@ -29,6 +29,10 @@ export class GoogleOAuthController {
       return res.status(400).send('bot_id is required');
     }
 
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/api/actions/google/callback';
+    
+    console.log('🔗 Generating OAuth URL with redirect_uri:', redirectUri);
+
     // Generate authorization URL with state parameter (bot_id)
     const authUrl = this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
@@ -39,7 +43,10 @@ export class GoogleOAuthController {
       ],
       state: botId, // Pass bot_id in state to retrieve after callback
       prompt: 'consent', // Force consent screen to get refresh token
+      redirect_uri: redirectUri, // Explicitly pass redirect_uri
     });
+
+    console.log('✅ OAuth URL generated:', authUrl);
 
     res.redirect(authUrl);
   }
