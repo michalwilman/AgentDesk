@@ -2,7 +2,7 @@ import { Controller, Get, Put, Param, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AppointmentsNotificationsService } from './appointments-notifications.service';
 
-@Controller('api/appointments/notifications')
+@Controller('appointments/notifications')
 @UseGuards(AuthGuard('jwt'))
 export class AppointmentsNotificationsController {
   constructor(
