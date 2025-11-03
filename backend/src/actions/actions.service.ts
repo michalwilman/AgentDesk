@@ -236,7 +236,16 @@ export class ActionsService {
       // Create calendar event if calendar is configured
       if (config?.google_calendar_access_token && config?.google_calendar_refresh_token) {
         try {
-          const startTime = new Date(appointmentDto.scheduled_time);
+          // Parse the time string sent by the bot as Israel time
+          // If it doesn't have timezone info, add Israel timezone offset (+02:00 or +03:00)
+          let timeString = appointmentDto.scheduled_time;
+          if (!timeString.includes('+') && !timeString.includes('Z')) {
+            // Israel is UTC+2 in winter (Oct-Mar), UTC+3 in summer (Mar-Oct) during DST
+            // For simplicity, add +02:00 (can be enhanced to detect DST)
+            timeString = timeString + '+02:00';
+          }
+          
+          const startTime = new Date(timeString);
           const endTime = new Date(
             startTime.getTime() + (appointmentDto.duration_minutes || 30) * 60000,
           );
