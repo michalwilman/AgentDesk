@@ -12,8 +12,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Search, Calendar as CalendarIcon, Clock, ExternalLink } from 'lucide-react'
+import { Search, Calendar as CalendarIcon, Clock, ExternalLink, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
+import { createClient } from '@/lib/supabase/client'
 
 interface Appointment {
   id: string
@@ -35,10 +36,13 @@ export function AppointmentsTable({
 }: {
   appointments: Appointment[]
 }) {
-  const [appointments] = useState(initialAppointments)
+  const supabase = createClient()
+  const [appointments, setAppointments] = useState(initialAppointments)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [timeFilter, setTimeFilter] = useState<string>('all')
+  const [selectedAppointments, setSelectedAppointments] = useState<Set<string>>(new Set())
+  const [deleting, setDeleting] = useState(false)
 
   // Filter appointments
   const now = new Date()
@@ -83,12 +87,100 @@ export function AppointmentsTable({
     }
   }
 
+  // Toggle select all
+  const toggleSelectAll = () => {
+    if (selectedAppointments.size === filteredAppointments.length) {
+      setSelectedAppointments(new Set())
+    } else {
+      setSelectedAppointments(new Set(filteredAppointments.map(appointment => appointment.id)))
+    }
+  }
+
+  // Toggle individual appointment
+  const toggleSelectAppointment = (appointmentId: string) => {
+    const newSelected = new Set(selectedAppointments)
+    if (newSelected.has(appointmentId)) {
+      newSelected.delete(appointmentId)
+    } else {
+      newSelected.add(appointmentId)
+    }
+    setSelectedAppointments(newSelected)
+  }
+
+  // Delete single appointment
+  const deleteAppointment = async (appointmentId: string) => {
+    if (!confirm('Are you sure you want to delete this appointment?')) {
+      return
+    }
+
+    try {
+      setDeleting(true)
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', appointmentId)
+
+      if (error) throw error
+
+      setAppointments(appointments.filter(appointment => appointment.id !== appointmentId))
+      setSelectedAppointments(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(appointmentId)
+        return newSet
+      })
+    } catch (error) {
+      console.error('Error deleting appointment:', error)
+      alert('Failed to delete appointment. Please try again.')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  // Delete selected appointments
+  const deleteSelectedAppointments = async () => {
+    if (selectedAppointments.size === 0) return
+
+    if (!confirm(`Are you sure you want to delete ${selectedAppointments.size} appointment(s)?`)) {
+      return
+    }
+
+    try {
+      setDeleting(true)
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .in('id', Array.from(selectedAppointments))
+
+      if (error) throw error
+
+      setAppointments(appointments.filter(appointment => !selectedAppointments.has(appointment.id)))
+      setSelectedAppointments(new Set())
+    } catch (error) {
+      console.error('Error deleting appointments:', error)
+      alert('Failed to delete appointments. Please try again.')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between flex-wrap gap-4">
           <CardTitle>All Appointments ({filteredAppointments.length})</CardTitle>
           <div className="flex items-center gap-3 flex-wrap">
+            {/* Delete Selected Button */}
+            {selectedAppointments.size > 0 && (
+              <Button 
+                variant="danger" 
+                onClick={deleteSelectedAppointments}
+                disabled={deleting}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Selected ({selectedAppointments.size})
+              </Button>
+            )}
+            
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-800" />
@@ -144,6 +236,14 @@ export function AppointmentsTable({
             <table className="w-full">
               <thead>
                 <tr className="border-b border-dark-100">
+                  <th className="text-left py-3 px-4 text-sm font-medium text-dark-800 w-12">
+                    <input
+                      type="checkbox"
+                      checked={filteredAppointments.length > 0 && selectedAppointments.size === filteredAppointments.length}
+                      onChange={toggleSelectAll}
+                      className="rounded border-dark-100 text-primary focus:ring-primary"
+                    />
+                  </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-dark-800">
                     Date & Time
                   </th>
@@ -174,6 +274,14 @@ export function AppointmentsTable({
                       key={appointment.id}
                       className="border-b border-dark-100 hover:bg-dark-50 transition-colors"
                     >
+                      <td className="py-3 px-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedAppointments.has(appointment.id)}
+                          onChange={() => toggleSelectAppointment(appointment.id)}
+                          className="rounded border-dark-100 text-primary focus:ring-primary"
+                        />
+                      </td>
                       <td className="py-3 px-4">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-white font-medium">
@@ -225,16 +333,27 @@ export function AppointmentsTable({
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        {appointment.calendar_event_id && (
-                          <a
-                            href={`https://calendar.google.com/calendar/event?eid=${appointment.calendar_event_id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-gray-100 h-9 px-3"
+                        <div className="flex items-center gap-2">
+                          {appointment.calendar_event_id && (
+                            <a
+                              href={`https://calendar.google.com/calendar/event?eid=${appointment.calendar_event_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-gray-100 h-9 px-3"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteAppointment(appointment.id)}
+                            disabled={deleting}
+                            className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
                           >
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        )}
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   )
