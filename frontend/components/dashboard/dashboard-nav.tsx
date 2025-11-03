@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Bot, LogOut, User } from 'lucide-react'
 import { SubscriptionBadge } from '@/components/subscription/subscription-badge'
+import { NotificationsPanel } from './notifications-panel'
 
 export function DashboardNav({ user }: { user: any }) {
   const router = useRouter()
@@ -34,6 +35,7 @@ export function DashboardNav({ user }: { user: any }) {
               <span className="hidden md:inline">{user.email}</span>
             </div>
             <SubscriptionBadge variant="compact" />
+            <NotificationsPanel />
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Logout</span>
