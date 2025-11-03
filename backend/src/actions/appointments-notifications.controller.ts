@@ -1,9 +1,9 @@
 import { Controller, Get, Put, Param, Req, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 import { AppointmentsNotificationsService } from './appointments-notifications.service';
 
 @Controller('api/appointments/notifications')
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard('jwt'))
 export class AppointmentsNotificationsController {
   constructor(
     private notificationsService: AppointmentsNotificationsService,

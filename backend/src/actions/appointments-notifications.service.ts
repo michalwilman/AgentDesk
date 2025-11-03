@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseService } from '../supabase/supabase.service';
+import { SupabaseService } from '../common/supabase.service';
 
 @Injectable()
 export class AppointmentsNotificationsService {
