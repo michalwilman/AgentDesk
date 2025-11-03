@@ -126,14 +126,24 @@ export default function LoginPage() {
                 required
               />
 
-              <Input
-                label="Password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-              />
+              <div className="space-y-2">
+                <Input
+                  label="Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                />
+                <div className="text-right">
+                  <Link 
+                    href="/forgot-password" 
+                    className="text-sm text-primary hover:text-primary/80 transition-smooth"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Signing in...' : 'Sign In'}
