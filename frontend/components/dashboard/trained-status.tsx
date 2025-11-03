@@ -49,8 +49,8 @@ export function TrainedStatus({ botId }: TrainedStatusProps) {
   }, [botId])
 
   const handleClick = () => {
-    // Always navigate to knowledge base page (works whether trained or not)
-    router.push(`/dashboard/bots/${botId}/knowledge`)
+    // Navigate to Edit page with Knowledge tab (בסיס ידע - העלאת מסמכים)
+    router.push(`/dashboard/bots/${botId}/edit?tab=knowledge`)
   }
 
   if (loading) {
