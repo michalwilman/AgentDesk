@@ -271,11 +271,22 @@ export class ActionsService {
             calendarEventId = calendarResult.eventId;
             eventLink = calendarResult.eventLink;
 
-            // Update appointment with calendar event ID
-            await supabase
+            this.logger.log(`Calendar event created successfully: ${calendarEventId}`);
+
+            // Update appointment with calendar event ID and status
+            const { error: updateError } = await supabase
               .from('appointments')
-              .update({ calendar_event_id: calendarEventId, status: 'confirmed' })
+              .update({ 
+                calendar_event_id: calendarEventId, 
+                status: 'confirmed' 
+              })
               .eq('id', appointment.id);
+
+            if (updateError) {
+              this.logger.error(`Failed to update appointment status: ${updateError.message}`);
+            } else {
+              this.logger.log(`Appointment ${appointment.id} status updated to confirmed`);
+            }
 
             // Track success
             await supabase
