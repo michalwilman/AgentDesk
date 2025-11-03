@@ -316,8 +316,17 @@ export class ActionsService {
       if (appointmentDto.attendee_email) {
         try {
           const templates = this.emailService.getDefaultTemplates();
-          const scheduledDate = new Date(appointmentDto.scheduled_time);
-          // Format date in Israel timezone (Asia/Jerusalem)
+          
+          // Parse the original time string and add Israel timezone offset if missing
+          let timeString = appointmentDto.scheduled_time;
+          if (!timeString.includes('+') && !timeString.includes('Z')) {
+            timeString = timeString + '+02:00';
+          }
+          const scheduledDate = new Date(timeString);
+          
+          // Format date in Israel timezone
+          // The Date object now correctly represents the UTC time,
+          // so formatting with Israel timezone will show the correct local time
           const formattedDate = scheduledDate.toLocaleString('en-US', {
             weekday: 'long',
             year: 'numeric',
