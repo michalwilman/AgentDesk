@@ -15,45 +15,70 @@ export class AppointmentsNotificationsService {
       const supabase = this.supabaseService.getClient();
 
       // Get undismissed notifications for upcoming appointments
-      const { data, error } = await supabase
+      const { data: notifications, error: notifError } = await supabase
         .from('appointment_notifications')
-        .select(
-          `
-          id,
-          dismissed,
-          created_at,
-          appointments (
-            id,
-            scheduled_time,
-            attendee_name,
-            attendee_email,
-            attendee_phone,
-            lead_id,
-            bot_id,
-            bots (
-              id,
-              name
-            )
-          )
-        `,
-        )
+        .select('id, dismissed, created_at, appointment_id')
         .eq('user_id', userId)
         .eq('dismissed', false)
-        .gte('appointments.scheduled_time', new Date().toISOString())
         .order('created_at', { ascending: false });
 
-      if (error) {
+      if (notifError) {
         this.logger.error(
           `Error fetching notifications for user ${userId}:`,
-          error,
+          notifError,
         );
-        throw error;
+        throw notifError;
       }
 
-      // Filter out notifications with null appointments (edge case)
-      const validNotifications = (data || []).filter(
-        (notification) => notification.appointments,
+      if (!notifications || notifications.length === 0) {
+        return { notifications: [], count: 0 };
+      }
+
+      // Get appointment details separately
+      const appointmentIds = notifications.map((n) => n.appointment_id);
+      const { data: appointments, error: apptError } = await supabase
+        .from('appointments')
+        .select('id, scheduled_time, attendee_name, attendee_email, attendee_phone, lead_id, bot_id')
+        .in('id', appointmentIds)
+        .gte('scheduled_time', new Date().toISOString());
+
+      if (apptError) {
+        this.logger.error(`Error fetching appointments:`, apptError);
+        throw apptError;
+      }
+
+      // Get bot details separately
+      const botIds = [...new Set(appointments?.map((a) => a.bot_id) || [])];
+      const { data: bots, error: botError } = await supabase
+        .from('bots')
+        .select('id, name')
+        .in('id', botIds);
+
+      if (botError) {
+        this.logger.error(`Error fetching bots:`, botError);
+        throw botError;
+      }
+
+      // Combine data
+      const botsMap = new Map(bots?.map((b) => [b.id, b]) || []);
+      const appointmentsMap = new Map(
+        appointments?.map((a) => [
+          a.id,
+          {
+            ...a,
+            bots: botsMap.get(a.bot_id) || { id: a.bot_id, name: 'Unknown Bot' },
+          },
+        ]) || [],
       );
+
+      const validNotifications = notifications
+        .filter((n) => appointmentsMap.has(n.appointment_id))
+        .map((n) => ({
+          id: n.id,
+          dismissed: n.dismissed,
+          created_at: n.created_at,
+          appointments: appointmentsMap.get(n.appointment_id),
+        }));
 
       this.logger.log(
         `Found ${validNotifications.length} notifications for user ${userId}`,
