@@ -308,6 +308,7 @@ export class ActionsService {
         try {
           const templates = this.emailService.getDefaultTemplates();
           const scheduledDate = new Date(appointmentDto.scheduled_time);
+          // Format date in Israel timezone (Asia/Jerusalem)
           const formattedDate = scheduledDate.toLocaleString('en-US', {
             weekday: 'long',
             year: 'numeric',
@@ -315,7 +316,7 @@ export class ActionsService {
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
-            timeZone: 'UTC',
+            timeZone: 'Asia/Jerusalem',
           });
 
           await this.emailService.sendEmailWithTemplate(

@@ -66,11 +66,11 @@ export class CalendarService {
           description: event.description,
           start: {
             dateTime: event.startTime.toISOString(),
-            timeZone: 'UTC',
+            timeZone: 'Asia/Jerusalem',
           },
           end: {
             dateTime: event.endTime.toISOString(),
-            timeZone: 'UTC',
+            timeZone: 'Asia/Jerusalem',
           },
           attendees: event.attendees?.map((email) => ({ email })),
           location: event.location,

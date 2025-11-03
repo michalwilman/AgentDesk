@@ -364,8 +364,9 @@ CURRENT DATE INFORMATION:
 - Day after tomorrow is: ${dayAfterTomorrowDay}, ${dayAfterTomorrow.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })} (${dayAfterTomorrowFormatted})
 
 IMPORTANT: When scheduling appointments, use the EXACT dates shown above. For example:
-- If customer says "tomorrow at 10:00", use date: ${tomorrowFormatted}T10:00:00Z
-- If customer says "מחר בשעה 10:00", use date: ${tomorrowFormatted}T10:00:00Z
+- If customer says "tomorrow at 10:00", use date: ${tomorrowFormatted}T10:00:00
+- If customer says "מחר בשעה 10:00", use date: ${tomorrowFormatted}T10:00:00
+- IMPORTANT: Use 24-hour format (07:30 for 7:30 AM, 19:30 for 7:30 PM)
 
 ${context ? `Here is relevant information from the knowledge base to help answer questions:\n\n${context}\n\n` : ''}
 
@@ -410,7 +411,8 @@ WHEN SAVING LEADS:
 
 GENERAL RULES:
 - When customers mention dates like "tomorrow", "next week", calculate the actual date based on today's date (${formattedToday})
-- For appointment times, convert to ISO format: YYYY-MM-DDTHH:MM:00Z (use UTC timezone)
+- For appointment times, convert to ISO format: YYYY-MM-DDTHH:MM:00 (use LOCAL time, do NOT add Z at the end)
+- Use 24-hour format for times (07:30, 13:00, 19:30, etc.)
 - Always USE the available functions instead of just saying you will do something
 - Be conversational and friendly while collecting information`;
 
