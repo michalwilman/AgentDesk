@@ -28,9 +28,9 @@ export class CalendarService {
   private getGoogleAuth(credentials: any) {
     try {
       const oauth2Client = new google.auth.OAuth2(
-        credentials.client_id || this.configService.get('GOOGLE_CALENDAR_CLIENT_ID'),
-        credentials.client_secret || this.configService.get('GOOGLE_CALENDAR_CLIENT_SECRET'),
-        credentials.redirect_uri || this.configService.get('GOOGLE_CALENDAR_REDIRECT_URI'),
+        credentials.client_id || this.configService.get('GOOGLE_CLIENT_ID'),
+        credentials.client_secret || this.configService.get('GOOGLE_CLIENT_SECRET'),
+        credentials.redirect_uri || this.configService.get('GOOGLE_REDIRECT_URI'),
       );
 
       if (credentials.access_token) {
@@ -222,9 +222,9 @@ export class CalendarService {
    */
   getAuthUrl(clientId?: string, redirectUri?: string): string {
     const oauth2Client = new google.auth.OAuth2(
-      clientId || this.configService.get('GOOGLE_CALENDAR_CLIENT_ID'),
-      this.configService.get('GOOGLE_CALENDAR_CLIENT_SECRET'),
-      redirectUri || this.configService.get('GOOGLE_CALENDAR_REDIRECT_URI'),
+      clientId || this.configService.get('GOOGLE_CLIENT_ID'),
+      this.configService.get('GOOGLE_CLIENT_SECRET'),
+      redirectUri || this.configService.get('GOOGLE_REDIRECT_URI'),
     );
 
     const scopes = [
@@ -245,9 +245,9 @@ export class CalendarService {
   async getTokensFromCode(code: string, redirectUri?: string): Promise<any> {
     try {
       const oauth2Client = new google.auth.OAuth2(
-        this.configService.get('GOOGLE_CALENDAR_CLIENT_ID'),
-        this.configService.get('GOOGLE_CALENDAR_CLIENT_SECRET'),
-        redirectUri || this.configService.get('GOOGLE_CALENDAR_REDIRECT_URI'),
+        this.configService.get('GOOGLE_CLIENT_ID'),
+        this.configService.get('GOOGLE_CLIENT_SECRET'),
+        redirectUri || this.configService.get('GOOGLE_REDIRECT_URI'),
       );
 
       const { tokens } = await oauth2Client.getToken(code);
