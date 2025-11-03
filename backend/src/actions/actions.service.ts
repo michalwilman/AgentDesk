@@ -235,64 +235,121 @@ export class ActionsService {
 
       // Create calendar event if calendar is configured
       if (config?.google_calendar_access_token && config?.google_calendar_refresh_token) {
-        const startTime = new Date(appointmentDto.scheduled_time);
-        const endTime = new Date(
-          startTime.getTime() + (appointmentDto.duration_minutes || 30) * 60000,
-        );
+        try {
+          const startTime = new Date(appointmentDto.scheduled_time);
+          const endTime = new Date(
+            startTime.getTime() + (appointmentDto.duration_minutes || 30) * 60000,
+          );
 
-        const calendarResult = await this.calendarService.createEvent(
-          {
-            access_token: config.google_calendar_access_token,
-            refresh_token: config.google_calendar_refresh_token,
-          },
-          config.google_calendar_id || 'primary',
-          {
-            summary: `Meeting with ${appointmentDto.attendee_name}`,
-            description: appointmentDto.notes,
-            startTime,
-            endTime,
-            attendees: appointmentDto.attendee_email
-              ? [appointmentDto.attendee_email]
-              : [],
-          },
-        );
+          const calendarResult = await this.calendarService.createEvent(
+            {
+              access_token: config.google_calendar_access_token,
+              refresh_token: config.google_calendar_refresh_token,
+            },
+            config.google_calendar_id || 'primary',
+            {
+              summary: `Meeting with ${appointmentDto.attendee_name}`,
+              description: appointmentDto.notes,
+              startTime,
+              endTime,
+              attendees: appointmentDto.attendee_email
+                ? [appointmentDto.attendee_email]
+                : [],
+            },
+          );
 
-        if (calendarResult.success) {
-          calendarEventId = calendarResult.eventId;
-          eventLink = calendarResult.eventLink;
+          if (calendarResult.success) {
+            calendarEventId = calendarResult.eventId;
+            eventLink = calendarResult.eventLink;
 
-          // Update appointment with calendar event ID
+            // Update appointment with calendar event ID
+            await supabase
+              .from('appointments')
+              .update({ calendar_event_id: calendarEventId, status: 'confirmed' })
+              .eq('id', appointment.id);
+
+            // Track success
+            await supabase
+              .from('bot_actions_config')
+              .update({
+                google_calendar_last_success_time: new Date().toISOString(),
+                google_calendar_last_error: null,
+              })
+              .eq('bot_id', botId);
+          } else {
+            // Track calendar error
+            await supabase
+              .from('bot_actions_config')
+              .update({
+                google_calendar_last_error: calendarResult.error || 'Unknown calendar error',
+                google_calendar_last_error_time: new Date().toISOString(),
+              })
+              .eq('bot_id', botId);
+            
+            this.logger.error(`Calendar error for bot ${botId}: ${calendarResult.error}`);
+          }
+        } catch (calendarError) {
+          // Track unexpected calendar error
+          const errorMessage = calendarError instanceof Error ? calendarError.message : 'Unexpected calendar error';
           await supabase
-            .from('appointments')
-            .update({ calendar_event_id: calendarEventId, status: 'confirmed' })
-            .eq('id', appointment.id);
+            .from('bot_actions_config')
+            .update({
+              google_calendar_last_error: errorMessage,
+              google_calendar_last_error_time: new Date().toISOString(),
+            })
+            .eq('bot_id', botId);
+          
+          this.logger.error(`Calendar exception for bot ${botId}:`, calendarError);
         }
       }
 
       // Send confirmation email if email service is available
       if (appointmentDto.attendee_email) {
-        const templates = this.emailService.getDefaultTemplates();
-        const scheduledDate = new Date(appointmentDto.scheduled_time);
-        const formattedDate = scheduledDate.toLocaleString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          timeZone: 'UTC',
-        });
+        try {
+          const templates = this.emailService.getDefaultTemplates();
+          const scheduledDate = new Date(appointmentDto.scheduled_time);
+          const formattedDate = scheduledDate.toLocaleString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'UTC',
+          });
 
-        await this.emailService.sendEmailWithTemplate(
-          appointmentDto.attendee_email,
-          templates.appointment_confirmation,
-          {
-            attendee_name: appointmentDto.attendee_name,
-            scheduled_time: formattedDate,
-            duration: (appointmentDto.duration_minutes || 30).toString(),
-            company_name: await this.getBotName(botId),
-          },
-        );
+          await this.emailService.sendEmailWithTemplate(
+            appointmentDto.attendee_email,
+            templates.appointment_confirmation,
+            {
+              attendee_name: appointmentDto.attendee_name,
+              scheduled_time: formattedDate,
+              duration: (appointmentDto.duration_minutes || 30).toString(),
+              company_name: await this.getBotName(botId),
+            },
+          );
+
+          // Track email success
+          await supabase
+            .from('bot_actions_config')
+            .update({
+              email_last_success_time: new Date().toISOString(),
+              email_last_error: null,
+            })
+            .eq('bot_id', botId);
+        } catch (emailError) {
+          // Track email error
+          const errorMessage = emailError instanceof Error ? emailError.message : 'Failed to send email';
+          await supabase
+            .from('bot_actions_config')
+            .update({
+              email_last_error: errorMessage,
+              email_last_error_time: new Date().toISOString(),
+            })
+            .eq('bot_id', botId);
+          
+          this.logger.error(`Email error for bot ${botId}:`, emailError);
+        }
       }
 
       // Log action

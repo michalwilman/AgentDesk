@@ -229,24 +229,64 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
           {/* Google Calendar Connection Status */}
           <div className="space-y-3">
             {googleConnected ? (
-              <div className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  <div>
-                    <p className="text-sm font-medium text-white">Google Calendar Connected</p>
-                    <p className="text-xs text-dark-800">Your bot can now schedule appointments</p>
+              <>
+                <div className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    <div>
+                      <p className="text-sm font-medium text-white">Google Calendar Connected</p>
+                      <p className="text-xs text-dark-800">Your bot can now schedule appointments</p>
+                    </div>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDisconnectGoogle}
+                    disabled={googleLoading}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Disconnect
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDisconnectGoogle}
-                  disabled={googleLoading}
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Disconnect
-                </Button>
-              </div>
+                
+                {/* Show Calendar Error if exists and is newer than last success */}
+                {config.google_calendar_last_error && (
+                  !config.google_calendar_last_success_time ||
+                  new Date(config.google_calendar_last_error_time || 0) > new Date(config.google_calendar_last_success_time || 0)
+                ) && (
+                  <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-red-500">Calendar Sync Error</p>
+                        <p className="text-xs text-red-400 mt-1">{config.google_calendar_last_error}</p>
+                        <p className="text-xs text-dark-800 mt-1">
+                          Last occurred: {new Date(config.google_calendar_last_error_time).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show Email Error if exists and is newer than last success */}
+                {config.email_last_error && (
+                  !config.email_last_success_time ||
+                  new Date(config.email_last_error_time || 0) > new Date(config.email_last_success_time || 0)
+                ) && (
+                  <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-red-500">Email Sending Error</p>
+                        <p className="text-xs text-red-400 mt-1">{config.email_last_error}</p>
+                        <p className="text-xs text-dark-800 mt-1">
+                          Last occurred: {new Date(config.email_last_error_time).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="space-y-3">
                 <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
