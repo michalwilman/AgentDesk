@@ -7,7 +7,7 @@
 Build intelligent AI agents that don't just chat—they learn, act, and engage customers 24/7 across every channel.
 
 [![Live Demo](https://img.shields.io/badge/Demo-Live-success)](https://agentdesk-frontend-production.up.railway.app/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: BSL 1.1](https://img.shields.io/badge/License-BSL%201.1-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-10.0-red)](https://nestjs.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-14.0-black)](https://nextjs.org/)
@@ -461,7 +461,15 @@ We welcome contributions! Fork → Feature branch → Commit → Push → PR
 
 ## 📄 License
 
-**MIT License** - Free for commercial use, modification, and distribution.
+**Business Source License 1.1** - The Licensed Work is protected under BSL 1.1.
+
+### Key Points:
+- ✅ **Free for non-commercial use** and companies < $1M revenue
+- ✅ **View, modify, and learn** from the source code
+- ❌ **Not allowed:** Using for competing AI chatbot/agent platforms commercially
+- 🔄 **Converts to MIT** on November 4, 2028 (3 years)
+
+**For commercial/enterprise licensing:** [sales@agentdesk.com](mailto:sales@agentdesk.com)
 
 See [LICENSE](LICENSE) for full details.
 
