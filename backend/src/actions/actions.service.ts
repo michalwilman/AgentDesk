@@ -382,6 +382,10 @@ export class ActionsService {
       // Send SMS/WhatsApp confirmation if enabled and phone number is available
       if (appointmentDto.attendee_phone && (config.sms_enabled || config.whatsapp_enabled)) {
         try {
+          this.logger.log('📱 === WhatsApp/SMS Sending Process Started ===');
+          this.logger.log(`📞 Original phone number: ${appointmentDto.attendee_phone}`);
+          this.logger.log(`🔧 SMS Enabled: ${config.sms_enabled}, WhatsApp Enabled: ${config.whatsapp_enabled}`);
+          
           const twilioTemplates = this.twilioService.getDefaultTemplates();
           const variables = {
             attendee_name: appointmentDto.attendee_name,
@@ -392,18 +396,28 @@ export class ActionsService {
 
           // Format phone number to E.164
           const phoneNumber = this.twilioService.formatPhoneToE164(appointmentDto.attendee_phone);
+          this.logger.log(`📞 Formatted phone number (E.164): ${phoneNumber}`);
           
           // Validate phone number
           if (!this.twilioService.validatePhoneNumber(phoneNumber)) {
+            this.logger.error(`❌ Phone validation failed: ${appointmentDto.attendee_phone} -> ${phoneNumber}`);
             throw new Error(`Invalid phone number: ${appointmentDto.attendee_phone}`);
           }
+          this.logger.log('✅ Phone number validation passed');
 
           // Send WhatsApp confirmation if enabled
           if (config.whatsapp_enabled && config.twilio_account_sid && config.twilio_whatsapp_number) {
+            this.logger.log('📲 Attempting to send WhatsApp message...');
+            this.logger.log(`📋 Twilio Config:
+              - Account SID: ${config.twilio_account_sid?.substring(0, 10)}...
+              - WhatsApp Number: ${config.twilio_whatsapp_number}
+              - To: ${phoneNumber}`);
+            
             const message = this.twilioService.formatMessage(
               twilioTemplates.appointment_confirmation_whatsapp,
               variables,
             );
+            this.logger.log(`💬 Message content: ${message.substring(0, 100)}...`);
 
             const result = await this.twilioService.sendWhatsApp(
               {
@@ -418,19 +432,34 @@ export class ActionsService {
               },
             );
 
+            this.logger.log(`📤 WhatsApp send result: ${JSON.stringify(result)}`);
+            
             if (result.success) {
-              this.logger.log(`WhatsApp confirmation sent for appointment ${appointment.id}`);
+              this.logger.log(`✅ WhatsApp confirmation sent successfully for appointment ${appointment.id}`);
             } else {
+              this.logger.error(`❌ WhatsApp send failed: ${result.error}`);
               throw new Error(result.error || 'WhatsApp send failed');
             }
+          } else {
+            this.logger.log('⚠️ WhatsApp not sent - missing configuration:');
+            this.logger.log(`  - whatsapp_enabled: ${config.whatsapp_enabled}`);
+            this.logger.log(`  - twilio_account_sid: ${config.twilio_account_sid ? 'Set' : 'Missing'}`);
+            this.logger.log(`  - twilio_whatsapp_number: ${config.twilio_whatsapp_number || 'Missing'}`);
           }
 
           // Send SMS confirmation if enabled
           if (config.sms_enabled && config.twilio_account_sid && config.twilio_phone_number) {
+            this.logger.log('📲 Attempting to send SMS message...');
+            this.logger.log(`📋 SMS Config:
+              - Account SID: ${config.twilio_account_sid?.substring(0, 10)}...
+              - SMS Number: ${config.twilio_phone_number}
+              - To: ${phoneNumber}`);
+            
             const message = this.twilioService.formatMessage(
               twilioTemplates.appointment_confirmation_sms,
               variables,
             );
+            this.logger.log(`💬 SMS content: ${message.substring(0, 100)}...`);
 
             const result = await this.twilioService.sendSMS(
               {
@@ -444,14 +473,23 @@ export class ActionsService {
               },
             );
 
+            this.logger.log(`📤 SMS send result: ${JSON.stringify(result)}`);
+
             if (result.success) {
-              this.logger.log(`SMS confirmation sent for appointment ${appointment.id}`);
+              this.logger.log(`✅ SMS confirmation sent successfully for appointment ${appointment.id}`);
             } else {
+              this.logger.error(`❌ SMS send failed: ${result.error}`);
               throw new Error(result.error || 'SMS send failed');
             }
+          } else {
+            this.logger.log('⚠️ SMS not sent - missing configuration:');
+            this.logger.log(`  - sms_enabled: ${config.sms_enabled}`);
+            this.logger.log(`  - twilio_account_sid: ${config.twilio_account_sid ? 'Set' : 'Missing'}`);
+            this.logger.log(`  - twilio_phone_number: ${config.twilio_phone_number || 'Missing'}`);
           }
 
           // Track SMS/WhatsApp success
+          this.logger.log('✅ Tracking SMS/WhatsApp success in database');
           await supabase
             .from('bot_actions_config')
             .update({
@@ -459,9 +497,14 @@ export class ActionsService {
               sms_last_error: null,
             })
             .eq('bot_id', botId);
+          this.logger.log('📱 === WhatsApp/SMS Sending Process Completed Successfully ===');
         } catch (smsError) {
           // Track SMS/WhatsApp error
           const errorMessage = smsError instanceof Error ? smsError.message : 'Failed to send SMS/WhatsApp';
+          this.logger.error('❌ === WhatsApp/SMS Sending Process FAILED ===');
+          this.logger.error(`❌ Error details: ${errorMessage}`);
+          this.logger.error('Full error object:', smsError);
+          
           await supabase
             .from('bot_actions_config')
             .update({
@@ -470,8 +513,13 @@ export class ActionsService {
             })
             .eq('bot_id', botId);
           
-          this.logger.error(`SMS/WhatsApp error for bot ${botId}:`, smsError);
+          this.logger.error(`❌ SMS/WhatsApp error for bot ${botId}:`, smsError);
         }
+      } else {
+        this.logger.log('⚠️ SMS/WhatsApp sending skipped:');
+        this.logger.log(`  - Phone number provided: ${!!appointmentDto.attendee_phone}`);
+        this.logger.log(`  - SMS enabled: ${config.sms_enabled}`);
+        this.logger.log(`  - WhatsApp enabled: ${config.whatsapp_enabled}`);
       }
 
       // Log action
