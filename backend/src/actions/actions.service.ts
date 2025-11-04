@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../common/supabase.service';
+import { PlanGuardService } from '../common/plan-guard.service';
 import { EmailService } from './integrations/email.service';
 import { CalendarService } from './integrations/calendar.service';
 import { PdfService } from './integrations/pdf.service';
@@ -19,6 +20,7 @@ export class ActionsService {
 
   constructor(
     private supabaseService: SupabaseService,
+    private planGuardService: PlanGuardService,
     private emailService: EmailService,
     private calendarService: CalendarService,
     private pdfService: PdfService,
@@ -192,6 +194,15 @@ export class ActionsService {
 
     try {
       const supabase = this.supabaseService.getClient();
+
+      // Get bot info (needed for user_id and plan checking)
+      const { data: bot } = await supabase
+        .from('bots')
+        .select('user_id')
+        .eq('id', botId)
+        .single();
+
+      if (!bot) throw new Error('Bot not found');
 
       // Get bot actions config
       const { data: config } = await supabase
@@ -383,6 +394,15 @@ export class ActionsService {
       if (appointmentDto.attendee_phone && (config.sms_enabled || config.whatsapp_enabled)) {
         try {
           this.logger.log('📱 === WhatsApp/SMS Sending Process Started ===');
+          
+          // Check plan limits for WhatsApp/SMS
+          const canSendWhatsApp = await this.planGuardService.checkAction(bot.user_id, 'send_whatsapp');
+          if (!canSendWhatsApp.allowed) {
+            this.logger.warn(`⚠️ WhatsApp/SMS sending skipped: ${canSendWhatsApp.reason}`);
+            // Don't throw error, just log and continue without sending
+            throw new Error(canSendWhatsApp.reason);
+          }
+          
           this.logger.log(`📞 Original phone number: ${appointmentDto.attendee_phone}`);
           this.logger.log(`🔧 SMS Enabled: ${config.sms_enabled}, WhatsApp Enabled: ${config.whatsapp_enabled}`);
           
@@ -497,6 +517,10 @@ export class ActionsService {
               sms_last_error: null,
             })
             .eq('bot_id', botId);
+          
+          // Increment WhatsApp usage counter
+          await this.planGuardService.incrementWhatsAppUsage(bot.user_id, 1);
+          
           this.logger.log('📱 === WhatsApp/SMS Sending Process Completed Successfully ===');
         } catch (smsError) {
           // Track SMS/WhatsApp error

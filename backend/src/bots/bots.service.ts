@@ -1,16 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../common/supabase.service';
+import { PlanGuardService } from '../common/plan-guard.service';
 import { CreateBotDto, UpdateBotDto } from './dto/bot.dto';
 
 @Injectable()
 export class BotsService {
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private supabaseService: SupabaseService,
+    private planGuardService: PlanGuardService,
+  ) {}
 
   async create(userId: string, createBotDto: CreateBotDto) {
     const supabase = this.supabaseService.getClient();
 
-    // Check if user already has a bot
-    await this.checkBotLimit(userId);
+    // Check plan limits before creating bot
+    await this.planGuardService.guardAction(userId, 'create_bot');
 
     const { data, error } = await supabase
       .from('bots')
@@ -28,25 +32,6 @@ export class BotsService {
     }
 
     return data;
-  }
-
-  async checkBotLimit(userId: string) {
-    const supabase = this.supabaseService.getClient();
-
-    const { data, error } = await supabase
-      .from('bots')
-      .select('id')
-      .eq('user_id', userId);
-
-    if (error) {
-      throw new Error(`Failed to check bot limit: ${error.message}`);
-    }
-
-    if (data && data.length >= 1) {
-      throw new Error(
-        'You can only create one bot per account. Please delete your existing bot to create a new one.',
-      );
-    }
   }
 
   async findAll(userId: string) {

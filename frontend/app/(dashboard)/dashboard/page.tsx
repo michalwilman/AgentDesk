@@ -13,6 +13,7 @@ import { DashboardBotsPerformance } from '@/components/dashboard/dashboard-bots-
 import { DashboardRecentActivity } from '@/components/dashboard/dashboard-recent-activity'
 import { DashboardAlerts } from '@/components/dashboard/dashboard-alerts'
 import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions'
+import { UsageDashboard } from '@/components/dashboard/usage-dashboard'
 import { format, subDays } from 'date-fns'
 
 export default async function DashboardPage() {
@@ -276,6 +277,9 @@ export default async function DashboardPage() {
 
       {/* Subscription Status Badge */}
       <SubscriptionBadge variant="full" />
+
+      {/* Usage Dashboard */}
+      <UsageDashboard />
 
       {/* My Bots Section - MOVED TO TOP */}
       {bots && bots.length > 0 && (

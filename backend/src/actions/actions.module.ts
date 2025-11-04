@@ -13,6 +13,7 @@ import { WebhookService } from './integrations/webhook.service';
 import { TwilioService } from './integrations/twilio.service';
 import { RemindersService } from './integrations/reminders.service';
 import { SupabaseService } from '../common/supabase.service';
+import { PlanGuardService } from '../common/plan-guard.service';
 import { AuthService } from '../auth/auth.service';
 
 @Module({
@@ -32,6 +33,7 @@ import { AuthService } from '../auth/auth.service';
     TwilioService,
     RemindersService,
     SupabaseService,
+    PlanGuardService,
     AuthService,
   ],
   exports: [ActionsService], // Export for use in ChatService

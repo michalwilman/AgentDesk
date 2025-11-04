@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { SupabaseService } from '../common/supabase.service';
+import { PlanGuardService } from '../common/plan-guard.service';
 import { EmbeddingsService } from '../embeddings/embeddings.service';
 import { ActionsService } from '../actions/actions.service';
 import {
@@ -16,6 +17,7 @@ export class ChatService {
   constructor(
     private configService: ConfigService,
     private supabaseService: SupabaseService,
+    private planGuardService: PlanGuardService,
     private embeddingsService: EmbeddingsService,
     private actionsService: ActionsService,
   ) {
@@ -137,6 +139,9 @@ export class ChatService {
     if (botError || !bot) {
       throw new BadRequestException('Bot not found or inactive');
     }
+
+    // Check plan limits before processing message
+    await this.planGuardService.guardAction(bot.user_id, 'send_message');
 
     // Get or create chat
     let chat = await this.getChatBySession(botId, sessionId);
@@ -291,6 +296,9 @@ export class ChatService {
       context.map((c) => c.id),
       totalTokensUsed,
     );
+
+    // Increment conversation usage counter
+    await this.planGuardService.incrementConversationUsage(bot.user_id);
 
     return {
       message: finalMessageContent,

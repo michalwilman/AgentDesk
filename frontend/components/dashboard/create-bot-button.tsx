@@ -9,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { usePlanLimits } from '@/hooks/usePlanLimits'
 
 interface CreateBotButtonProps {
   hasExistingBot: boolean
@@ -16,8 +17,26 @@ interface CreateBotButtonProps {
 }
 
 export function CreateBotButton({ hasExistingBot, subscriptionStatus }: CreateBotButtonProps) {
-  // If user already has a bot and is on free/trial plan, show disabled button with tooltip
-  if (hasExistingBot && (subscriptionStatus === 'trial' || subscriptionStatus === 'free' || !subscriptionStatus)) {
+  const { canCreateBot, plan, limits, usage, loading } = usePlanLimits()
+
+  // Show loading state
+  if (loading) {
+    return (
+      <Button disabled className="gap-2">
+        <Plus className="h-4 w-4" />
+        Create Bot
+      </Button>
+    )
+  }
+
+  // Check if user can create bot based on plan limits
+  const isAtLimit = !canCreateBot()
+
+  // If user is at their bot limit, show disabled button with tooltip
+  if (isAtLimit) {
+    const currentCount = usage?.bots_created || 0
+    const maxBots = limits?.max_bots || 1
+
     return (
       <TooltipProvider>
         <Tooltip>
@@ -33,7 +52,8 @@ export function CreateBotButton({ hasExistingBot, subscriptionStatus }: CreateBo
             <div className="space-y-2">
               <p className="font-semibold">Bot Limit Reached</p>
               <p className="text-sm">
-                You already have a bot. Upgrade your plan to create more bots and unlock additional features.
+                You've created {currentCount} of {maxBots} bot{maxBots > 1 ? 's' : ''} in your {plan} plan.
+                Upgrade to create more bots.
               </p>
               <Link href="/pricing" className="block">
                 <Button size="sm" className="w-full mt-2">

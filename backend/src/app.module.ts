@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { BotsModule } from './bots/bots.module';
 import { ScraperModule } from './scraper/scraper.module';
@@ -28,6 +29,7 @@ import { ActionsModule } from './actions/actions.module';
     }]),
 
     // Feature modules
+    CommonModule,
     AuthModule,
     BotsModule,
     ScraperModule,

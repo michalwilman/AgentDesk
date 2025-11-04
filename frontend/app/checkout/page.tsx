@@ -22,19 +22,19 @@ const PLAN_DETAILS: Record<string, PlanDetails> = {
     name: 'Starter',
     price: 24.17,
     currency: 'USD',
-    features: ['100 billable conversations', 'Basic analytics', 'Live visitors list', 'Operating hours', 'AI Copilot', '50 AI conversations (one-time)', '100 flow visitors reached']
+    features: ['1 AI Bot', '100 AI conversations/month', 'Email notifications (included)', 'Google Calendar sync', 'WhatsApp notifications (up to 500/mo)', '24h appointment reminders', 'Lead collection & management', 'Basic analytics']
   },
   growth: {
     name: 'Growth',
     price: 49.17,
     currency: 'USD',
-    features: ['250 billable conversations', 'Advanced analytics', 'Power features', 'No branding option', 'Permissions', '50 AI conversations (one-time)', '100 flow visitors reached']
+    features: ['3 AI Bots', '250 AI conversations/month', 'Everything in Starter, plus:', 'Unlimited WhatsApp notifications', 'Advanced analytics', 'Remove AgentDesk branding', 'Priority support', 'Webhook integrations']
   },
   plus: {
     name: 'Plus',
     price: 749,
     currency: 'USD',
-    features: ['Custom billable quota', 'Dedicated success manager', 'Custom branding', 'Multiple projects', 'Departments', 'Multilanguage', 'OpenAPI', 'Live chat human support', 'From 300 AI conversations', 'Custom flow limits']
+    features: ['Unlimited AI Bots', 'Custom AI conversation quota', 'Everything in Growth, plus:', 'Bring your own Twilio (optional)', 'Custom branding & white label', 'Dedicated success manager', 'Multiple team members', 'API access (OpenAPI)', 'SLA guarantee', 'Custom flow limits']
   },
   premium: {
     name: 'Premium',

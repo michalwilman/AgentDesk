@@ -25,8 +25,9 @@ function SuccessContent() {
 
   const planNames: Record<string, string> = {
     starter: 'Starter',
-    pro: 'Pro',
-    business: 'Business',
+    growth: 'Growth',
+    plus: 'Plus',
+    premium: 'Premium',
   }
 
   return (
