@@ -128,27 +128,36 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
   }
 
   const handleSave = async () => {
+    console.log('🔵 Save button clicked!')
+    console.log('📦 Config to save:', config)
+    
     setLoading(true)
     setMessage(null)
 
     try {
-      const { error } = await supabase
+      console.log('🚀 Calling Supabase upsert...')
+      const { data, error } = await supabase
         .from('bot_actions_config')
         .upsert([{ bot_id: bot.id, ...config }], { onConflict: 'bot_id' })
+        .select()
+
+      console.log('📥 Supabase response:', { data, error })
 
       if (error) {
-        console.error('Supabase error:', error)
+        console.error('❌ Supabase error:', error)
         throw new Error(error.message || 'Failed to save configuration')
       }
 
+      console.log('✅ Save successful!')
       setMessage({ type: 'success', text: '✅ Configuration saved successfully!' })
       
-      // Reload page after 1 second to show updated status
+      // Reload page after 1.5 seconds to show updated status
       setTimeout(() => {
+        console.log('🔄 Reloading page...')
         window.location.reload()
       }, 1500)
     } catch (error) {
-      console.error('Error saving config:', error)
+      console.error('💥 Error saving config:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to save configuration'
       setMessage({ type: 'error', text: `❌ ${errorMessage}` })
     } finally {
