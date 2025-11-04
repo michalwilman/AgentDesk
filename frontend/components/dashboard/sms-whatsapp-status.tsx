@@ -11,9 +11,15 @@ interface SmsWhatsAppStatusProps {
   config: any
 }
 
-export function SmsWhatsAppStatus({ botId, config }: SmsWhatsAppStatusProps) {
+export function SmsWhatsAppStatus({ botId, config: initialConfig }: SmsWhatsAppStatusProps) {
   const router = useRouter()
+  const [config, setConfig] = useState(initialConfig)
   const [isConfigured, setIsConfigured] = useState(false)
+
+  useEffect(() => {
+    // Update config when initialConfig changes
+    setConfig(initialConfig)
+  }, [initialConfig])
 
   useEffect(() => {
     // Check if SMS/WhatsApp is configured
@@ -22,6 +28,13 @@ export function SmsWhatsAppStatus({ botId, config }: SmsWhatsAppStatusProps) {
       config?.twilio_auth_token &&
       (config?.sms_enabled || config?.whatsapp_enabled)
     )
+    console.log('🔍 SMS/WhatsApp Status Check:', {
+      twilio_account_sid: config?.twilio_account_sid ? '✅ Set' : '❌ Missing',
+      twilio_auth_token: config?.twilio_auth_token ? '✅ Set' : '❌ Missing',
+      sms_enabled: config?.sms_enabled,
+      whatsapp_enabled: config?.whatsapp_enabled,
+      configured,
+    })
     setIsConfigured(configured)
   }, [config])
 
