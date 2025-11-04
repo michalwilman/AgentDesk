@@ -4,6 +4,7 @@ import { EmailService } from './integrations/email.service';
 import { CalendarService } from './integrations/calendar.service';
 import { PdfService } from './integrations/pdf.service';
 import { WebhookService } from './integrations/webhook.service';
+import { TwilioService } from './integrations/twilio.service';
 import { SaveLeadDto } from './dto/save-lead.dto';
 import { ScheduleAppointmentDto } from './dto/schedule-appointment.dto';
 import { SendEmailDto } from './dto/send-email.dto';
@@ -22,6 +23,7 @@ export class ActionsService {
     private calendarService: CalendarService,
     private pdfService: PdfService,
     private webhookService: WebhookService,
+    private twilioService: TwilioService,
   ) {}
 
   /**
@@ -324,26 +326,24 @@ export class ActionsService {
         }
       }
 
+      // Use the same timeString that we saved to DB (already has timezone offset)
+      const scheduledDate = new Date(timeString);
+      
+      // Format date in Israel timezone
+      const formattedDate = scheduledDate.toLocaleString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Jerusalem',
+      });
+
       // Send confirmation email if email service is available
       if (appointmentDto.attendee_email) {
         try {
           const templates = this.emailService.getDefaultTemplates();
-          
-          // Use the same timeString that we saved to DB (already has timezone offset)
-          const scheduledDate = new Date(timeString);
-          
-          // Format date in Israel timezone
-          // The Date object now correctly represents the UTC time,
-          // so formatting with Israel timezone will show the correct local time
-          const formattedDate = scheduledDate.toLocaleString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZone: 'Asia/Jerusalem',
-          });
 
           await this.emailService.sendEmailWithTemplate(
             appointmentDto.attendee_email,
@@ -376,6 +376,101 @@ export class ActionsService {
             .eq('bot_id', botId);
           
           this.logger.error(`Email error for bot ${botId}:`, emailError);
+        }
+      }
+
+      // Send SMS/WhatsApp confirmation if enabled and phone number is available
+      if (appointmentDto.attendee_phone && (config.sms_enabled || config.whatsapp_enabled)) {
+        try {
+          const twilioTemplates = this.twilioService.getDefaultTemplates();
+          const variables = {
+            attendee_name: appointmentDto.attendee_name,
+            company_name: await this.getBotName(botId),
+            scheduled_time: formattedDate,
+            duration: (appointmentDto.duration_minutes || 30).toString(),
+          };
+
+          // Format phone number to E.164
+          const phoneNumber = this.twilioService.formatPhoneToE164(appointmentDto.attendee_phone);
+          
+          // Validate phone number
+          if (!this.twilioService.validatePhoneNumber(phoneNumber)) {
+            throw new Error(`Invalid phone number: ${appointmentDto.attendee_phone}`);
+          }
+
+          // Send WhatsApp confirmation if enabled
+          if (config.whatsapp_enabled && config.twilio_account_sid && config.twilio_whatsapp_number) {
+            const message = this.twilioService.formatMessage(
+              twilioTemplates.appointment_confirmation_whatsapp,
+              variables,
+            );
+
+            const result = await this.twilioService.sendWhatsApp(
+              {
+                accountSid: config.twilio_account_sid,
+                authToken: config.twilio_auth_token,
+                phoneNumber: config.twilio_phone_number,
+                whatsappNumber: config.twilio_whatsapp_number,
+              },
+              {
+                to: phoneNumber,
+                body: message,
+              },
+            );
+
+            if (result.success) {
+              this.logger.log(`WhatsApp confirmation sent for appointment ${appointment.id}`);
+            } else {
+              throw new Error(result.error || 'WhatsApp send failed');
+            }
+          }
+
+          // Send SMS confirmation if enabled
+          if (config.sms_enabled && config.twilio_account_sid && config.twilio_phone_number) {
+            const message = this.twilioService.formatMessage(
+              twilioTemplates.appointment_confirmation_sms,
+              variables,
+            );
+
+            const result = await this.twilioService.sendSMS(
+              {
+                accountSid: config.twilio_account_sid,
+                authToken: config.twilio_auth_token,
+                phoneNumber: config.twilio_phone_number,
+              },
+              {
+                to: phoneNumber,
+                body: message,
+              },
+            );
+
+            if (result.success) {
+              this.logger.log(`SMS confirmation sent for appointment ${appointment.id}`);
+            } else {
+              throw new Error(result.error || 'SMS send failed');
+            }
+          }
+
+          // Track SMS/WhatsApp success
+          await supabase
+            .from('bot_actions_config')
+            .update({
+              sms_last_success_time: new Date().toISOString(),
+              sms_last_error: null,
+            })
+            .eq('bot_id', botId);
+        } catch (smsError) {
+          // Track SMS/WhatsApp error
+          const errorMessage = smsError instanceof Error ? smsError.message : 'Failed to send SMS/WhatsApp';
+          await supabase
+            .from('bot_actions_config')
+            .update({
+              sms_last_error: errorMessage,
+              sms_last_error_time: new Date().toISOString(),
+            })
+            .eq('bot_id', botId);
+          
+          this.logger.error(`SMS/WhatsApp error for bot ${botId}:`, smsError);
         }
       }
 

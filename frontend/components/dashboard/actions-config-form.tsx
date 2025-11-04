@@ -414,34 +414,164 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
         )}
       </Card>
 
-      {/* WhatsApp */}
+      {/* SMS & WhatsApp Notifications */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <MessageCircle className="h-6 w-6 text-primary" />
-              <div>
-                <CardTitle>WhatsApp Messaging</CardTitle>
-                <CardDescription>
-                  Send WhatsApp messages using Twilio integration
-                </CardDescription>
-              </div>
+          <div className="flex items-center gap-3">
+            <MessageCircle className="h-6 w-6 text-primary" />
+            <div>
+              <CardTitle>SMS & WhatsApp Notifications</CardTitle>
+              <CardDescription>
+                Send appointment confirmations and reminders via SMS or WhatsApp using Twilio
+              </CardDescription>
             </div>
-            <Switch
-              checked={config.whatsapp_enabled || false}
-              onCheckedChange={(checked) => updateConfig('whatsapp_enabled', checked)}
-            />
           </div>
         </CardHeader>
-        {config.whatsapp_enabled && (
-          <CardContent>
-            <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
-              <p className="text-sm text-purple-600 dark:text-purple-400">
-                📱 WhatsApp requires Twilio configuration in bot settings
-              </p>
+        <CardContent className="space-y-6">
+          {/* Twilio Configuration */}
+          <div className="space-y-4 p-4 bg-dark-100 rounded-lg">
+            <h4 className="text-sm font-semibold text-white">Twilio Configuration</h4>
+            
+            <div>
+              <Label>Twilio Account SID</Label>
+              <Input
+                type="text"
+                placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                value={config.twilio_account_sid || ''}
+                onChange={(e) => updateConfig('twilio_account_sid', e.target.value)}
+                className="mt-2"
+              />
             </div>
-          </CardContent>
-        )}
+
+            <div>
+              <Label>Twilio Auth Token</Label>
+              <Input
+                type="password"
+                placeholder="Auth Token"
+                value={config.twilio_auth_token || ''}
+                onChange={(e) => updateConfig('twilio_auth_token', e.target.value)}
+                className="mt-2"
+              />
+            </div>
+
+            <p className="text-xs text-dark-800">
+              Get your credentials from{' '}
+              <a href="https://console.twilio.com" target="_blank" rel="noopener" className="text-primary hover:underline">
+                console.twilio.com
+              </a>
+            </p>
+          </div>
+
+          {/* SMS Configuration */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-semibold text-white">SMS Notifications</h4>
+                <p className="text-xs text-dark-800 mt-1">
+                  Send appointment confirmations via SMS
+                </p>
+              </div>
+              <Switch
+                checked={config.sms_enabled || false}
+                onCheckedChange={(checked) => updateConfig('sms_enabled', checked)}
+                disabled={!config.twilio_account_sid || !config.twilio_auth_token}
+              />
+            </div>
+
+            {config.sms_enabled && (
+              <div>
+                <Label>Twilio Phone Number</Label>
+                <Input
+                  type="tel"
+                  placeholder="+1234567890 (E.164 format)"
+                  value={config.twilio_phone_number || ''}
+                  onChange={(e) => updateConfig('twilio_phone_number', e.target.value)}
+                  className="mt-2"
+                />
+                <p className="text-xs text-dark-800 mt-1">
+                  Your Twilio phone number in E.164 format (e.g., +1234567890)
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* WhatsApp Configuration */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-semibold text-white">WhatsApp Notifications</h4>
+                <p className="text-xs text-dark-800 mt-1">
+                  Send appointment confirmations via WhatsApp
+                </p>
+              </div>
+              <Switch
+                checked={config.whatsapp_enabled || false}
+                onCheckedChange={(checked) => updateConfig('whatsapp_enabled', checked)}
+                disabled={!config.twilio_account_sid || !config.twilio_auth_token}
+              />
+            </div>
+
+            {config.whatsapp_enabled && (
+              <div>
+                <Label>Twilio WhatsApp Number</Label>
+                <Input
+                  type="tel"
+                  placeholder="+1234567890 (E.164 format)"
+                  value={config.twilio_whatsapp_number || ''}
+                  onChange={(e) => updateConfig('twilio_whatsapp_number', e.target.value)}
+                  className="mt-2"
+                />
+                <p className="text-xs text-dark-800 mt-1">
+                  Your Twilio WhatsApp-enabled number (must be configured in Twilio)
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Reminder Configuration */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-semibold text-white">24h Reminders</h4>
+                <p className="text-xs text-dark-800 mt-1">
+                  Send automatic reminders 24 hours before appointments
+                </p>
+              </div>
+              <Switch
+                checked={config.reminder_enabled !== false} // Default to true
+                onCheckedChange={(checked) => updateConfig('reminder_enabled', checked)}
+                disabled={!config.sms_enabled && !config.whatsapp_enabled}
+              />
+            </div>
+
+            {(config.sms_enabled || config.whatsapp_enabled) && (
+              <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <p className="text-xs text-blue-400">
+                  💡 Reminders are sent daily at 08:00 AM for appointments scheduled in the next 24 hours
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Show SMS Error if exists and is newer than last success */}
+          {config.sms_last_error && (
+            !config.sms_last_success_time ||
+            new Date(config.sms_last_error_time || 0) > new Date(config.sms_last_success_time || 0)
+          ) && (
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-red-500">SMS/WhatsApp Error</p>
+                  <p className="text-xs text-red-400 mt-1">{config.sms_last_error}</p>
+                  <p className="text-xs text-dark-800 mt-1">
+                    Last occurred: {new Date(config.sms_last_error_time).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
       </Card>
 
       {/* Webhooks */}
