@@ -18,10 +18,12 @@ export function SubscriptionBadge({ variant = 'compact', className }: Subscripti
   useEffect(() => {
     async function loadTrialStatus() {
       try {
+        console.log('🔄 SubscriptionBadge: Loading trial status...')
         const status = await checkTrialStatus()
+        console.log('📊 SubscriptionBadge: Received status:', status)
         setTrialStatus(status)
       } catch (error) {
-        console.error('Error loading trial status:', error)
+        console.error('❌ SubscriptionBadge: Error loading trial status:', error)
       } finally {
         setLoading(false)
       }
@@ -39,9 +41,18 @@ export function SubscriptionBadge({ variant = 'compact', className }: Subscripti
   }
 
   // Determine badge style and content based on status
+  console.log('🎯 SubscriptionBadge: Determining display...', {
+    isOnTrial: trialStatus.isOnTrial,
+    subscriptionStatus: trialStatus.subscriptionStatus,
+    trialExpired: trialStatus.trialExpired,
+    daysRemaining: trialStatus.daysRemaining,
+  })
+  
   const isOnTrial = trialStatus.isOnTrial && trialStatus.subscriptionStatus === 'trial'
   const hasSubscription = trialStatus.subscriptionStatus === 'active'
   const isExpired = trialStatus.trialExpired || trialStatus.subscriptionStatus === 'expired'
+  
+  console.log('🎯 Display decision:', { isOnTrial, hasSubscription, isExpired })
 
   // Compact variant (for nav bar)
   if (variant === 'compact') {
