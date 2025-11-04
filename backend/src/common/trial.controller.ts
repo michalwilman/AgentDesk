@@ -1,28 +1,38 @@
-import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Headers,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { TrialService } from './trial.service';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthService } from '../auth/auth.service';
 
-@Controller('api/trial')
+@Controller('trial')
 export class TrialController {
-  constructor(private readonly trialService: TrialService) {}
+  constructor(
+    private readonly trialService: TrialService,
+    private readonly authService: AuthService,
+  ) {}
+
+  private async validateAuth(authorization: string) {
+    if (!authorization) {
+      throw new UnauthorizedException('Authorization header missing');
+    }
+    const token = authorization.replace('Bearer ', '');
+    const user = await this.authService.validateUser(token);
+    return user;
+  }
 
   /**
    * GET /api/trial/status
    * Check current user's trial status
    */
   @Get('status')
-  @UseGuards(AuthGuard)
-  async getTrialStatus(@Req() req: any) {
-    const userId = req.user?.id;
-
-    if (!userId) {
-      return {
-        success: false,
-        message: 'User not authenticated',
-      };
-    }
-
-    const status = await this.trialService.checkTrialStatus(userId);
+  async getTrialStatus(@Headers('authorization') authorization: string) {
+    const user = await this.validateAuth(authorization);
+    const status = await this.trialService.checkTrialStatus(user.id);
 
     return {
       success: true,
@@ -35,22 +45,14 @@ export class TrialController {
    * Convert trial to paid subscription
    */
   @Post('convert')
-  @UseGuards(AuthGuard)
   async convertToPaid(
-    @Req() req: any,
+    @Headers('authorization') authorization: string,
     @Body() body: { tier: string; payment_method_id?: string },
   ) {
-    const userId = req.user?.id;
-
-    if (!userId) {
-      return {
-        success: false,
-        message: 'User not authenticated',
-      };
-    }
+    const user = await this.validateAuth(authorization);
 
     const result = await this.trialService.convertToPaid(
-      userId,
+      user.id,
       body.tier,
       body.payment_method_id,
     );
