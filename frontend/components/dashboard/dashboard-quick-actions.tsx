@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Plus, BarChart3, Settings, HelpCircle, CreditCard, FileText, UserPlus, Calendar } from 'lucide-react'
 import Link from 'next/link'
+import { usePlanLimits } from '@/hooks/usePlanLimits'
 
 interface DashboardQuickActionsProps {
   hasExistingBot?: boolean
@@ -12,6 +13,10 @@ interface DashboardQuickActionsProps {
 
 export function DashboardQuickActions({ hasExistingBot = false }: DashboardQuickActionsProps) {
   const [showBotLimitAlert, setShowBotLimitAlert] = useState(false)
+  const { canCreateBot, plan, limits, usage } = usePlanLimits()
+  
+  // Check if user is at bot limit
+  const isAtBotLimit = !canCreateBot()
   
   const actions = [
     {
@@ -84,11 +89,12 @@ export function DashboardQuickActions({ hasExistingBot = false }: DashboardQuick
           <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/50 rounded-lg">
             <h3 className="text-yellow-500 font-semibold mb-2">Bot Limit Reached</h3>
             <p className="text-sm text-white mb-3">
-              You already have a bot. Upgrade your plan to create more bots and unlock additional features.
+              You've created {usage?.bots_created || 0} of {limits?.max_bots || 1} bot{limits?.max_bots && limits.max_bots > 1 ? 's' : ''} in your {plan} plan. 
+              Upgrade to create more bots and unlock additional features.
             </p>
             <Link href="/pricing">
               <Button variant="outline" size="sm">
-                View Plans →
+                Upgrade Plan →
               </Button>
             </Link>
           </div>
@@ -98,15 +104,15 @@ export function DashboardQuickActions({ hasExistingBot = false }: DashboardQuick
           {actions.map((action) => {
             const Icon = action.icon
             const isCreateBot = action.label === 'Create New Bot'
-            const isDisabled = isCreateBot && hasExistingBot
+            const isDisabled = isCreateBot && isAtBotLimit
             
             return (
               <div key={action.label} className="relative">
-                {isCreateBot && hasExistingBot ? (
+                {isCreateBot && isAtBotLimit ? (
                   <Button
                     variant={action.variant}
                     className="w-full h-auto flex flex-col items-center gap-2 py-4 px-3 opacity-50 cursor-not-allowed"
-                    title="Only 1 bot allowed per subscription"
+                    title={`Bot limit reached (${usage?.bots_created}/${limits?.max_bots}). Upgrade to create more bots.`}
                     onClick={(e) => {
                       e.preventDefault()
                       setShowBotLimitAlert(true)
