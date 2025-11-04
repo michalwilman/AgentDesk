@@ -1,12 +1,15 @@
 'use client'
 
-import { Bot, MessageCircle, MessageSquare, TrendingUp, Zap } from 'lucide-react'
+import { useState } from 'react'
+import { Bot, MessageCircle, MessageSquare, TrendingUp, Zap, ChevronDown, ChevronUp } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { usePlanLimits } from '@/hooks/usePlanLimits'
 import Link from 'next/link'
 
 export function UsageDashboard() {
+  const [isExpanded, setIsExpanded] = useState(true)
+  
   const {
     plan,
     limits,
@@ -73,15 +76,54 @@ export function UsageDashboard() {
   return (
     <Card className="shadow-glow">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          Your Usage This Month
-        </CardTitle>
-        <CardDescription>
-          {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div className="space-y-1.5">
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              Your Usage This Month
+            </CardTitle>
+            <CardDescription>
+              {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </CardDescription>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="h-8 w-8 p-0"
+          >
+            {isExpanded ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-6">
+      
+      {/* Collapsed Summary */}
+      {!isExpanded && (
+        <CardContent className="py-3">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-4 text-dark-800">
+              <span className="flex items-center gap-1">
+                <Bot className="h-3 w-3" /> {usage.bots_created}/{limits.max_bots === -1 ? '∞' : limits.max_bots}
+              </span>
+              <span className="flex items-center gap-1">
+                <MessageCircle className="h-3 w-3" /> {usage.conversations_used}/{limits.max_conversations === -1 ? '∞' : limits.max_conversations}
+              </span>
+              <span className="flex items-center gap-1">
+                <MessageSquare className="h-3 w-3" /> {usage.whatsapp_messages_sent}/{limits.max_whatsapp_messages === -1 ? '∞' : limits.max_whatsapp_messages}
+              </span>
+            </div>
+            <span className="text-primary font-medium">{planNames[plan]}</span>
+          </div>
+        </CardContent>
+      )}
+      
+      {/* Expanded Details */}
+      {isExpanded && (
+        <CardContent className="space-y-6">
         {/* Bots Usage */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
@@ -214,7 +256,8 @@ export function UsageDashboard() {
             </Button>
           </Link>
         </div>
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   )
 }
