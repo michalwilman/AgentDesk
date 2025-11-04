@@ -2,9 +2,18 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { checkTrialStatus, type TrialStatus } from '@/lib/subscription/trial-checker'
 import { Clock, CheckCircle, Crown, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+interface TrialStatus {
+  hasAccess: boolean
+  isOnTrial: boolean
+  trialExpired: boolean
+  daysRemaining: number | null
+  subscriptionTier: string
+  subscriptionStatus: string
+  trialEndDate: string | null
+}
 
 interface SubscriptionBadgeProps {
   variant?: 'compact' | 'full'
@@ -18,9 +27,36 @@ export function SubscriptionBadge({ variant = 'compact', className }: Subscripti
   useEffect(() => {
     async function loadTrialStatus() {
       try {
-        console.log('🔄 SubscriptionBadge: Loading trial status...')
-        const status = await checkTrialStatus()
-        console.log('📊 SubscriptionBadge: Received status:', status)
+        console.log('🔄 SubscriptionBadge: Loading trial status from API...')
+        
+        // Call backend API endpoint with cookie authentication
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`, {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!response.ok) {
+          console.error(`❌ API error: ${response.status}`)
+          throw new Error(`API error: ${response.status}`)
+        }
+
+        const data = await response.json()
+        console.log('📊 SubscriptionBadge: Received data from API:', data)
+        
+        // Transform API response to TrialStatus format
+        const status: TrialStatus = {
+          hasAccess: data.status === 'active' || (data.is_trial && data.days_remaining > 0),
+          isOnTrial: data.is_trial === true,
+          trialExpired: data.status === 'expired',
+          daysRemaining: data.days_remaining || null,
+          subscriptionTier: data.plan || 'starter',
+          subscriptionStatus: data.subscription_status || 'trial',
+          trialEndDate: data.trial_end || null,
+        }
+        
+        console.log('✅ SubscriptionBadge: Transformed status:', status)
         setTrialStatus(status)
       } catch (error) {
         console.error('❌ SubscriptionBadge: Error loading trial status:', error)
