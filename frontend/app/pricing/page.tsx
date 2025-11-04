@@ -77,7 +77,7 @@ export default function PricingPage() {
             <div className="bg-dark-50 p-8 rounded-3xl border border-primary/20 shadow-glow hover-lift animate-fade-in delay-100">
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-bold mb-2 text-white">Starter</h3>
-                <div className="text-sm text-dark-800 mb-4">Ideal for small businesses focused on enhancing customer satisfaction via live chat support.</div>
+                <div className="text-sm text-dark-800 mb-4">Perfect for small businesses with automated appointment booking, email & WhatsApp notifications.</div>
                 <div className="text-xs text-dark-700 mb-2">Starts at</div>
                 <div className="text-5xl font-bold mb-2">
                   <span className="text-primary text-glow">$24.17</span>
@@ -88,31 +88,35 @@ export default function PricingPage() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">100 billable conversations</span>
+                  <span className="text-dark-800">1 AI Bot</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">100 AI conversations/month</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Email notifications (included)</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Google Calendar sync</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">WhatsApp notifications (up to 500/mo)</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">24h appointment reminders</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Lead collection & management</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <span className="text-dark-800">Basic analytics</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Live visitors list</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Operating hours</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">AI Copilot</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">50 AI conversations (one-time)</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">100 flow visitors reached</span>
                 </li>
               </ul>
               
@@ -133,7 +137,7 @@ export default function PricingPage() {
               
               <div className="text-center mb-8 mt-4">
                 <h3 className="text-2xl font-bold mb-2 text-white">Growth</h3>
-                <div className="text-sm text-dark-800 mb-4">Ideal for growing teams looking to boost customer engagement and automation.</div>
+                <div className="text-sm text-dark-800 mb-4">For growing teams needing unlimited WhatsApp, advanced analytics, and custom branding.</div>
                 <div className="text-xs text-dark-700 mb-2">Starts at</div>
                 <div className="text-5xl font-bold mb-2">
                   <span className="text-primary text-glow">$49.17</span>
@@ -144,7 +148,19 @@ export default function PricingPage() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">250 billable conversations</span>
+                  <span className="text-dark-800">3 AI Bots</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">250 AI conversations/month</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800 font-semibold">Everything in Starter, plus:</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Unlimited WhatsApp notifications</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -152,23 +168,15 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Power features</span>
+                  <span className="text-dark-800">Remove AgentDesk branding</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">No branding option</span>
+                  <span className="text-dark-800">Priority support</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Permissions</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">50 AI conversations (one-time)</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">100 flow visitors reached</span>
+                  <span className="text-dark-800">Webhook integrations</span>
                 </li>
               </ul>
               
@@ -183,7 +191,7 @@ export default function PricingPage() {
             <div className="bg-dark-50 p-8 rounded-3xl border border-primary/20 shadow-glow hover-lift animate-fade-in delay-300">
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-bold mb-2 text-white">Plus</h3>
-                <div className="text-sm text-dark-800 mb-4">For businesses needing higher limits, advanced tools, integrations & support.</div>
+                <div className="text-sm text-dark-800 mb-4">Enterprise-grade features with dedicated support, API access, and optional Twilio integration.</div>
                 <div className="text-xs text-dark-700 mb-2">Starts at</div>
                 <div className="text-5xl font-bold mb-2">
                   <span className="text-primary text-glow">$749</span>
@@ -194,7 +202,23 @@ export default function PricingPage() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Custom billable quota</span>
+                  <span className="text-dark-800">Unlimited AI Bots</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Custom AI conversation quota</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800 font-semibold">Everything in Growth, plus:</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Bring your own Twilio (optional)</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-dark-800">Custom branding & white label</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -202,31 +226,15 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Custom branding</span>
+                  <span className="text-dark-800">Multiple team members</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Multiple projects</span>
+                  <span className="text-dark-800">API access (OpenAPI)</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Departments</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Multilanguage</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">OpenAPI</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">Live chat human support</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-dark-800">From 300 AI conversations</span>
+                  <span className="text-dark-800">SLA guarantee</span>
                 </li>
                 <li className="flex items-start space-x-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -327,6 +335,11 @@ export default function PricingPage() {
               <div className="bg-dark-50 p-6 rounded-2xl shadow-glow border border-primary/20">
                 <h3 className="text-xl font-semibold mb-2 text-white">What happens after the free trial?</h3>
                 <p className="text-dark-800">After your 7-day trial, you can choose to upgrade to a paid plan or continue with limited features.</p>
+              </div>
+              
+              <div className="bg-dark-50 p-6 rounded-2xl shadow-glow border border-primary/20">
+                <h3 className="text-xl font-semibold mb-2 text-white">Are WhatsApp notifications included?</h3>
+                <p className="text-dark-800">Yes! Starter includes up to 500 WhatsApp messages per month. Growth and Plus plans include unlimited WhatsApp notifications. Plus plan customers can optionally connect their own Twilio account for full control.</p>
               </div>
             </div>
           </div>
