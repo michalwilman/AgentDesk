@@ -136,12 +136,21 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
         .from('bot_actions_config')
         .upsert([{ bot_id: bot.id, ...config }], { onConflict: 'bot_id' })
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw new Error(error.message || 'Failed to save configuration')
+      }
 
-      setMessage({ type: 'success', text: 'Actions configuration saved successfully!' })
+      setMessage({ type: 'success', text: '✅ Configuration saved successfully!' })
+      
+      // Reload page after 1 second to show updated status
+      setTimeout(() => {
+        window.location.reload()
+      }, 1500)
     } catch (error) {
       console.error('Error saving config:', error)
-      setMessage({ type: 'error', text: 'Failed to save configuration' })
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save configuration'
+      setMessage({ type: 'error', text: `❌ ${errorMessage}` })
     } finally {
       setLoading(false)
     }

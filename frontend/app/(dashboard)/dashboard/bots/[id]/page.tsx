@@ -8,6 +8,7 @@ import { DeleteBotButton } from '@/components/dashboard/delete-bot-button'
 import { ChannelConnections } from '@/components/dashboard/channel-connections'
 import { TrainedStatus } from '@/components/dashboard/trained-status'
 import { GoogleCalendarStatus } from '@/components/dashboard/google-calendar-status'
+import { SmsWhatsAppStatus } from '@/components/dashboard/sms-whatsapp-status'
 import { ArrowLeft, Code, Pencil, Globe, CheckCircle2, XCircle, Clock, Zap, UserPlus, Calendar } from 'lucide-react'
 
 function formatTimeAgo(dateString: string | null): string {
@@ -243,6 +244,12 @@ export default async function BotDetailPage({ params }: { params: { id: string }
               botId={bot.id}
               isConnected={isGoogleCalendarConnected}
               appointmentsEnabled={actionConfig?.appointments_enabled || false}
+            />
+
+            {/* SMS & WhatsApp Notifications Status */}
+            <SmsWhatsAppStatus
+              botId={bot.id}
+              config={actionConfig}
             />
           </CardContent>
         </Card>
