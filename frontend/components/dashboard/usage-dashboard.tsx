@@ -8,7 +8,7 @@ import { usePlanLimits } from '@/hooks/usePlanLimits'
 import Link from 'next/link'
 
 export function UsageDashboard() {
-  const [isExpanded, setIsExpanded] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(false)
   
   const {
     plan,
