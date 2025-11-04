@@ -151,20 +151,34 @@ export class PlanGuardService {
         return null;
       }
 
-      // If no record exists, return zero usage
+      // Count ACTUAL total active bots (not just created this month)
+      const { count: actualBotsCount, error: botsError } = await supabase
+        .from('bots')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+
+      if (botsError) {
+        this.logger.error(`Error counting bots: ${botsError.message}`);
+      }
+
+      // If no record exists, return zero usage (but with actual bots count)
       if (!data) {
         return {
           user_id: userId,
           tracking_month: currentMonth,
           tracking_year: currentYear,
-          bots_created: 0,
+          bots_created: actualBotsCount || 0,
           conversations_used: 0,
           whatsapp_messages_sent: 0,
           sms_messages_sent: 0,
         };
       }
 
-      return data as UsageStats;
+      // Override bots_created with actual count
+      return {
+        ...data,
+        bots_created: actualBotsCount || 0,
+      } as UsageStats;
     } catch (error) {
       this.logger.error('Error in getUsageStats:', error);
       return null;
