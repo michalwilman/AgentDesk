@@ -9,8 +9,10 @@ import { EncryptionService } from '../common/encryption.service';
 import { EmbeddingsService } from '../embeddings/embeddings.service';
 import { SiteCrawlerWorker } from './site-crawler.worker';
 import { closeSiteCrawlerQueue } from './site-crawler.queue';
+import { CommonModule } from '../common/common.module';
 
 @Module({
+  imports: [CommonModule],
   controllers: [ScraperController],
   providers: [
     ScraperService,
