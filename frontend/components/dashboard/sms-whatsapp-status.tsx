@@ -5,21 +5,49 @@ import { Card, CardContent } from '@/components/ui/card'
 import { MessageCircle, CheckCircle, XCircle, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 interface SmsWhatsAppStatusProps {
   botId: string
-  config: any
+  config?: any
 }
 
 export function SmsWhatsAppStatus({ botId, config: initialConfig }: SmsWhatsAppStatusProps) {
   const router = useRouter()
-  const [config, setConfig] = useState(initialConfig)
+  const [config, setConfig] = useState(initialConfig || null)
   const [isConfigured, setIsConfigured] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const supabase = createClient()
 
+  // Fetch fresh config from database
   useEffect(() => {
-    // Update config when initialConfig changes
-    setConfig(initialConfig)
-  }, [initialConfig])
+    const fetchConfig = async () => {
+      setLoading(true)
+      try {
+        const { data, error } = await supabase
+          .from('bot_actions_config')
+          .select('*')
+          .eq('bot_id', botId)
+          .single()
+
+        if (!error && data) {
+          console.log('✅ Fetched fresh SMS/WhatsApp config:', data)
+          setConfig(data)
+        } else if (initialConfig) {
+          setConfig(initialConfig)
+        }
+      } catch (error) {
+        console.error('❌ Error fetching config:', error)
+        if (initialConfig) {
+          setConfig(initialConfig)
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchConfig()
+  }, [botId, initialConfig])
 
   useEffect(() => {
     // Check if SMS/WhatsApp is configured
@@ -28,6 +56,7 @@ export function SmsWhatsAppStatus({ botId, config: initialConfig }: SmsWhatsAppS
       config?.twilio_auth_token &&
       (config?.sms_enabled || config?.whatsapp_enabled)
     )
+    
     console.log('🔍 SMS/WhatsApp Status Check:', {
       twilio_account_sid: config?.twilio_account_sid ? '✅ Set' : '❌ Missing',
       twilio_auth_token: config?.twilio_auth_token ? '✅ Set' : '❌ Missing',
@@ -35,6 +64,7 @@ export function SmsWhatsAppStatus({ botId, config: initialConfig }: SmsWhatsAppS
       whatsapp_enabled: config?.whatsapp_enabled,
       configured,
     })
+    
     setIsConfigured(configured)
   }, [config])
 
