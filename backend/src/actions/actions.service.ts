@@ -208,7 +208,16 @@ export class ActionsService {
 
       const leadId = leadResult.lead_id;
 
-      // Create appointment record
+      // Parse the time string sent by the bot as Israel time
+      // If it doesn't have timezone info, add Israel timezone offset (+02:00 or +03:00)
+      let timeString = appointmentDto.scheduled_time;
+      if (!timeString.includes('+') && !timeString.includes('Z')) {
+        // Israel is UTC+2 in winter (Oct-Mar), UTC+3 in summer (Mar-Oct) during DST
+        // For simplicity, add +02:00 (can be enhanced to detect DST)
+        timeString = timeString + '+02:00';
+      }
+
+      // Create appointment record with corrected timezone
       const { data: appointment, error } = await supabase
         .from('appointments')
         .insert([
@@ -216,7 +225,7 @@ export class ActionsService {
             bot_id: botId,
             chat_id: chatId,
             lead_id: leadId || appointmentDto.lead_id,
-            scheduled_time: appointmentDto.scheduled_time,
+            scheduled_time: timeString, // Use timeString with offset
             duration_minutes: appointmentDto.duration_minutes || 30,
             attendee_name: appointmentDto.attendee_name,
             attendee_email: appointmentDto.attendee_email,
@@ -236,15 +245,7 @@ export class ActionsService {
       // Create calendar event if calendar is configured
       if (config?.google_calendar_access_token && config?.google_calendar_refresh_token) {
         try {
-          // Parse the time string sent by the bot as Israel time
-          // If it doesn't have timezone info, add Israel timezone offset (+02:00 or +03:00)
-          let timeString = appointmentDto.scheduled_time;
-          if (!timeString.includes('+') && !timeString.includes('Z')) {
-            // Israel is UTC+2 in winter (Oct-Mar), UTC+3 in summer (Mar-Oct) during DST
-            // For simplicity, add +02:00 (can be enhanced to detect DST)
-            timeString = timeString + '+02:00';
-          }
-          
+          // Use the same timeString that we saved to DB
           const startTime = new Date(timeString);
           const endTime = new Date(
             startTime.getTime() + (appointmentDto.duration_minutes || 30) * 60000,
@@ -328,11 +329,7 @@ export class ActionsService {
         try {
           const templates = this.emailService.getDefaultTemplates();
           
-          // Parse the original time string and add Israel timezone offset if missing
-          let timeString = appointmentDto.scheduled_time;
-          if (!timeString.includes('+') && !timeString.includes('Z')) {
-            timeString = timeString + '+02:00';
-          }
+          // Use the same timeString that we saved to DB (already has timezone offset)
           const scheduledDate = new Date(timeString);
           
           // Format date in Israel timezone
