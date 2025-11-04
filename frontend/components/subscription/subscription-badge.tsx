@@ -30,7 +30,7 @@ export function SubscriptionBadge({ variant = 'compact', className }: Subscripti
         console.log('🔄 SubscriptionBadge: Loading trial status from API...')
         
         // Call backend API endpoint with cookie authentication
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trial/status`, {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
