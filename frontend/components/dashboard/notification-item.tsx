@@ -1,6 +1,5 @@
 'use client'
 
-import { format } from 'date-fns'
 import { Calendar, Clock, User, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
@@ -35,9 +34,23 @@ export function NotificationItem({
   const router = useRouter()
   const appointment = notification.appointments
 
+  // Parse the time string and ensure correct timezone handling
   const scheduledDate = new Date(appointment.scheduled_time)
-  const formattedDate = format(scheduledDate, 'MMM dd, yyyy')
-  const formattedTime = format(scheduledDate, 'HH:mm')
+  
+  // Format date and time separately for Israel timezone
+  const formattedDate = scheduledDate.toLocaleDateString('en-US', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+    timeZone: 'Asia/Jerusalem',
+  })
+  
+  const formattedTime = scheduledDate.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Jerusalem',
+  })
 
   const handleViewLead = () => {
     if (appointment.lead_id) {
