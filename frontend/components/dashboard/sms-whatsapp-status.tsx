@@ -78,13 +78,13 @@ export function SmsWhatsAppStatus({ botId, config: initialConfig }: SmsWhatsAppS
         <MessageCircle className="h-4 w-4 mr-2" />
         SMS & WhatsApp Notifications
       </label>
-      <div className="bg-dark-50 border border-dark-100 rounded-lg p-4">
+      <div className={`rounded-lg p-4 ${isConfigured ? 'bg-primary/5 border border-primary/20' : 'bg-dark-50 border border-dark-100'}`}>
         <div className="flex items-start gap-3 mb-3">
           {isConfigured ? (
             <>
               <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-white font-medium">Connected</p>
+                <p className="text-primary font-medium">Connected</p>
                 <p className="text-sm text-dark-800 mt-1">
                   {config?.sms_enabled && config?.whatsapp_enabled && 'SMS & WhatsApp notifications enabled'}
                   {config?.sms_enabled && !config?.whatsapp_enabled && 'SMS notifications enabled'}
