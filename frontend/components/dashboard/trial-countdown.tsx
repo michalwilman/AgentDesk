@@ -15,7 +15,7 @@ export function TrialCountdown() {
   if (trialStatus.status === 'expired') {
     return (
       <Link href="/pricing">
-        <Button size="sm" variant="destructive" className="gap-2">
+        <Button size="sm" variant="danger" className="gap-2">
           <CreditCard className="h-4 w-4" />
           Trial Expired - Upgrade Now
         </Button>
