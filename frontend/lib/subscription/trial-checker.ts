@@ -6,7 +6,7 @@ export interface TrialStatus {
   trialExpired: boolean
   daysRemaining: number | null
   subscriptionTier: string
-  subscriptionStatus: string
+  subscriptionStatus: string // 'trial', 'active', 'expired', 'cancelled'
   trialEndDate: string | null
 }
 
@@ -31,9 +31,11 @@ export async function checkTrialStatus(userId?: string): Promise<TrialStatus> {
     // Fetch user data from database
     const { data: userData, error } = await supabase
       .from('users')
-      .select('subscription_tier, subscription_status, trial_start_date, trial_end_date')
+      .select('subscription_tier, subscription_status, trial_start_date, trial_end_date, created_at')
       .eq('id', targetUserId)
       .single()
+    
+    console.log('📊 Trial Status Check - User Data:', userData)
 
     if (error || !userData) {
       console.error('Error fetching user data:', error)
@@ -43,7 +45,7 @@ export async function checkTrialStatus(userId?: string): Promise<TrialStatus> {
         isOnTrial: false,
         trialExpired: true,
         daysRemaining: null,
-        subscriptionTier: 'free',
+        subscriptionTier: 'starter',
         subscriptionStatus: 'expired',
         trialEndDate: null
       }
@@ -51,6 +53,26 @@ export async function checkTrialStatus(userId?: string): Promise<TrialStatus> {
 
     const now = new Date()
     const trialEndDate = userData.trial_end_date ? new Date(userData.trial_end_date) : null
+    
+    // If no trial dates set, initialize them (7 days from account creation)
+    if (!userData.trial_start_date || !userData.trial_end_date) {
+      const createdAt = new Date(userData.created_at)
+      const newTrialEnd = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000)
+      
+      await supabase
+        .from('users')
+        .update({
+          trial_start_date: createdAt.toISOString(),
+          trial_end_date: newTrialEnd.toISOString(),
+          subscription_status: 'trial'
+        })
+        .eq('id', targetUserId)
+      
+      // Update local userData
+      userData.trial_start_date = createdAt.toISOString()
+      userData.trial_end_date = newTrialEnd.toISOString()
+      userData.subscription_status = 'trial'
+    }
     
     // Calculate days remaining
     let daysRemaining: number | null = null
@@ -61,22 +83,20 @@ export async function checkTrialStatus(userId?: string): Promise<TrialStatus> {
       if (daysRemaining < 0) daysRemaining = 0
     }
 
-    // Check if user has paid subscription
-    const hasPaidSubscription = userData.subscription_tier !== 'free'
+    // Check if user has active subscription
+    const hasPaidSubscription = userData.subscription_status === 'active'
 
     // Check if trial has expired
     const trialExpired = 
-      !hasPaidSubscription && 
-      trialEndDate !== null && 
-      now > trialEndDate
+      userData.subscription_status === 'expired' ||
+      (!hasPaidSubscription && trialEndDate !== null && now > trialEndDate)
 
     // User has access if:
-    // 1. They have a paid subscription, OR
+    // 1. They have active subscription, OR
     // 2. They are on trial and trial hasn't expired
     const hasAccess = 
       hasPaidSubscription || 
-      (userData.subscription_status === 'trial' && !trialExpired) ||
-      userData.subscription_status === 'active'
+      (userData.subscription_status === 'trial' && !trialExpired)
 
     // If trial expired, update status in database
     if (trialExpired && userData.subscription_status === 'trial') {
@@ -84,17 +104,23 @@ export async function checkTrialStatus(userId?: string): Promise<TrialStatus> {
         .from('users')
         .update({ subscription_status: 'expired' })
         .eq('id', targetUserId)
+      
+      userData.subscription_status = 'expired'
     }
 
-    return {
+    const finalStatus = {
       hasAccess,
       isOnTrial: userData.subscription_status === 'trial' && !trialExpired,
       trialExpired,
       daysRemaining,
-      subscriptionTier: userData.subscription_tier,
-      subscriptionStatus: trialExpired ? 'expired' : userData.subscription_status,
+      subscriptionTier: userData.subscription_tier || 'starter',
+      subscriptionStatus: userData.subscription_status || 'trial',
       trialEndDate: userData.trial_end_date
     }
+    
+    console.log('✅ Trial Status Result:', finalStatus)
+    
+    return finalStatus
   } catch (error) {
     console.error('Error checking trial status:', error)
     return {
@@ -102,7 +128,7 @@ export async function checkTrialStatus(userId?: string): Promise<TrialStatus> {
       isOnTrial: false,
       trialExpired: true,
       daysRemaining: null,
-      subscriptionTier: 'free',
+      subscriptionTier: 'starter',
       subscriptionStatus: 'error',
       trialEndDate: null
     }
@@ -126,7 +152,7 @@ export async function initializeTrial(userId: string): Promise<boolean> {
         trial_start_date: now.toISOString(),
         trial_end_date: trialEndDate.toISOString(),
         subscription_status: 'trial',
-        subscription_tier: 'free'
+        subscription_tier: 'starter' // Default to starter plan during trial
       })
       .eq('id', userId)
 

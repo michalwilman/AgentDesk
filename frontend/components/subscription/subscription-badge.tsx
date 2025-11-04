@@ -39,9 +39,9 @@ export function SubscriptionBadge({ variant = 'compact', className }: Subscripti
   }
 
   // Determine badge style and content based on status
-  const isOnTrial = trialStatus.isOnTrial && trialStatus.subscriptionTier === 'free'
-  const hasSubscription = trialStatus.subscriptionTier !== 'free'
-  const isExpired = trialStatus.trialExpired && !hasSubscription
+  const isOnTrial = trialStatus.isOnTrial && trialStatus.subscriptionStatus === 'trial'
+  const hasSubscription = trialStatus.subscriptionStatus === 'active'
+  const isExpired = trialStatus.trialExpired || trialStatus.subscriptionStatus === 'expired'
 
   // Compact variant (for nav bar)
   if (variant === 'compact') {
