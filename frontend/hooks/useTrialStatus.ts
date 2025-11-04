@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 interface TrialStatus {
   is_trial: boolean
@@ -25,8 +26,22 @@ export function useTrialStatus() {
 
   const fetchTrialStatus = async () => {
     try {
+      // Get Supabase session token
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        console.error('No session token available')
+        setLoading(false)
+        return
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trial/status`, {
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
       })
 
       if (!response.ok) {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Clock, CheckCircle, Crown, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 
 interface TrialStatus {
   hasAccess: boolean
@@ -29,11 +30,22 @@ export function SubscriptionBadge({ variant = 'compact', className }: Subscripti
       try {
         console.log('🔄 SubscriptionBadge: Loading trial status from API...')
         
-        // Call backend API endpoint with cookie authentication
+        // Get Supabase session token
+        const supabase = createClient()
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (!session?.access_token) {
+          console.error('❌ No session token available')
+          setLoading(false)
+          return
+        }
+        
+        // Call backend API endpoint with Authorization header
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trial/status`, {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
           },
         })
 
