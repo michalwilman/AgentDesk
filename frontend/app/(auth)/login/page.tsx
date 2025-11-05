@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -12,7 +12,8 @@ import { FaGoogle, FaFacebook } from 'react-icons/fa'
 import { useLanguage } from '@/lib/contexts/LanguageContext'
 import { LanguageToggle } from '@/components/ui/language-toggle'
 
-export default function LoginPage() {
+// Separate component for login form that uses useSearchParams
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { t, dir } = useLanguage()
@@ -178,6 +179,19 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+// Main page component with Suspense boundary
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-dark">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
 
