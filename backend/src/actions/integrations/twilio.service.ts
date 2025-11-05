@@ -127,22 +127,24 @@ export class TwilioService {
    */
   getDefaultTemplates() {
     return {
-      appointment_confirmation_sms: `Hello {attendee_name}! Your appointment with {company_name} is confirmed for {scheduled_time}. Duration: {duration} minutes.`,
+      appointment_confirmation_sms: `Hello {{attendee_name}}! Your appointment with {{company_name}} is confirmed for {{scheduled_time}}. Duration: {{duration}} minutes.`,
       
-      appointment_confirmation_whatsapp: `Hello {attendee_name}! 👋\n\nYour appointment with {company_name} is confirmed:\n📅 {scheduled_time}\n⏱️ Duration: {duration} minutes\n\nSee you soon!`,
+      appointment_confirmation_whatsapp: `Hello {{attendee_name}}! 👋\n\nYour appointment with {{company_name}} is confirmed:\n📅 {{scheduled_time}}\n⏱️ Duration: {{duration}} minutes\n\nSee you soon!`,
       
-      appointment_reminder_sms: `Reminder: You have an appointment with {company_name} tomorrow at {scheduled_time}. Duration: {duration} minutes.`,
+      appointment_reminder_sms: `Reminder: You have an appointment with {{company_name}} tomorrow at {{scheduled_time}}. Duration: {{duration}} minutes.`,
       
-      appointment_reminder_whatsapp: `⏰ Reminder!\n\nYou have an appointment with {company_name} tomorrow:\n📅 {scheduled_time}\n⏱️ Duration: {duration} minutes\n\nLooking forward to seeing you!`,
+      appointment_reminder_whatsapp: `⏰ Reminder!\n\nYou have an appointment with {{company_name}} tomorrow:\n📅 {{scheduled_time}}\n⏱️ Duration: {{duration}} minutes\n\nLooking forward to seeing you!`,
     };
   }
 
   /**
-   * Format message with variables
+   * Format message with variables (supports both {{var}} and {var} formats for backward compatibility)
    */
   formatMessage(template: string, variables: Record<string, string>): string {
     let message = template;
     Object.keys(variables).forEach((key) => {
+      // Support both {{var}} and {var} formats
+      message = message.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), variables[key]);
       message = message.replace(new RegExp(`\\{${key}\\}`, 'g'), variables[key]);
     });
     return message;

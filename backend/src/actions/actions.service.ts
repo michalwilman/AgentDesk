@@ -254,6 +254,9 @@ export class ActionsService {
 
       let calendarEventId: string | undefined;
       let eventLink: string | undefined;
+      let calendarSuccess = false;
+      let emailSuccess = false;
+      let smsSuccess = false;
 
       // Create calendar event if calendar is configured
       if (config?.google_calendar_access_token && config?.google_calendar_refresh_token) {
@@ -284,23 +287,15 @@ export class ActionsService {
           if (calendarResult.success) {
             calendarEventId = calendarResult.eventId;
             eventLink = calendarResult.eventLink;
+            calendarSuccess = true;
 
-            this.logger.log(`Calendar event created successfully: ${calendarEventId}`);
+            this.logger.log(`✅ Calendar event created successfully: ${calendarEventId}`);
 
-            // Update appointment with calendar event ID and status
-            const { error: updateError } = await supabase
+            // Just update the calendar event ID (not status yet)
+            await supabase
               .from('appointments')
-              .update({ 
-                calendar_event_id: calendarEventId, 
-                status: 'confirmed' 
-              })
+              .update({ calendar_event_id: calendarEventId })
               .eq('id', appointment.id);
-
-            if (updateError) {
-              this.logger.error(`Failed to update appointment status: ${updateError.message}`);
-            } else {
-              this.logger.log(`Appointment ${appointment.id} status updated to confirmed`);
-            }
 
             // Track success
             await supabase
@@ -320,7 +315,7 @@ export class ActionsService {
               })
               .eq('bot_id', botId);
             
-            this.logger.error(`Calendar error for bot ${botId}: ${calendarResult.error}`);
+            this.logger.error(`❌ Calendar error for bot ${botId}: ${calendarResult.error}`);
           }
         } catch (calendarError) {
           // Track unexpected calendar error
@@ -333,8 +328,12 @@ export class ActionsService {
             })
             .eq('bot_id', botId);
           
-          this.logger.error(`Calendar exception for bot ${botId}:`, calendarError);
+          this.logger.error(`❌ Calendar exception for bot ${botId}:`, calendarError);
         }
+      } else {
+        // Calendar not configured - mark as success (not required)
+        calendarSuccess = true;
+        this.logger.log('⚠️ Calendar not configured - skipping');
       }
 
       // Use the same timeString that we saved to DB (already has timezone offset)
@@ -354,9 +353,11 @@ export class ActionsService {
       // Send confirmation email if email service is available
       if (appointmentDto.attendee_email) {
         try {
+          this.logger.log(`📧 Attempting to send confirmation email to ${appointmentDto.attendee_email}`);
+          
           const templates = this.emailService.getDefaultTemplates();
 
-          await this.emailService.sendEmailWithTemplate(
+          const emailResult = await this.emailService.sendEmailWithTemplate(
             appointmentDto.attendee_email,
             templates.appointment_confirmation,
             {
@@ -365,19 +366,29 @@ export class ActionsService {
               duration: (appointmentDto.duration_minutes || 30).toString(),
               company_name: await this.getBotName(botId),
             },
+            config?.email_from_address, // Use configured email if available
+            config?.email_from_name,
           );
 
-          // Track email success
-          await supabase
-            .from('bot_actions_config')
-            .update({
-              email_last_success_time: new Date().toISOString(),
-              email_last_error: null,
-            })
-            .eq('bot_id', botId);
+          if (emailResult.success) {
+            emailSuccess = true;
+            this.logger.log(`✅ Email sent successfully to ${appointmentDto.attendee_email}`);
+            // Track email success
+            await supabase
+              .from('bot_actions_config')
+              .update({
+                email_last_success_time: new Date().toISOString(),
+                email_last_error: null,
+              })
+              .eq('bot_id', botId);
+          } else {
+            throw new Error(emailResult.error || 'Email send failed');
+          }
         } catch (emailError) {
           // Track email error
           const errorMessage = emailError instanceof Error ? emailError.message : 'Failed to send email';
+          this.logger.error(`❌ Email error for bot ${botId}: ${errorMessage}`);
+          
           await supabase
             .from('bot_actions_config')
             .update({
@@ -385,13 +396,21 @@ export class ActionsService {
               email_last_error_time: new Date().toISOString(),
             })
             .eq('bot_id', botId);
-          
-          this.logger.error(`Email error for bot ${botId}:`, emailError);
         }
+      } else {
+        // No email to send - mark as success (not required)
+        emailSuccess = true;
+        this.logger.log('⚠️ Email sending skipped - no attendee email provided');
       }
 
       // Send SMS/WhatsApp confirmation if enabled and phone number is available
-      if (appointmentDto.attendee_phone && (config.sms_enabled || config.whatsapp_enabled)) {
+      this.logger.log(`📱 Checking SMS/WhatsApp conditions:
+        - Phone: ${appointmentDto.attendee_phone ? 'YES (' + appointmentDto.attendee_phone + ')' : 'NO'}
+        - SMS Enabled: ${config?.sms_enabled || false}
+        - WhatsApp Enabled: ${config?.whatsapp_enabled || false}
+        - Config exists: ${config ? 'YES' : 'NO'}`);
+      
+      if (appointmentDto.attendee_phone && (config?.sms_enabled || config?.whatsapp_enabled)) {
         try {
           this.logger.log('📱 === WhatsApp/SMS Sending Process Started ===');
           
@@ -509,6 +528,7 @@ export class ActionsService {
           }
 
           // Track SMS/WhatsApp success
+          smsSuccess = true;
           this.logger.log('✅ Tracking SMS/WhatsApp success in database');
           await supabase
             .from('bot_actions_config')
@@ -540,11 +560,52 @@ export class ActionsService {
           this.logger.error(`❌ SMS/WhatsApp error for bot ${botId}:`, smsError);
         }
       } else {
+        // No SMS/WhatsApp to send - mark as success (not required)
+        smsSuccess = true;
         this.logger.log('⚠️ SMS/WhatsApp sending skipped:');
         this.logger.log(`  - Phone number provided: ${!!appointmentDto.attendee_phone}`);
-        this.logger.log(`  - SMS enabled: ${config.sms_enabled}`);
-        this.logger.log(`  - WhatsApp enabled: ${config.whatsapp_enabled}`);
+        this.logger.log(`  - SMS enabled: ${config?.sms_enabled}`);
+        this.logger.log(`  - WhatsApp enabled: ${config?.whatsapp_enabled}`);
       }
+
+      // Determine final appointment status based on all operations
+      let finalStatus = 'pending'; // Default
+      const notificationResults: string[] = [];
+
+      if (calendarSuccess) {
+        notificationResults.push('✅ Calendar');
+      } else {
+        notificationResults.push('❌ Calendar');
+      }
+
+      if (emailSuccess) {
+        notificationResults.push('✅ Email');
+      } else if (appointmentDto.attendee_email) {
+        notificationResults.push('❌ Email');
+      }
+
+      if (smsSuccess) {
+        notificationResults.push('✅ SMS/WhatsApp');
+      } else if (appointmentDto.attendee_phone && (config?.sms_enabled || config?.whatsapp_enabled)) {
+        notificationResults.push('❌ SMS/WhatsApp');
+      }
+
+      // Mark as confirmed only if all required notifications succeeded
+      if (calendarSuccess && emailSuccess && smsSuccess) {
+        finalStatus = 'confirmed';
+        this.logger.log(`🎉 All notifications sent successfully! Status: CONFIRMED`);
+      } else {
+        this.logger.warn(`⚠️ Some notifications failed. Status remains: PENDING`);
+        this.logger.warn(`Results: ${notificationResults.join(', ')}`);
+      }
+
+      // Update appointment status
+      await supabase
+        .from('appointments')
+        .update({ status: finalStatus })
+        .eq('id', appointment.id);
+
+      this.logger.log(`📋 Appointment ${appointment.id} final status: ${finalStatus}`);
 
       // Log action
       await this.logAction(
@@ -552,7 +613,12 @@ export class ActionsService {
         chatId,
         'schedule_appointment',
         appointmentDto,
-        { appointment_id: appointment.id, calendar_event_id: calendarEventId },
+        { 
+          appointment_id: appointment.id, 
+          calendar_event_id: calendarEventId,
+          final_status: finalStatus,
+          notifications: notificationResults.join(', '),
+        },
         'success',
         null,
         Date.now() - startTime,
