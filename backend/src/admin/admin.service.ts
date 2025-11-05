@@ -329,6 +329,131 @@ export class AdminService {
   }
 
   /**
+   * Get users pending deletion (soft-deleted, awaiting permanent deletion)
+   * Only accessible by admins and super_admins
+   */
+  async getUsersPendingDeletion(): Promise<any[]> {
+    const supabase = this.supabaseService.getClient();
+
+    const { data, error } = await supabase.rpc('get_users_pending_deletion');
+
+    if (error) {
+      throw new BadRequestException('Failed to fetch pending deletions');
+    }
+
+    return data || [];
+  }
+
+  /**
+   * Restore a soft-deleted user
+   * Only accessible by super_admins
+   */
+  async restoreUser(userEmail: string, adminId: string): Promise<any> {
+    const supabase = this.supabaseService.getClient();
+
+    const { data, error } = await supabase.rpc('restore_deleted_user', {
+      user_email: userEmail,
+    });
+
+    if (error) {
+      throw new BadRequestException(`Failed to restore user: ${error.message}`);
+    }
+
+    // Log the action
+    await this.logAdminAction({
+      action: 'restore_user',
+      targetUserId: data[0]?.restored_user_id,
+      details: {
+        adminId,
+        email: userEmail,
+        message: data[0]?.message,
+      },
+    });
+
+    return data[0];
+  }
+
+  /**
+   * Mark a user for deletion (soft delete)
+   * Only accessible by super_admins
+   */
+  async markUserForDeletion(userId: string, adminId: string): Promise<void> {
+    const supabase = this.supabaseService.getClient();
+
+    // Get user info before deletion
+    const { data: user } = await supabase
+      .from('users')
+      .select('email, full_name')
+      .eq('id', userId)
+      .single();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const { error } = await supabase
+      .from('users')
+      .update({
+        deleted_at: new Date().toISOString(),
+        is_active: false,
+      })
+      .eq('id', userId);
+
+    if (error) {
+      throw new BadRequestException('Failed to mark user for deletion');
+    }
+
+    // Log the action
+    await this.logAdminAction({
+      action: 'mark_user_for_deletion',
+      targetUserId: userId,
+      details: {
+        adminId,
+        email: user.email,
+        full_name: user.full_name,
+      },
+    });
+  }
+
+  /**
+   * Get deletion statistics
+   * Only accessible by admins and super_admins
+   */
+  async getDeletionStats(): Promise<{
+    pending_deletion: number;
+    deleted_this_month: number;
+    restored_this_month: number;
+  }> {
+    const supabase = this.supabaseService.getClient();
+
+    // Count pending deletions
+    const { count: pendingCount } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .not('deleted_at', 'is', null);
+
+    // Count deletions this month
+    const { count: deletedCount } = await supabase
+      .from('user_deletion_log')
+      .select('*', { count: 'exact', head: true })
+      .eq('deletion_type', 'permanent_delete')
+      .gte('performed_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
+
+    // Count restorations this month
+    const { count: restoredCount } = await supabase
+      .from('user_deletion_log')
+      .select('*', { count: 'exact', head: true })
+      .eq('deletion_type', 'restored')
+      .gte('performed_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
+
+    return {
+      pending_deletion: pendingCount || 0,
+      deleted_this_month: deletedCount || 0,
+      restored_this_month: restoredCount || 0,
+    };
+  }
+
+  /**
    * Log an admin action
    * Internal method
    */

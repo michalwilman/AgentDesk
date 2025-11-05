@@ -9,6 +9,7 @@ import {
   Req,
   ParseIntPipe,
   DefaultValuePipe,
+  NotFoundException,
 } from '@nestjs/common';
 import { AdminService, PromoteUserDto } from './admin.service';
 import { AdminGuard, UserRole } from '../common/guards/admin.guard';
@@ -136,6 +137,63 @@ export class AdminController {
     @Query('search') search?: string,
   ) {
     return this.adminService.getAllBots(limit, offset, search);
+  }
+
+  /**
+   * GET /admin/users/pending-deletion
+   * Get all users pending deletion (soft-deleted)
+   * Accessible by: admin, super_admin
+   */
+  @Get('users/pending-deletion')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async getUsersPendingDeletion() {
+    return this.adminService.getUsersPendingDeletion();
+  }
+
+  /**
+   * POST /admin/users/:id/restore
+   * Restore a soft-deleted user
+   * Accessible by: super_admin only
+   */
+  @Post('users/:id/restore')
+  @Roles(UserRole.SUPER_ADMIN)
+  async restoreUser(@Param('id') userId: string, @Req() req: any) {
+    // Get user email from user ID
+    const supabase = this.adminService['supabaseService'].getClient();
+    const { data: user } = await supabase
+      .from('users')
+      .select('email')
+      .eq('id', userId)
+      .single();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.adminService.restoreUser(user.email, req.user.id);
+  }
+
+  /**
+   * POST /admin/users/:id/mark-for-deletion
+   * Mark a user for deletion (soft delete)
+   * Accessible by: super_admin only
+   */
+  @Post('users/:id/mark-for-deletion')
+  @Roles(UserRole.SUPER_ADMIN)
+  async markUserForDeletion(@Param('id') userId: string, @Req() req: any) {
+    await this.adminService.markUserForDeletion(userId, req.user.id);
+    return { message: 'User marked for deletion successfully' };
+  }
+
+  /**
+   * GET /admin/deletion-stats
+   * Get deletion statistics
+   * Accessible by: admin, super_admin
+   */
+  @Get('deletion-stats')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async getDeletionStats() {
+    return this.adminService.getDeletionStats();
   }
 }
 
