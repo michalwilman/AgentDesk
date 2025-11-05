@@ -32,15 +32,32 @@ function LoginForm() {
 
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) throw error
 
-      // Redirect to the intended page (or dashboard if no redirect specified)
-      router.push(redirectUrl)
+      // Check user role and redirect accordingly
+      if (authData?.user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', authData.user.id)
+          .single()
+
+        // If user is admin/super_admin, redirect to /admin
+        if (userData?.role === 'super_admin' || userData?.role === 'admin') {
+          router.push('/admin')
+        } else {
+          // Regular users go to their intended destination
+          router.push(redirectUrl)
+        }
+      } else {
+        router.push(redirectUrl)
+      }
+      
       router.refresh()
     } catch (error: any) {
       setError(error.message || 'Failed to login')

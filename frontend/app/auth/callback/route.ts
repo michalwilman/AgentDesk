@@ -45,7 +45,7 @@ export async function GET(request: Request) {
       // Check if user profile exists in users table
       const { data: existingProfile } = await supabase
         .from('users')
-        .select('id')
+        .select('id, role')
         .eq('id', data.user.id)
         .single()
 
@@ -71,8 +71,17 @@ export async function GET(request: Request) {
         ])
       }
 
-      // Redirect to dashboard on successful OAuth
-      return NextResponse.redirect(new URL(next, baseUrl))
+      // Check user role and redirect accordingly
+      const userRole = existingProfile?.role
+      let redirectUrl = next
+      
+      // If user is admin/super_admin, redirect to /admin
+      if (userRole === 'super_admin' || userRole === 'admin') {
+        redirectUrl = '/admin'
+      }
+
+      // Redirect on successful OAuth
+      return NextResponse.redirect(new URL(redirectUrl, baseUrl))
     }
   }
 
@@ -91,7 +100,7 @@ export async function GET(request: Request) {
         // Check if user profile exists
         const { data: existingProfile } = await supabase
           .from('users')
-          .select('id')
+          .select('id, role')
           .eq('id', user.id)
           .single()
 
@@ -115,10 +124,19 @@ export async function GET(request: Request) {
             },
           ])
         }
-      }
 
-      // Redirect to dashboard on successful verification
-      return NextResponse.redirect(new URL(next, baseUrl))
+        // Check user role and redirect accordingly
+        const userRole = existingProfile?.role
+        let redirectUrl = next
+        
+        // If user is admin/super_admin, redirect to /admin
+        if (userRole === 'super_admin' || userRole === 'admin') {
+          redirectUrl = '/admin'
+        }
+
+        // Redirect on successful verification
+        return NextResponse.redirect(new URL(redirectUrl, baseUrl))
+      }
     }
   }
 
