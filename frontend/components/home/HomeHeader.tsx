@@ -38,7 +38,8 @@ export function HomeHeader() {
         </nav>
         
         <div className="flex items-center gap-3 animate-fade-in delay-100">
-          <LanguageToggle />
+          {/* Language toggle hidden for now - uncomment to restore */}
+          {/* <LanguageToggle /> */}
           <Link href="/login">
             <Button variant="ghost" className="text-white hover:text-primary hover:bg-dark-50 transition-smooth rounded-full px-6">
               {t('nav.login')}

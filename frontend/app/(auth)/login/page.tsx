@@ -70,9 +70,10 @@ export default function LoginPage() {
             </div>
             <span className="text-3xl font-bold text-primary text-glow">AgentDesk</span>
           </Link>
-          <div className="flex justify-center mb-4">
+          {/* Language toggle hidden for now - uncomment to restore */}
+          {/* <div className="flex justify-center mb-4">
             <LanguageToggle />
-          </div>
+          </div> */}
           <h1 className="text-2xl font-bold mb-2 text-white">{t('auth.welcomeBack')}</h1>
           <p className="text-dark-800">{t('auth.signInToAccount')}</p>
         </div>

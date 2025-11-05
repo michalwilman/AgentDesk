@@ -37,7 +37,8 @@ export function DashboardNav({ user }: { user: any }) {
             </div>
             <SubscriptionBadge variant="compact" />
             <NotificationsPanel />
-            <LanguageToggleWithIcon />
+            {/* Language toggle hidden for now - uncomment to restore */}
+            {/* <LanguageToggleWithIcon /> */}
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Logout</span>

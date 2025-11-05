@@ -308,6 +308,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   // Load language from localStorage on mount
   useEffect(() => {
     setMounted(true)
+    // Always default to English for now
+    // TODO: Uncomment below to restore multi-language support
+    /*
     const savedLanguage = localStorage.getItem('language') as Language
     if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'he')) {
       setLanguageState(savedLanguage)
@@ -318,6 +321,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         setLanguageState('he')
       }
     }
+    */
   }, [])
 
   // Update localStorage and document direction when language changes
