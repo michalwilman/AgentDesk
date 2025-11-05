@@ -17,7 +17,14 @@ function RegisterForm() {
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [companyName, setCompanyName] = useState('')
+  const [phone, setPhone] = useState('')
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<{
+    fullName?: string
+    phone?: string
+    email?: string
+    password?: string
+  }>({})
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [plan, setPlan] = useState<string>('starter')
@@ -29,13 +36,112 @@ function RegisterForm() {
     }
   }, [searchParams])
 
+  // Validation functions
+  const validateFullName = (name: string): string | undefined => {
+    if (!name.trim()) {
+      return 'Full name is required'
+    }
+    if (name.trim().length < 2) {
+      return 'Full name must be at least 2 characters'
+    }
+    const nameParts = name.trim().split(' ')
+    if (nameParts.length < 2) {
+      return 'Please enter both first and last name'
+    }
+    if (!/^[a-zA-Zא-ת\s]+$/.test(name)) {
+      return 'Full name can only contain letters and spaces'
+    }
+    return undefined
+  }
+
+  const validatePhone = (phoneNumber: string): string | undefined => {
+    if (!phoneNumber.trim()) {
+      return 'Phone number is required'
+    }
+    // Israeli phone number format: 05X-XXXXXXX or 05XXXXXXXX
+    const phoneRegex = /^05[0-9][-\s]?[0-9]{7}$/
+    const cleanPhone = phoneNumber.replace(/[\s-]/g, '')
+    
+    if (!phoneRegex.test(phoneNumber) && !/^05[0-9]{8}$/.test(cleanPhone)) {
+      return 'Invalid phone number. Format: 05X-XXXXXXX'
+    }
+    return undefined
+  }
+
+  const validateEmail = (emailAddress: string): string | undefined => {
+    if (!emailAddress.trim()) {
+      return 'Email is required'
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(emailAddress)) {
+      return 'Invalid email address'
+    }
+    return undefined
+  }
+
+  const validatePassword = (pass: string): string | undefined => {
+    if (!pass) {
+      return 'Password is required'
+    }
+    if (pass.length < 6) {
+      return 'Password must be at least 6 characters'
+    }
+    return undefined
+  }
+
+  // Validate on blur
+  const handleFullNameBlur = () => {
+    const error = validateFullName(fullName)
+    setFieldErrors(prev => ({ ...prev, fullName: error }))
+  }
+
+  const handlePhoneBlur = () => {
+    const error = validatePhone(phone)
+    setFieldErrors(prev => ({ ...prev, phone: error }))
+  }
+
+  const handleEmailBlur = () => {
+    const error = validateEmail(email)
+    setFieldErrors(prev => ({ ...prev, email: error }))
+  }
+
+  const handlePasswordBlur = () => {
+    const error = validatePassword(password)
+    setFieldErrors(prev => ({ ...prev, password: error }))
+  }
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
+    // Validate all fields
+    const fullNameError = validateFullName(fullName)
+    const phoneError = validatePhone(phone)
+    const emailError = validateEmail(email)
+    const passwordError = validatePassword(password)
+
+    const errors = {
+      fullName: fullNameError,
+      phone: phoneError,
+      email: emailError,
+      password: passwordError,
+    }
+
+    setFieldErrors(errors)
+
+    // Check if there are any errors
+    if (Object.values(errors).some(error => error !== undefined)) {
+      setError('Please fix the errors in the form')
+      setLoading(false)
+      return
+    }
+
     try {
       const supabase = createClient()
+      
+      // Clean phone number (remove spaces and dashes)
+      const cleanPhone = phone.replace(/[\s-]/g, '')
       
       // Sign up user
       const { data, error: signUpError } = await supabase.auth.signUp({
@@ -44,8 +150,9 @@ function RegisterForm() {
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
-            full_name: fullName,
-            company_name: companyName,
+            full_name: fullName.trim(),
+            company_name: companyName.trim(),
+            phone: cleanPhone,
           },
         },
       })
@@ -162,11 +269,34 @@ function RegisterForm() {
                 </div>
 
               <Input
-                label="Full Name"
+                label="📛 Full Name *"
                 type="text"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  setFullName(e.target.value)
+                  if (fieldErrors.fullName) {
+                    setFieldErrors(prev => ({ ...prev, fullName: undefined }))
+                  }
+                }}
+                onBlur={handleFullNameBlur}
                 placeholder="John Doe"
+                error={fieldErrors.fullName}
+                required
+              />
+
+              <Input
+                label="📞 Mobile Number *"
+                type="tel"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value)
+                  if (fieldErrors.phone) {
+                    setFieldErrors(prev => ({ ...prev, phone: undefined }))
+                  }
+                }}
+                onBlur={handlePhoneBlur}
+                placeholder="050-1234567"
+                error={fieldErrors.phone}
                 required
               />
 
@@ -179,20 +309,34 @@ function RegisterForm() {
               />
 
               <Input
-                label="Email"
+                label="📧 Email *"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  if (fieldErrors.email) {
+                    setFieldErrors(prev => ({ ...prev, email: undefined }))
+                  }
+                }}
+                onBlur={handleEmailBlur}
                 placeholder="you@example.com"
+                error={fieldErrors.email}
                 required
               />
 
               <Input
-                label="Password"
+                label="🔐 Password *"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  if (fieldErrors.password) {
+                    setFieldErrors(prev => ({ ...prev, password: undefined }))
+                  }
+                }}
+                onBlur={handlePasswordBlur}
                 placeholder="At least 6 characters"
+                error={fieldErrors.password}
                 required
                 minLength={6}
               />
