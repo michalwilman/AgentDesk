@@ -197,7 +197,7 @@ export default function BotsPage() {
           {/* Filter Buttons */}
           <div className="flex gap-2">
             <Button
-              variant={filter === 'all' ? 'default' : 'outline'}
+              variant={filter === 'all' ? 'primary' : 'outline'}
               onClick={() => {
                 setFilter('all')
                 setCurrentPage(1)
@@ -207,7 +207,7 @@ export default function BotsPage() {
               All Bots
             </Button>
             <Button
-              variant={filter === 'active' ? 'default' : 'outline'}
+              variant={filter === 'active' ? 'primary' : 'outline'}
               onClick={() => {
                 setFilter('active')
                 setCurrentPage(1)
@@ -217,7 +217,7 @@ export default function BotsPage() {
               Active
             </Button>
             <Button
-              variant={filter === 'inactive' ? 'default' : 'outline'}
+              variant={filter === 'inactive' ? 'primary' : 'outline'}
               onClick={() => {
                 setFilter('inactive')
                 setCurrentPage(1)

@@ -233,7 +233,7 @@ export default function AuditLogsPage() {
         <CardContent className="space-y-4">
           <div className="flex gap-2 flex-wrap">
             <Button
-              variant={filter === null ? 'default' : 'outline'}
+              variant={filter === null ? 'primary' : 'outline'}
               onClick={() => {
                 setFilter(null)
                 setCurrentPage(1)
@@ -247,7 +247,7 @@ export default function AuditLogsPage() {
               return (
                 <Button
                   key={action}
-                  variant={filter === action ? 'default' : 'outline'}
+                  variant={filter === action ? 'primary' : 'outline'}
                   onClick={() => {
                     setFilter(action)
                     setCurrentPage(1)

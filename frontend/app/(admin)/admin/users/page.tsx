@@ -198,7 +198,7 @@ export default function UsersPage() {
           {/* Filter Buttons */}
           <div className="flex gap-2">
             <Button
-              variant={filter === 'all' ? 'default' : 'outline'}
+              variant={filter === 'all' ? 'primary' : 'outline'}
               onClick={() => {
                 setFilter('all')
                 setCurrentPage(1)
@@ -207,7 +207,7 @@ export default function UsersPage() {
               All Users
             </Button>
             <Button
-              variant={filter === 'trial' ? 'default' : 'outline'}
+              variant={filter === 'trial' ? 'primary' : 'outline'}
               onClick={() => {
                 setFilter('trial')
                 setCurrentPage(1)
@@ -216,7 +216,7 @@ export default function UsersPage() {
               Trial
             </Button>
             <Button
-              variant={filter === 'paid' ? 'default' : 'outline'}
+              variant={filter === 'paid' ? 'primary' : 'outline'}
               onClick={() => {
                 setFilter('paid')
                 setCurrentPage(1)
@@ -225,7 +225,7 @@ export default function UsersPage() {
               Paying
             </Button>
             <Button
-              variant={filter === 'inactive' ? 'default' : 'outline'}
+              variant={filter === 'inactive' ? 'primary' : 'outline'}
               onClick={() => {
                 setFilter('inactive')
                 setCurrentPage(1)
