@@ -11,8 +11,8 @@
 CREATE OR REPLACE FUNCTION sync_bot_status_with_user_subscription()
 RETURNS TABLE (
   updated_bot_id UUID,
-  bot_name TEXT,
-  user_email TEXT,
+  bot_name VARCHAR(255),
+  user_email VARCHAR(255),
   old_status BOOLEAN,
   new_status BOOLEAN,
   reason TEXT
