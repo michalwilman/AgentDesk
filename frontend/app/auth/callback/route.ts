@@ -45,7 +45,7 @@ export async function GET(request: Request) {
       // Check if user profile exists in users table
       const { data: existingProfile } = await supabase
         .from('users')
-        .select('id, role')
+        .select('id, role, is_active')
         .eq('id', data.user.id)
         .single()
 
@@ -69,6 +69,14 @@ export async function GET(request: Request) {
             subscription_tier: 'free'
           },
         ])
+      }
+
+      // Check if user is inactive (suspended)
+      if (existingProfile && !existingProfile.is_active) {
+        // Sign out inactive user
+        await supabase.auth.signOut()
+        // Redirect to login with error message
+        return NextResponse.redirect(new URL('/login?error=account_suspended', baseUrl))
       }
 
       // Check user role and redirect accordingly
@@ -100,7 +108,7 @@ export async function GET(request: Request) {
         // Check if user profile exists
         const { data: existingProfile } = await supabase
           .from('users')
-          .select('id, role')
+          .select('id, role, is_active')
           .eq('id', user.id)
           .single()
 
@@ -123,6 +131,14 @@ export async function GET(request: Request) {
               subscription_tier: 'free'
             },
           ])
+        }
+
+        // Check if user is inactive (suspended)
+        if (existingProfile && !existingProfile.is_active) {
+          // Sign out inactive user
+          await supabase.auth.signOut()
+          // Redirect to login with error message
+          return NextResponse.redirect(new URL('/login?error=account_suspended', baseUrl))
         }
 
         // Check user role and redirect accordingly

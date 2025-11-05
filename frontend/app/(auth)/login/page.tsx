@@ -24,6 +24,12 @@ function LoginForm() {
   
   // Get redirect URL from query params (default to /dashboard)
   const redirectUrl = searchParams.get('redirect') || '/dashboard'
+  
+  // Check for error from callback (e.g., account suspended)
+  const errorParam = searchParams.get('error')
+  if (errorParam === 'account_suspended' && !error) {
+    setError('Your account has been suspended. Please contact support.')
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,13 +45,20 @@ function LoginForm() {
 
       if (error) throw error
 
-      // Check user role and redirect accordingly
+      // Check user role and is_active status
       if (authData?.user) {
         const { data: userData } = await supabase
           .from('users')
-          .select('role')
+          .select('role, is_active')
           .eq('id', authData.user.id)
           .single()
+
+        // Check if user is inactive
+        if (userData && !userData.is_active) {
+          // Sign out inactive user
+          await supabase.auth.signOut()
+          throw new Error('Your account has been suspended. Please contact support.')
+        }
 
         // If user is admin/super_admin, redirect to /admin
         if (userData?.role === 'super_admin' || userData?.role === 'admin') {
