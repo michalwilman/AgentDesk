@@ -117,9 +117,9 @@ export function AdminStats() {
           const Icon = stat.icon
 
           return (
-            <Card key={stat.title} className="hover:shadow-lg transition-shadow border-gray-200 dark:border-gray-700">
+            <Card key={stat.title} className="hover:shadow-lg transition-shadow border-gray-700 bg-gray-900">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <CardTitle className="text-sm font-medium text-gray-300">
                   {stat.title}
                 </CardTitle>
                 <div className={`p-2 rounded-lg ${stat.bgColor}`}>
@@ -127,7 +127,7 @@ export function AdminStats() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
+                <div className="text-3xl font-bold text-white">{stat.value}</div>
               </CardContent>
             </Card>
           )
@@ -136,33 +136,33 @@ export function AdminStats() {
 
       {/* Additional Info */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-gray-200 dark:border-gray-700">
+        <Card className="border-gray-700 bg-gray-900">
           <CardHeader>
-            <CardTitle className="text-lg text-gray-900 dark:text-white">Recent Growth</CardTitle>
+            <CardTitle className="text-lg text-white">Recent Growth</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">This Week</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{stats.signups_this_week} signups</span>
+                <span className="text-gray-300">This Week</span>
+                <span className="font-semibold text-white">{stats.signups_this_week} signups</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">This Month</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{stats.signups_this_month} signups</span>
+                <span className="text-gray-300">This Month</span>
+                <span className="font-semibold text-white">{stats.signups_this_month} signups</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-gray-200 dark:border-gray-700">
+        <Card className="border-gray-700 bg-gray-900">
           <CardHeader>
-            <CardTitle className="text-lg text-gray-900 dark:text-white">Conversion Rate</CardTitle>
+            <CardTitle className="text-lg text-white">Conversion Rate</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Trial → Paid</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
+                <span className="text-gray-300">Trial → Paid</span>
+                <span className="font-semibold text-white">
                   {stats.trial_users > 0
                     ? ((stats.paid_users / (stats.paid_users + stats.trial_users)) * 100).toFixed(1)
                     : 0}
@@ -170,8 +170,8 @@ export function AdminStats() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Bot Activation</span>
-                <span className="font-semibold text-gray-900 dark:text-white">
+                <span className="text-gray-300">Bot Activation</span>
+                <span className="font-semibold text-white">
                   {stats.total_bots > 0
                     ? ((stats.active_bots / stats.total_bots) * 100).toFixed(1)
                     : 0}
