@@ -100,27 +100,33 @@ export function TrialExpiredModal() {
             </div>
           </div>
           
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold text-white">Trial Period Ended</h2>
-            <p className="text-dark-800 text-lg">
-              Your 7-day free trial has expired
+          <div className="space-y-3">
+            <h2 className="text-3xl font-bold text-white">Your Trial Has Ended</h2>
+            <p className="text-primary text-xl font-semibold">
+              We'd Love to Have You as a Customer! 💙
+            </p>
+            <p className="text-dark-800 text-base leading-relaxed">
+              Your 7-day free trial with AgentDesk has come to an end. We hope you enjoyed exploring what our AI-powered platform can do for your business!
+            </p>
+            <p className="text-white text-base leading-relaxed">
+              <strong className="text-primary">To continue using AgentDesk</strong>, please choose a plan that fits your needs and add a payment method.
             </p>
           </div>
 
-          <div className="bg-dark/50 rounded-xl p-4 space-y-2">
-            <p className="text-white font-semibold">What happens now?</p>
-            <ul className="text-sm text-dark-800 space-y-1 text-left">
-              <li>✓ Your bots and data are safe</li>
-              <li>✓ Choose a plan to continue using AgentDesk</li>
-              <li>✓ Get instant access after upgrading</li>
-            </ul>
+          <div className="bg-dark/50 rounded-xl p-4 space-y-2 border-l-4 border-green-500">
+            <p className="text-green-400 font-semibold text-sm flex items-center justify-center gap-2">
+              <span className="text-lg">✓</span> Your Data is Safe!
+            </p>
+            <p className="text-dark-800 text-sm">
+              All your bots, conversations, and settings are preserved. Get instant access after upgrading.
+            </p>
           </div>
 
           <div className="space-y-3">
             <Link href="/pricing" className="block">
               <Button size="lg" className="w-full bg-gradient-cyan hover:shadow-glow-lg transition-smooth rounded-full py-6 text-dark font-semibold text-lg">
                 <CreditCard className="mr-2 h-5 w-5" />
-                View Pricing Plans
+                View Plans & Continue Using AgentDesk
               </Button>
             </Link>
             
@@ -129,6 +135,15 @@ export function TrialExpiredModal() {
                 Contact Support
               </Button>
             </Link>
+          </div>
+
+          <div className="pt-4 border-t border-dark-100">
+            <p className="text-primary text-sm font-medium">
+              Thank you for trying AgentDesk!
+            </p>
+            <p className="text-dark-800 text-sm">
+              The AgentDesk Team 💙
+            </p>
           </div>
         </div>
       </div>

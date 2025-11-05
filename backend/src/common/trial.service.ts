@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseService } from './supabase.service';
+import { EmailService } from '../actions/integrations/email.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 interface TrialStatus {
@@ -26,11 +27,25 @@ interface UserNeedingReminder {
   whatsapp_messages_sent: number;
 }
 
+interface UserTrialExpired {
+  user_id: string;
+  email: string;
+  full_name: string;
+  trial_end_date: string;
+  subscription_tier: string;
+  bots_created: number;
+  conversations_used: number;
+  whatsapp_messages_sent: number;
+}
+
 @Injectable()
 export class TrialService {
   private readonly logger = new Logger(TrialService.name);
 
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private supabaseService: SupabaseService,
+    private emailService: EmailService,
+  ) {}
 
   /**
    * Check if user's trial has expired
@@ -77,6 +92,27 @@ export class TrialService {
   }
 
   /**
+   * Get users whose trial expired today (for sending expired email)
+   */
+  async getUsersTrialExpiredToday(): Promise<UserTrialExpired[]> {
+    try {
+      const supabase = this.supabaseService.getClient();
+
+      const { data, error } = await supabase.rpc('get_users_trial_expired_today');
+
+      if (error) {
+        this.logger.error(`Error getting users with expired trial: ${error.message}`);
+        return [];
+      }
+
+      return data as UserTrialExpired[];
+    } catch (error) {
+      this.logger.error('Error getting users with expired trial:', error);
+      return [];
+    }
+  }
+
+  /**
    * Mark reminder as sent
    */
   async markReminderSent(userId: string): Promise<void> {
@@ -92,6 +128,25 @@ export class TrialService {
       }
     } catch (error) {
       this.logger.error('Error marking reminder sent:', error);
+    }
+  }
+
+  /**
+   * Mark trial expired email as sent
+   */
+  async markTrialExpiredEmailSent(userId: string): Promise<void> {
+    try {
+      const supabase = this.supabaseService.getClient();
+
+      const { error } = await supabase.rpc('mark_trial_expired_email_sent', {
+        user_id_param: userId,
+      });
+
+      if (error) {
+        this.logger.error(`Error marking trial expired email sent: ${error.message}`);
+      }
+    } catch (error) {
+      this.logger.error('Error marking trial expired email sent:', error);
     }
   }
 
@@ -204,6 +259,61 @@ export class TrialService {
   }
 
   /**
+   * Cron job: Send trial expired emails daily at 9:30 AM
+   */
+  @Cron('30 9 * * *')
+  async sendTrialExpiredEmails() {
+    this.logger.log('📭 Running trial expired email cron job...');
+
+    try {
+      const users = await this.getUsersTrialExpiredToday();
+
+      if (users.length === 0) {
+        this.logger.log('✅ No users with expired trial today');
+        return;
+      }
+
+      this.logger.log(`📧 Found ${users.length} users with expired trial`);
+
+      for (const user of users) {
+        try {
+          const recommendation = this.getRecommendedPlan(user);
+          const emailTemplate = this.generateTrialExpiredEmail(user);
+
+          this.logger.log(
+            `📨 Sending trial expired email to ${user.email}`,
+          );
+          this.logger.log(`   Recommended plan: ${recommendation.recommended_plan}`);
+          this.logger.log(`   Subject: ${emailTemplate.subject}`);
+
+          // Send email using email service
+          const result = await this.emailService.sendEmail(
+            user.email,
+            emailTemplate.subject,
+            emailTemplate.html,
+          );
+
+          if (result.success) {
+            this.logger.log(`✅ Email sent successfully to ${user.email} (${result.messageId})`);
+            
+            // Mark as sent
+            await this.markTrialExpiredEmailSent(user.user_id);
+            this.logger.log(`✅ Marked trial expired email sent for ${user.email}`);
+          } else {
+            this.logger.error(`❌ Failed to send email to ${user.email}: ${result.error}`);
+          }
+        } catch (error) {
+          this.logger.error(`❌ Error sending trial expired email to ${user.email}:`, error);
+        }
+      }
+
+      this.logger.log('🎉 Trial expired email cron job completed');
+    } catch (error) {
+      this.logger.error('❌ Error in trial expired email cron job:', error);
+    }
+  }
+
+  /**
    * Generate trial reminder email HTML
    */
   generateReminderEmail(user: UserNeedingReminder): {
@@ -290,6 +400,116 @@ export class TrialService {
         <div style="text-align: center; color: #666; font-size: 12px; padding-top: 20px; border-top: 1px solid #333;">
             <p>💙 תודה שאתם חלק מ-AgentDesk!</p>
             <p>יש שאלות? צרו איתנו קשר: <a href="mailto:support@agentdesk.co.il" style="color: #00d9ff; text-decoration: none;">support@agentdesk.co.il</a></p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+
+    return { subject, html };
+  }
+
+  /**
+   * Generate trial expired email HTML (English)
+   */
+  generateTrialExpiredEmail(user: UserTrialExpired): {
+    subject: string;
+    html: string;
+  } {
+    const recommendation = this.getRecommendedPlan(user);
+    const planNames = {
+      starter: 'Starter',
+      growth: 'Growth',
+      plus: 'Plus',
+      premium: 'Premium',
+    };
+    const planPrices = {
+      starter: '$24.17/mo',
+      growth: '$49.17/mo',
+      plus: '$749/mo',
+      premium: 'Custom',
+    };
+
+    const subject = `Your AgentDesk Trial Has Ended - We'd Love to Have You as a Customer! 💙`;
+
+    const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0a0a0a; color: #ffffff; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h1 style="color: #00d9ff; font-size: 32px; margin: 0;">Your Trial Has Ended - We'd Love to Have You! 💙</h1>
+        </div>
+
+        <!-- Main Content -->
+        <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border-radius: 12px; padding: 30px; margin-bottom: 30px; border: 1px solid #00d9ff33;">
+            <p style="font-size: 18px; line-height: 1.6; color: #e0e0e0;">
+                Hello${user.full_name ? ' ' + user.full_name : ''}! 👋
+            </p>
+            <p style="font-size: 16px; line-height: 1.8; color: #e0e0e0;">
+                Your 7-day free trial with AgentDesk has come to an end. We hope you enjoyed exploring what our AI-powered platform can do for your business!
+            </p>
+            <p style="font-size: 16px; line-height: 1.8; color: #e0e0e0;">
+                <strong style="color: #00d9ff;">To continue using AgentDesk</strong>, please choose a plan that fits your needs and add a payment method.
+            </p>
+            
+            <!-- Usage Summary -->
+            <div style="background-color: #1a1a1a; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #00d9ff;">
+                <h3 style="color: #00d9ff; margin-top: 0;">📊 Your Usage This Month:</h3>
+                <ul style="list-style: none; padding: 0; margin: 10px 0;">
+                    <li style="padding: 8px 0; border-bottom: 1px solid #333;">🤖 Bots Created: <strong>${user.bots_created}</strong></li>
+                    <li style="padding: 8px 0; border-bottom: 1px solid #333;">💬 AI Conversations: <strong>${user.conversations_used}</strong></li>
+                    <li style="padding: 8px 0;">📱 WhatsApp Messages: <strong>${user.whatsapp_messages_sent}</strong></li>
+                </ul>
+            </div>
+
+            <!-- Recommendation -->
+            <div style="background: linear-gradient(135deg, #00d9ff22 0%, #00d9ff11 100%); border-radius: 8px; padding: 20px; margin: 20px 0; border: 1px solid #00d9ff;">
+                <h3 style="color: #00d9ff; margin-top: 0;">💡 Recommended Plan for You:</h3>
+                <p style="font-size: 24px; font-weight: bold; color: #ffffff; margin: 10px 0;">
+                    ${planNames[recommendation.recommended_plan]} Plan
+                </p>
+                <p style="font-size: 18px; color: #00d9ff; margin: 10px 0;">
+                    ${planPrices[recommendation.recommended_plan]}
+                </p>
+                <p style="font-size: 14px; color: #b0b0b0; line-height: 1.6;">
+                    ${recommendation.reason}
+                </p>
+                ${recommendation.savings ? `<p style="font-size: 14px; color: #00ff88; margin-top: 10px;">✨ ${recommendation.savings}</p>` : ''}
+            </div>
+
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="https://agentdesk-frontend-production.up.railway.app/pricing" style="display: inline-block; background: linear-gradient(135deg, #00d9ff 0%, #00a8cc 100%); color: #000000; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 18px; box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3);">
+                    🚀 View Plans & Continue Using AgentDesk
+                </a>
+            </div>
+
+            <div style="background-color: #1a1a1a; border-radius: 8px; padding: 15px; margin: 20px 0; border-left: 4px solid #00ff88;">
+                <p style="font-size: 14px; color: #00ff88; margin: 0;">
+                    ✓ <strong>Your data is safe!</strong> All your bots, conversations, and settings are preserved.
+                </p>
+            </div>
+
+            <p style="font-size: 14px; color: #888; text-align: center; margin-top: 20px;">
+                Without an active subscription, you won't be able to continue using AgentDesk.
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; color: #666; font-size: 14px; padding-top: 20px; border-top: 1px solid #333;">
+            <p style="font-size: 16px; color: #e0e0e0; margin-bottom: 10px;">
+                <strong>Thank you for trying AgentDesk!</strong>
+            </p>
+            <p style="color: #00d9ff;">The AgentDesk Team 💙</p>
+            <p style="margin-top: 20px;">
+                Questions? Contact us: <a href="mailto:support@agentdesk.co.il" style="color: #00d9ff; text-decoration: none;">support@agentdesk.co.il</a>
+            </p>
         </div>
     </div>
 </body>
