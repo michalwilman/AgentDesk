@@ -34,14 +34,25 @@ export async function checkAdminAccess(): Promise<AdminUser> {
     .eq('id', user.id)
     .single()
 
+  console.log('🔍 Admin Check Debug:', {
+    userId: user.id,
+    userData,
+    error: error?.message,
+    hasRole: userData?.role,
+  })
+
   if (error || !userData) {
+    console.error('❌ Admin check failed:', error?.message)
     redirect('/dashboard')
   }
 
   // Check if user is admin or super_admin
   if (userData.role !== 'admin' && userData.role !== 'super_admin') {
+    console.log('❌ User is not admin:', userData.role)
     redirect('/dashboard')
   }
+
+  console.log('✅ Admin access granted:', userData.role)
 
   return userData as AdminUser
 }
