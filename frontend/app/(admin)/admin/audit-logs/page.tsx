@@ -164,61 +164,61 @@ export default function AuditLogsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Audit Logs</h1>
-        <p className="text-gray-500 mt-2">Track all administrative actions and changes</p>
+        <h1 className="text-3xl font-bold text-gray-900">Audit Logs</h1>
+        <p className="text-gray-600 mt-2">Track all administrative actions and changes</p>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
+        <Card className="border-gray-700 bg-gray-900">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <Shield className="h-4 w-4" />
+            <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
+              <Shield className="h-4 w-4 text-blue-500" />
               Total Actions
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{total}</div>
+            <div className="text-3xl font-bold text-white">{total}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-gray-700 bg-gray-900">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <UserCog className="h-4 w-4 text-yellow-600" />
+            <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
+              <UserCog className="h-4 w-4 text-amber-500" />
               Role Changes
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-yellow-600">
+            <div className="text-3xl font-bold text-amber-500">
               {logs.filter(l => l.action === 'ROLE_CHANGE').length}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-gray-700 bg-gray-900">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-emerald-500" />
               Activations
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-emerald-500">
               {logs.filter(l => l.action === 'USER_ACTIVATED').length}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-gray-700 bg-gray-900">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-              <UserX className="h-4 w-4 text-red-600" />
+            <CardTitle className="text-sm font-medium text-gray-300 flex items-center gap-2">
+              <UserX className="h-4 w-4 text-rose-500" />
               Deactivations
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-600">
+            <div className="text-3xl font-bold text-rose-500">
               {logs.filter(l => l.action === 'USER_DEACTIVATED').length}
             </div>
           </CardContent>
@@ -226,9 +226,9 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="border-gray-700 bg-gray-900">
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <CardTitle className="text-white">Filters</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2 flex-wrap">
@@ -270,7 +270,7 @@ export default function AuditLogsPage() {
       </Card>
 
       {/* Logs Table */}
-      <Card>
+      <Card className="border-gray-700 bg-gray-900">
         <CardContent className="pt-6">
           <DataTable
             columns={columns}

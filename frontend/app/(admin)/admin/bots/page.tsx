@@ -121,39 +121,39 @@ export default function BotsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Bot Management</h1>
-        <p className="text-gray-500 mt-2">View and monitor all bots in the system</p>
+        <h1 className="text-3xl font-bold text-gray-900">Bot Management</h1>
+        <p className="text-gray-600 mt-2">View and monitor all bots in the system</p>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
+        <Card className="border-gray-700 bg-gray-900">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-gray-300">
               Total Bots
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{bots.filter(b => b.is_active).length}</div>
+            <div className="text-3xl font-bold text-white">{bots.filter(b => b.is_active).length}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-gray-700 bg-gray-900">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-gray-300">
               Active Bots
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-emerald-500">
               {bots.filter(b => b.is_active).length}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-gray-700 bg-gray-900">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-gray-300">
               Inactive Bots
             </CardTitle>
           </CardHeader>
@@ -166,9 +166,9 @@ export default function BotsPage() {
       </div>
 
       {/* Filters and Search */}
-      <Card>
+      <Card className="border-gray-700 bg-gray-900">
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <CardTitle className="text-white">Filters</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Search */}
@@ -231,7 +231,7 @@ export default function BotsPage() {
       </Card>
 
       {/* Bots Table */}
-      <Card>
+      <Card className="border-gray-700 bg-gray-900">
         <CardContent className="pt-6">
           <DataTable
             columns={columns}

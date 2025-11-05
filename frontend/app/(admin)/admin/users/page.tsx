@@ -162,14 +162,14 @@ export default function UsersPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">User Management</h1>
-        <p className="text-gray-500 mt-2">View and manage all system users</p>
+        <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+        <p className="text-gray-600 mt-2">View and manage all system users</p>
       </div>
 
       {/* Filters and Search */}
-      <Card>
+      <Card className="border-gray-700 bg-gray-900">
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <CardTitle className="text-white">Filters</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Search */}
@@ -238,7 +238,7 @@ export default function UsersPage() {
       </Card>
 
       {/* Users Table */}
-      <Card>
+      <Card className="border-gray-700 bg-gray-900">
         <CardContent className="pt-6">
           <DataTable
             columns={columns}
