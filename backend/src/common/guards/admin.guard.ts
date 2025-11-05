@@ -33,11 +33,21 @@ export class AdminGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     
-    // Get the user from the request (should be set by auth middleware)
-    const user = request.user;
-    
-    if (!user || !user.id) {
+    // Get the authorization header
+    const authHeader = request.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new UnauthorizedException('Authentication required');
+    }
+
+    // Extract the token
+    const token = authHeader.substring(7);
+
+    // Verify the token with Supabase
+    const supabase = this.supabaseService.getClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      throw new UnauthorizedException('Invalid or expired token');
     }
 
     // Get the required roles from the @Roles() decorator
@@ -50,7 +60,6 @@ export class AdminGuard implements CanActivate {
     const allowedRoles = requiredRoles || [UserRole.ADMIN, UserRole.SUPER_ADMIN];
 
     // Fetch the user's role from the database
-    const supabase = this.supabaseService.getClient();
     const { data: userData, error } = await supabase
       .from('users')
       .select('role')
@@ -70,8 +79,8 @@ export class AdminGuard implements CanActivate {
       );
     }
 
-    // Add role to request for later use
-    request.user.role = userRole;
+    // Add user and role to request for later use
+    request.user = { ...user, role: userRole };
 
     return true;
   }
