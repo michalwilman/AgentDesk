@@ -147,7 +147,7 @@ export default function UserDetailsPage() {
             Change Role
           </Button>
           <Button
-            variant={user.is_active ? 'destructive' : 'primary'}
+            variant={user.is_active ? 'danger' : 'primary'}
             onClick={handleToggleStatus}
           >
             <Power className="h-4 w-4 mr-2" />
