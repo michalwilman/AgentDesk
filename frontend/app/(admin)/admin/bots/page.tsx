@@ -134,7 +134,7 @@ export default function BotsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{total}</div>
+            <div className="text-3xl font-bold">{bots.filter(b => b.is_active).length}</div>
           </CardContent>
         </Card>
 
