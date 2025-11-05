@@ -119,6 +119,41 @@ export class UserDeletionService {
   }
 
   /**
+   * Sync user status with subscriptions
+   * Runs daily at 12:30 AM
+   * 
+   * Sets users to inactive if their subscription is expired
+   */
+  @Cron('30 0 * * *') // 12:30 AM
+  async syncUserStatusWithSubscriptions() {
+    this.logger.log('Running: Sync user status with subscriptions');
+
+    try {
+      const supabase = this.supabaseService.getClient();
+
+      const { data, error } = await supabase.rpc('sync_user_status_with_subscription');
+
+      if (error) {
+        this.logger.error('Error syncing user status:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        this.logger.log(`✅ Synced ${data.length} users with subscription status`);
+        data.forEach((user: any) => {
+          this.logger.log(
+            `  - ${user.user_email} (${user.user_role}): ${user.old_is_active ? 'Active' : 'Inactive'} → ${user.new_is_active ? 'Active' : 'Inactive'} (${user.reason})`,
+          );
+        });
+      } else {
+        this.logger.log('All users are already in sync with subscriptions');
+      }
+    } catch (error) {
+      this.logger.error('Error in syncUserStatusWithSubscriptions:', error);
+    }
+  }
+
+  /**
    * Sync bot status with user subscriptions
    * Runs daily at 1:00 AM
    * 
