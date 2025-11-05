@@ -119,6 +119,41 @@ export class UserDeletionService {
   }
 
   /**
+   * Sync bot status with user subscriptions
+   * Runs daily at 1:00 AM
+   * 
+   * Sets bots to inactive if their owner's subscription is expired
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async syncBotStatusWithSubscriptions() {
+    this.logger.log('Running: Sync bot status with subscriptions');
+
+    try {
+      const supabase = this.supabaseService.getClient();
+
+      const { data, error } = await supabase.rpc('sync_bot_status_with_user_subscription');
+
+      if (error) {
+        this.logger.error('Error syncing bot status:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        this.logger.log(`✅ Synced ${data.length} bots with subscription status`);
+        data.forEach((bot: any) => {
+          this.logger.log(
+            `  - ${bot.bot_name} (${bot.user_email}): ${bot.old_status ? 'Active' : 'Inactive'} → ${bot.new_status ? 'Active' : 'Inactive'} (${bot.reason})`,
+          );
+        });
+      } else {
+        this.logger.log('All bots are already in sync with user subscriptions');
+      }
+    } catch (error) {
+      this.logger.error('Error in syncBotStatusWithSubscriptions:', error);
+    }
+  }
+
+  /**
    * Manually mark a user for deletion
    * Can be called from admin panel
    */
