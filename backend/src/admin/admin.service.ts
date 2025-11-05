@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { SupabaseService } from '../common/supabase/supabase.service';
+import { SupabaseService } from '../common/supabase.service';
 import { UserRole } from '../common/guards/admin.guard';
 
 export interface AdminStats {

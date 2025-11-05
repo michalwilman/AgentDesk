@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { SupabaseService } from '../supabase/supabase.service';
+import { SupabaseService } from '../supabase.service';
 
 export enum UserRole {
   USER = 'user',

@@ -13,14 +13,14 @@ import {
 import { AdminService, PromoteUserDto } from './admin.service';
 import { AdminGuard, UserRole } from '../common/guards/admin.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 /**
  * Admin Controller - All routes are protected by AdminGuard
  * Only users with 'admin' or 'super_admin' roles can access these endpoints
  */
 @Controller('admin')
-@UseGuards(AuthGuard, AdminGuard)
+@UseGuards(AuthGuard('jwt'), AdminGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
