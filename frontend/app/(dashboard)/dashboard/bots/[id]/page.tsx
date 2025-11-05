@@ -160,38 +160,38 @@ export default async function BotDetailPage({ params }: { params: { id: string }
             {bot.wordpress_connected && (
               <div className="border-t border-dark-100 pt-4 mt-4">
                 <label className="text-sm font-medium text-[#666666] flex items-center mb-3">
-                  <Globe className="h-4 w-4 mr-2" />
+                  <Globe className="h-5 w-5 mr-2 text-blue-500" />
                   WordPress Integration
                 </label>
                 <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                   <div className="flex items-start gap-3 mb-3">
-                    <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-primary font-medium">Connected</p>
-                      <p className="text-sm text-dark-800 mt-1">
+                      <p className="text-primary font-bold text-base">Connected</p>
+                      <p className="text-sm text-dark-800 mt-1 font-medium">
                         Your WordPress plugin is actively connected
                       </p>
                     </div>
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-[#666666]">Site:</span>
+                      <span className="text-[#666666] font-semibold">Site:</span>
                       <a 
                         href={bot.wordpress_site_url} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline"
+                        className="text-primary hover:underline font-medium"
                       >
                         {bot.wordpress_site_url}
                       </a>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#666666]">Plugin version:</span>
-                      <span className="text-white">{bot.wordpress_plugin_version}</span>
+                      <span className="text-[#666666] font-semibold">Plugin version:</span>
+                      <span className="text-white font-medium">{bot.wordpress_plugin_version}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-[#666666]">Last sync:</span>
-                      <span className="text-white flex items-center gap-1">
+                      <span className="text-[#666666] font-semibold">Last sync:</span>
+                      <span className="text-white flex items-center gap-1 font-medium">
                         <Clock className="h-3 w-3" />
                         {formatTimeAgo(bot.wordpress_last_activity)}
                       </span>

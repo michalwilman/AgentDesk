@@ -31,22 +31,22 @@ export function GoogleCalendarStatus({
       <>
         <div className="border-t border-dark-100 pt-4 mt-4">
           <label className="text-sm font-medium text-[#666666] flex items-center mb-3">
-            <Calendar className="h-4 w-4 mr-2" />
+            <Calendar className="h-5 w-5 mr-2 text-red-500" />
             Google Calendar Integration
           </label>
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
             <div className="flex items-start gap-3 mb-3">
-              <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+              <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-primary font-medium">Connected</p>
-                <p className="text-sm text-dark-800 mt-1">
+                <p className="text-primary font-bold text-base">Connected</p>
+                <p className="text-sm text-dark-800 mt-1 font-medium">
                   Your bot can automatically schedule appointments via Google Calendar
                 </p>
               </div>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-[#666666]">Appointment Scheduling:</span>
+                <span className="text-[#666666] font-semibold">Appointment Scheduling:</span>
                 <span
                   className={`px-2 py-0.5 rounded text-xs font-medium ${
                     appointmentsEnabled

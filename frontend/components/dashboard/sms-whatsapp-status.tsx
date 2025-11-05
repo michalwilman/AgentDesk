@@ -75,23 +75,23 @@ export function SmsWhatsAppStatus({ botId, config: initialConfig }: SmsWhatsAppS
   return (
     <div className="border-t border-dark-100 pt-4 mt-4">
       <label className="text-sm font-medium text-[#666666] flex items-center mb-3">
-        <MessageCircle className="h-4 w-4 mr-2" />
+        <MessageCircle className="h-5 w-5 mr-2 text-green-500" />
         SMS & WhatsApp Notifications
       </label>
       <div className={`rounded-lg p-4 ${isConfigured ? 'bg-primary/5 border border-primary/20' : 'bg-dark-50 border border-dark-100'}`}>
         <div className="flex items-start gap-3 mb-3">
           {isConfigured ? (
             <>
-              <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+              <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-primary font-medium">Connected</p>
-                <p className="text-sm text-dark-800 mt-1">
+                <p className="text-primary font-bold text-base">Connected</p>
+                <p className="text-sm text-dark-800 mt-1 font-medium">
                   {config?.sms_enabled && config?.whatsapp_enabled && 'SMS & WhatsApp notifications enabled'}
                   {config?.sms_enabled && !config?.whatsapp_enabled && 'SMS notifications enabled'}
                   {!config?.sms_enabled && config?.whatsapp_enabled && 'WhatsApp notifications enabled'}
                 </p>
                 {config?.reminder_enabled && (
-                  <p className="text-xs text-primary mt-1">
+                  <p className="text-xs text-primary mt-1 font-medium">
                     📅 24h reminders active
                   </p>
                 )}
