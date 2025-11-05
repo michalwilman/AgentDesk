@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,11 +14,15 @@ import { LanguageToggle } from '@/components/ui/language-toggle'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { t, dir } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  
+  // Get redirect URL from query params (default to /dashboard)
+  const redirectUrl = searchParams.get('redirect') || '/dashboard'
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,7 +38,8 @@ export default function LoginPage() {
 
       if (error) throw error
 
-      router.push('/dashboard')
+      // Redirect to the intended page (or dashboard if no redirect specified)
+      router.push(redirectUrl)
       router.refresh()
     } catch (error: any) {
       setError(error.message || 'Failed to login')
@@ -47,10 +52,16 @@ export default function LoginPage() {
     try {
       setError('')
       const supabase = createClient()
+      
+      // Include redirect URL in OAuth callback
+      const callbackUrl = redirectUrl !== '/dashboard' 
+        ? `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectUrl)}`
+        : `${window.location.origin}/auth/callback`
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: callbackUrl,
         },
       })
       

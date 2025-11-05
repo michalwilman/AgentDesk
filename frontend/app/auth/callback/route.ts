@@ -31,7 +31,8 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
   const token_hash = searchParams.get('token_hash')
   const type = searchParams.get('type')
-  const next = searchParams.get('next') ?? '/dashboard'
+  // Support both 'next' and 'redirect' parameters for backward compatibility
+  const next = searchParams.get('redirect') ?? searchParams.get('next') ?? '/dashboard'
 
   const baseUrl = getBaseUrl(request)
   const supabase = createClient()
