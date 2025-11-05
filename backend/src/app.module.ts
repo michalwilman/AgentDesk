@@ -13,6 +13,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { WidgetModule } from './widget/widget.module';
 import { WordpressModule } from './wordpress/wordpress.module';
 import { ActionsModule } from './actions/actions.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { ActionsModule } from './actions/actions.module';
     WidgetModule,
     WordpressModule,
     ActionsModule,
+    AdminModule,  // Admin Dashboard - Protected routes
   ],
   controllers: [],
 })
