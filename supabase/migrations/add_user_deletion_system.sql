@@ -9,11 +9,11 @@
 -- ============================================================================
 
 -- 1. Fix Super Admin subscription
--- Update admin@agentdesk.system to have unlimited subscription without trial
+-- Update admin@agentdesk.system to have premium subscription without trial
 UPDATE users
 SET 
   subscription_status = 'active',
-  subscription_tier = 'unlimited',
+  subscription_tier = 'premium',
   trial_start_date = NULL,
   trial_end_date = NULL
 WHERE email = 'admin@agentdesk.system' AND role = 'super_admin';
