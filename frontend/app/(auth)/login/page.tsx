@@ -159,7 +159,7 @@ export default function LoginPage() {
             <div className="mt-4 text-center text-sm">
               <span className="text-dark-800">{t('auth.dontHaveAccount')} </span>
               <Link href="/register" className="text-primary hover:text-primary/80 transition-smooth font-medium">
-                {t('auth.signUp')}
+                {t('auth.signUpLink')}
               </Link>
             </div>
           </CardContent>
