@@ -45,20 +45,20 @@ export default function SettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">System Settings</h1>
-        <p className="text-gray-500 mt-2">Manage system configuration and administrators</p>
+        <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
+        <p className="text-gray-600 mt-2">Manage system configuration and administrators</p>
       </div>
 
       {/* Admin Users Section */}
-      <Card>
+      <Card className="border-gray-700 bg-gray-900">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-purple-600" />
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Shield className="h-5 w-5 text-purple-500" />
                 Administrator Accounts
               </CardTitle>
-              <CardDescription className="mt-2">
+              <CardDescription className="mt-2 text-gray-300">
                 Users with elevated permissions to manage the system
               </CardDescription>
             </div>
@@ -77,23 +77,23 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Loading...</div>
+            <div className="text-center py-8 text-gray-300">Loading...</div>
           ) : adminUsers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">No administrators found</div>
+            <div className="text-center py-8 text-gray-300">No administrators found</div>
           ) : (
             <div className="space-y-3">
               {adminUsers.map((admin) => (
                 <div
                   key={admin.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                  className="flex items-center justify-between p-4 border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="p-2 rounded-full bg-purple-50">
-                      <UserCog className="h-5 w-5 text-purple-600" />
+                    <div className="p-2 rounded-full bg-purple-500/10">
+                      <UserCog className="h-5 w-5 text-purple-500" />
                     </div>
                     <div>
-                      <div className="font-medium">{admin.full_name || 'N/A'}</div>
-                      <div className="text-sm text-gray-500">{admin.email}</div>
+                      <div className="font-medium text-white">{admin.full_name || 'N/A'}</div>
+                      <div className="text-sm text-gray-300">{admin.email}</div>
                       <div className="text-xs text-gray-400 mt-1">
                         Added {new Date(admin.created_at).toLocaleDateString()}
                       </div>
@@ -108,19 +108,19 @@ export default function SettingsPage() {
       </Card>
 
       {/* System Settings (Placeholder) */}
-      <Card>
+      <Card className="border-gray-700 bg-gray-900">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5 text-gray-600" />
+          <CardTitle className="flex items-center gap-2 text-white">
+            <Settings className="h-5 w-5 text-gray-400" />
             System Configuration
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-300">
             General system settings and configuration options
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12 text-gray-500">
-            <Settings className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <div className="text-center py-12 text-gray-300">
+            <Settings className="h-12 w-12 mx-auto mb-4 text-gray-500" />
             <p>System configuration options will be available here</p>
             <p className="text-sm mt-2">Coming soon...</p>
           </div>
@@ -128,40 +128,40 @@ export default function SettingsPage() {
       </Card>
 
       {/* Security Settings (Placeholder) */}
-      <Card>
+      <Card className="border-gray-700 bg-gray-900">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-gray-600" />
+          <CardTitle className="flex items-center gap-2 text-white">
+            <Shield className="h-5 w-5 text-amber-500" />
             Security Settings
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-300">
             Security and access control configuration
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center justify-between p-4 border border-gray-700 rounded-lg">
               <div>
-                <div className="font-medium">Two-Factor Authentication</div>
-                <div className="text-sm text-gray-500">Require 2FA for admin accounts</div>
+                <div className="font-medium text-white">Two-Factor Authentication</div>
+                <div className="text-sm text-gray-300">Require 2FA for admin accounts</div>
               </div>
-              <div className="text-sm text-gray-500">Coming soon</div>
+              <div className="text-sm text-gray-400">Coming soon</div>
             </div>
 
-            <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center justify-between p-4 border border-gray-700 rounded-lg">
               <div>
-                <div className="font-medium">Session Timeout</div>
-                <div className="text-sm text-gray-500">Automatic logout after inactivity</div>
+                <div className="font-medium text-white">Session Timeout</div>
+                <div className="text-sm text-gray-300">Automatic logout after inactivity</div>
               </div>
-              <div className="text-sm text-gray-500">Coming soon</div>
+              <div className="text-sm text-gray-400">Coming soon</div>
             </div>
 
-            <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center justify-between p-4 border border-gray-700 rounded-lg">
               <div>
-                <div className="font-medium">IP Whitelist</div>
-                <div className="text-sm text-gray-500">Restrict admin access by IP address</div>
+                <div className="font-medium text-white">IP Whitelist</div>
+                <div className="text-sm text-gray-300">Restrict admin access by IP address</div>
               </div>
-              <div className="text-sm text-gray-500">Coming soon</div>
+              <div className="text-sm text-gray-400">Coming soon</div>
             </div>
           </div>
         </CardContent>
