@@ -182,7 +182,7 @@ export class TrialService {
   /**
    * Get recommended plan based on usage
    */
-  getRecommendedPlan(user: UserNeedingReminder): {
+  getRecommendedPlan(user: UserNeedingReminder | UserTrialExpired): {
     recommended_plan: string;
     reason: string;
     savings?: string;

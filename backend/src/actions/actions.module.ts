@@ -36,7 +36,7 @@ import { AuthService } from '../auth/auth.service';
     PlanGuardService,
     AuthService,
   ],
-  exports: [ActionsService], // Export for use in ChatService
+  exports: [ActionsService, EmailService], // Export for use in ChatService and TrialService
 })
 export class ActionsModule {}
 
