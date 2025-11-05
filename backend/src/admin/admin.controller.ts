@@ -118,5 +118,25 @@ export class AdminController {
   ) {
     return this.adminService.getAuditLogs(limit, offset);
   }
+
+  /**
+   * GET /admin/bots
+   * Get all bots in the system with owner information
+   * Accessible by: admin, super_admin
+   * 
+   * Query params:
+   * - limit: number (default: 50)
+   * - offset: number (default: 0)
+   * - search: string (optional)
+   */
+  @Get('bots')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async getAllBots(
+    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
+    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getAllBots(limit, offset, search);
+  }
 }
 

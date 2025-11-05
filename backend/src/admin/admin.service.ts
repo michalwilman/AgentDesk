@@ -275,6 +275,60 @@ export class AdminService {
   }
 
   /**
+   * Get all bots in the system with owner information
+   * Only accessible by admins and super_admins
+   */
+  async getAllBots(
+    limit: number = 50,
+    offset: number = 0,
+    searchTerm?: string,
+  ): Promise<{ bots: any[]; total: number }> {
+    const supabase = this.supabaseService.getClient();
+
+    let query = supabase
+      .from('bots')
+      .select('*, user:users(email, full_name)', { count: 'exact' });
+
+    // Add search filter if provided
+    if (searchTerm) {
+      query = query.or(
+        `name.ilike.%${searchTerm}%`,
+      );
+    }
+
+    // Add pagination
+    query = query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
+
+    if (error) {
+      throw new BadRequestException('Failed to fetch bots');
+    }
+
+    // Get chat counts for each bot
+    const botsWithCounts = await Promise.all(
+      (data || []).map(async (bot) => {
+        const { count: chatCount } = await supabase
+          .from('chats')
+          .select('*', { count: 'exact', head: true })
+          .eq('bot_id', bot.id);
+
+        return {
+          ...bot,
+          chat_count: chatCount || 0,
+        };
+      })
+    );
+
+    return {
+      bots: botsWithCounts,
+      total: count || 0,
+    };
+  }
+
+  /**
    * Log an admin action
    * Internal method
    */

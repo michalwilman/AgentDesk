@@ -3,6 +3,8 @@
  * Wrapper for admin-related API calls to the backend
  */
 
+import { createClient } from '@/lib/supabase/client'
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export interface AdminStats {
@@ -41,11 +43,18 @@ export interface UserSummary {
  * Get auth headers with Supabase token
  */
 async function getAuthHeaders(): Promise<HeadersInit> {
-  // In Next.js app router, we need to get the session from cookies
-  // This is a client-side function, so we'll pass the token from the component
-  return {
+  const supabase = createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  const headers: HeadersInit = {
     'Content-Type': 'application/json',
   }
+  
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`
+  }
+  
+  return headers
 }
 
 /**
@@ -142,6 +151,23 @@ export async function getAuditLogs(params: {
   if (params.offset) searchParams.set('offset', params.offset.toString())
 
   const response = await fetchWithAuth(`/admin/audit-logs?${searchParams.toString()}`)
+  return response.json()
+}
+
+/**
+ * Get all bots with pagination
+ */
+export async function getAllBots(params: {
+  limit?: number
+  offset?: number
+  search?: string
+}): Promise<{ bots: any[]; total: number }> {
+  const searchParams = new URLSearchParams()
+  if (params.limit) searchParams.set('limit', params.limit.toString())
+  if (params.offset) searchParams.set('offset', params.offset.toString())
+  if (params.search) searchParams.set('search', params.search)
+
+  const response = await fetchWithAuth(`/admin/bots?${searchParams.toString()}`)
   return response.json()
 }
 
