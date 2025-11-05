@@ -444,7 +444,10 @@ export class ActionsService {
           }
           this.logger.log('✅ Phone number validation passed');
 
-          // Send WhatsApp confirmation if enabled
+          let whatsappSuccess = false;
+          let smsAttempted = false;
+
+          // Send WhatsApp confirmation if enabled  
           if (config.whatsapp_enabled && config.twilio_account_sid && config.twilio_whatsapp_number) {
             this.logger.log('📲 Attempting to send WhatsApp message...');
             this.logger.log(`📋 Twilio Config:
@@ -474,10 +477,24 @@ export class ActionsService {
             this.logger.log(`📤 WhatsApp send result: ${JSON.stringify(result)}`);
             
             if (result.success) {
+              whatsappSuccess = true;
               this.logger.log(`✅ WhatsApp confirmation sent successfully for appointment ${appointment.id}`);
             } else {
               this.logger.error(`❌ WhatsApp send failed: ${result.error}`);
-              throw new Error(result.error || 'WhatsApp send failed');
+              
+              // Check if it's the 24-hour window error (Error 63016)
+              const isWindowError = result.error?.includes('63016') || 
+                                   result.error?.includes('outside the allowed window') ||
+                                   result.error?.includes('freeform message');
+              
+              if (isWindowError) {
+                this.logger.warn(`⚠️ WhatsApp failed due to 24-hour window restriction (Error 63016)`);
+                this.logger.warn(`🔄 Will attempt to send SMS as fallback...`);
+                // Don't throw error - we'll try SMS instead
+              } else {
+                // Other WhatsApp errors - still throw
+                throw new Error(result.error || 'WhatsApp send failed');
+              }
             }
           } else {
             this.logger.log('⚠️ WhatsApp not sent - missing configuration:');
@@ -486,9 +503,22 @@ export class ActionsService {
             this.logger.log(`  - twilio_whatsapp_number: ${config.twilio_whatsapp_number || 'Missing'}`);
           }
 
-          // Send SMS confirmation if enabled
-          if (config.sms_enabled && config.twilio_account_sid && config.twilio_phone_number) {
-            this.logger.log('📲 Attempting to send SMS message...');
+          // Send SMS confirmation if:
+          // 1. SMS is explicitly enabled, OR
+          // 2. WhatsApp failed due to 24-hour window (fallback)
+          const shouldSendSMS = (config.sms_enabled || !whatsappSuccess) && 
+                               config.twilio_account_sid && 
+                               config.twilio_phone_number;
+
+          if (shouldSendSMS) {
+            smsAttempted = true;
+            
+            if (!whatsappSuccess) {
+              this.logger.log('📲 Sending SMS as fallback for failed WhatsApp...');
+            } else {
+              this.logger.log('📲 Attempting to send SMS message...');
+            }
+            
             this.logger.log(`📋 SMS Config:
               - Account SID: ${config.twilio_account_sid?.substring(0, 10)}...
               - SMS Number: ${config.twilio_phone_number}
@@ -516,32 +546,43 @@ export class ActionsService {
 
             if (result.success) {
               this.logger.log(`✅ SMS confirmation sent successfully for appointment ${appointment.id}`);
+              // Mark as success - either WhatsApp or SMS worked
+              smsSuccess = true;
             } else {
               this.logger.error(`❌ SMS send failed: ${result.error}`);
+              // If SMS also failed, throw error
               throw new Error(result.error || 'SMS send failed');
             }
           } else {
-            this.logger.log('⚠️ SMS not sent - missing configuration:');
-            this.logger.log(`  - sms_enabled: ${config.sms_enabled}`);
-            this.logger.log(`  - twilio_account_sid: ${config.twilio_account_sid ? 'Set' : 'Missing'}`);
-            this.logger.log(`  - twilio_phone_number: ${config.twilio_phone_number || 'Missing'}`);
+            // If WhatsApp succeeded, mark as success even without SMS
+            if (whatsappSuccess) {
+              smsSuccess = true;
+              this.logger.log('✅ WhatsApp sent successfully, SMS not needed');
+            } else {
+              this.logger.log('⚠️ SMS not sent - missing configuration:');
+              this.logger.log(`  - sms_enabled: ${config.sms_enabled}`);
+              this.logger.log(`  - whatsapp_success: ${whatsappSuccess}`);
+              this.logger.log(`  - twilio_account_sid: ${config.twilio_account_sid ? 'Set' : 'Missing'}`);
+              this.logger.log(`  - twilio_phone_number: ${config.twilio_phone_number || 'Missing'}`);
+            }
           }
 
-          // Track SMS/WhatsApp success
-          smsSuccess = true;
-          this.logger.log('✅ Tracking SMS/WhatsApp success in database');
-          await supabase
-            .from('bot_actions_config')
-            .update({
-              sms_last_success_time: new Date().toISOString(),
-              sms_last_error: null,
-            })
-            .eq('bot_id', botId);
-          
-          // Increment WhatsApp usage counter
-          await this.planGuardService.incrementWhatsAppUsage(bot.user_id, 1);
-          
-          this.logger.log('📱 === WhatsApp/SMS Sending Process Completed Successfully ===');
+          // Track SMS/WhatsApp success only if one of them worked
+          if (smsSuccess) {
+            this.logger.log('✅ Tracking SMS/WhatsApp success in database');
+            await supabase
+              .from('bot_actions_config')
+              .update({
+                sms_last_success_time: new Date().toISOString(),
+                sms_last_error: null,
+              })
+              .eq('bot_id', botId);
+            
+            // Increment WhatsApp usage counter
+            await this.planGuardService.incrementWhatsAppUsage(bot.user_id, 1);
+            
+            this.logger.log('📱 === WhatsApp/SMS Sending Process Completed Successfully ===');
+          }
         } catch (smsError) {
           // Track SMS/WhatsApp error
           const errorMessage = smsError instanceof Error ? smsError.message : 'Failed to send SMS/WhatsApp';

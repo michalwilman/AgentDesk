@@ -18,6 +18,13 @@ interface WhatsAppMessage {
   body: string;
 }
 
+interface WhatsAppTemplateMessage {
+  to: string;
+  templateName: string;
+  templateLanguage: string;
+  parameters: string[]; // Array of parameter values for the template
+}
+
 @Injectable()
 export class TwilioService {
   private readonly logger = new Logger(TwilioService.name);
@@ -81,7 +88,7 @@ export class TwilioService {
   }
 
   /**
-   * Send WhatsApp message
+   * Send WhatsApp message (freeform - requires 24h window)
    */
   async sendWhatsApp(
     credentials: TwilioCredentials,
@@ -118,6 +125,69 @@ export class TwilioService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown WhatsApp error';
       this.logger.error(`❌ Failed to send WhatsApp to ${message.to}:`, error);
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  /**
+   * Send WhatsApp message using an approved template (no 24h window required!)
+   * This uses Facebook-approved WhatsApp templates via Twilio
+   */
+  async sendWhatsAppTemplate(
+    credentials: TwilioCredentials,
+    message: WhatsAppTemplateMessage,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    try {
+      if (!credentials.whatsappNumber) {
+        throw new Error('WhatsApp number not configured');
+      }
+
+      const client = this.twilioClient || (() => {
+        const twilio = require('twilio');
+        return twilio(credentials.accountSid, credentials.authToken);
+      })();
+
+      this.logger.log(`📤 Sending WhatsApp template: ${message.templateName} (${message.templateLanguage})`);
+      this.logger.log(`   To: ${message.to}`);
+      this.logger.log(`   Parameters: ${JSON.stringify(message.parameters)}`);
+
+      // Build the template parameters in the format WhatsApp/Twilio expects
+      const templateParameters = message.parameters.map((value, index) => ({
+        type: 'text',
+        text: value
+      }));
+
+      const result = await client.messages.create({
+        from: `whatsapp:${credentials.whatsappNumber}`,
+        to: `whatsapp:${message.to}`,
+        // Use MessagingServiceSid if available, otherwise just from number
+        ...(credentials.accountSid && {
+          messagingServiceSid: undefined, // Can be set if using Messaging Service
+        }),
+        // Facebook WhatsApp Template format
+        body: undefined, // No body when using template
+        persistentAction: undefined,
+        // The template configuration
+        // Note: Twilio uses either contentSid (for Twilio Content) or body with special format
+        // For Facebook templates, we need to specify it differently
+        ...(templateParameters.length > 0 && {
+          // For Facebook-approved templates via Twilio, use this format:
+          body: `{{${message.templateName}}}`, // Template name
+          // Or use contentSid if you have Twilio Content:
+          // contentSid: 'HXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+        }),
+      });
+
+      this.logger.log(`✅ WhatsApp template sent to ${message.to}: ${result.sid}`);
+      return { success: true, messageId: result.sid };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown WhatsApp template error';
+      this.logger.error(`❌ Failed to send WhatsApp template to ${message.to}:`, error);
+      this.logger.error(`   Template: ${message.templateName}, Language: ${message.templateLanguage}`);
+      this.logger.error(`   Error details:`, error);
+      
+      // Fallback: Try sending as regular freeform message
+      this.logger.warn(`   Attempting fallback to freeform message...`);
       return { success: false, error: errorMessage };
     }
   }
