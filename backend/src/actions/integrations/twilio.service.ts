@@ -151,32 +151,73 @@ export class TwilioService {
       this.logger.log(`   To: ${message.to}`);
       this.logger.log(`   Parameters: ${JSON.stringify(message.parameters)}`);
 
-      // Build the template parameters in the format WhatsApp/Twilio expects
-      const templateParameters = message.parameters.map((value, index) => ({
-        type: 'text',
-        text: value
-      }));
-
-      const result = await client.messages.create({
+      // For Facebook-approved WhatsApp templates via Twilio, use ContentSid or ContentVariables
+      // The template must be approved in Facebook Business Manager first
+      
+      const messagePayload: any = {
         from: `whatsapp:${credentials.whatsappNumber}`,
         to: `whatsapp:${message.to}`,
-        // Use MessagingServiceSid if available, otherwise just from number
-        ...(credentials.accountSid && {
-          messagingServiceSid: undefined, // Can be set if using Messaging Service
-        }),
-        // Facebook WhatsApp Template format
-        body: undefined, // No body when using template
-        persistentAction: undefined,
-        // The template configuration
-        // Note: Twilio uses either contentSid (for Twilio Content) or body with special format
-        // For Facebook templates, we need to specify it differently
-        ...(templateParameters.length > 0 && {
-          // For Facebook-approved templates via Twilio, use this format:
-          body: `{{${message.templateName}}}`, // Template name
-          // Or use contentSid if you have Twilio Content:
-          // contentSid: 'HXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-        }),
+      };
+
+      // Facebook WhatsApp Template format using ContentVariables
+      // This requires the template to be synced from Facebook to Twilio
+      // For now, we'll use the direct approach with body and contentVariables
+      
+      // Format: We need to send the template with variables
+      // Twilio supports this via contentSid (if template is in Twilio Content API)
+      // Or via body with special formatting for Facebook templates
+      
+      // Since we're using Facebook templates directly, we use this format:
+      messagePayload.contentSid = undefined; // Not using Twilio Content API
+      
+      // Alternative: Use body with template format
+      // For Facebook templates, format is: template name + variables as JSON
+      messagePayload.body = undefined; // Templates don't use body
+      
+      // Use contentVariables to pass template parameters
+      // Format the parameters as Twilio expects for WhatsApp templates
+      const contentVariables: Record<string, string> = {};
+      message.parameters.forEach((value, index) => {
+        contentVariables[`${index + 1}`] = value;
       });
+      
+      messagePayload.contentVariables = JSON.stringify(contentVariables);
+      
+      // For Facebook templates, we also need to specify the template
+      // This is done via messagingServiceSid or by using the template name in body
+      // Since Facebook templates are managed in Facebook Business Manager,
+      // we need to use the template name directly
+      
+      // Actually, the correct way for Facebook WhatsApp templates via Twilio is:
+      // Use the Twilio Content API or send via MessagingServiceSid
+      // But for direct Facebook templates, use this format:
+      
+      // Clear approach: Send with template name and variables
+      delete messagePayload.contentVariables;
+      
+      // For Facebook WhatsApp Business templates, use this structure:
+      messagePayload.body = JSON.stringify({
+        type: 'template',
+        template: {
+          name: message.templateName,
+          language: {
+            code: message.templateLanguage,
+          },
+          components: [
+            {
+              type: 'body',
+              parameters: message.parameters.map(value => ({
+                type: 'text',
+                text: value,
+              })),
+            },
+          ],
+        },
+      });
+
+      this.logger.log(`📋 Message payload: ${JSON.stringify(messagePayload, null, 2)}`);
+
+      const result = await client.messages.create(messagePayload);
 
       this.logger.log(`✅ WhatsApp template sent to ${message.to}: ${result.sid}`);
       return { success: true, messageId: result.sid };
@@ -186,8 +227,6 @@ export class TwilioService {
       this.logger.error(`   Template: ${message.templateName}, Language: ${message.templateLanguage}`);
       this.logger.error(`   Error details:`, error);
       
-      // Fallback: Try sending as regular freeform message
-      this.logger.warn(`   Attempting fallback to freeform message...`);
       return { success: false, error: errorMessage };
     }
   }

@@ -455,26 +455,65 @@ export class ActionsService {
               - WhatsApp Number: ${config.twilio_whatsapp_number}
               - To: ${phoneNumber}`);
             
-            const message = this.twilioService.formatMessage(
-              twilioTemplates.appointment_confirmation_whatsapp,
-              variables,
-            );
-            this.logger.log(`💬 Message content: ${message.substring(0, 100)}...`);
+            let result: { success: boolean; messageId?: string; error?: string };
+            
+            // Try to use WhatsApp Template if configured (no 24h window restriction!)
+            if (config.whatsapp_template_name) {
+              this.logger.log(`✨ Using WhatsApp Template: ${config.whatsapp_template_name}`);
+              
+              // Prepare template parameters
+              // {{1}} = attendee name
+              // {{2}} = scheduled time
+              // {{3}} = duration
+              const templateParams = [
+                appointmentDto.attendee_name,
+                formattedDate,
+                (appointmentDto.duration_minutes || 30).toString(),
+              ];
+              
+              this.logger.log(`📋 Template parameters: ${JSON.stringify(templateParams)}`);
+              
+              result = await this.twilioService.sendWhatsAppTemplate(
+                {
+                  accountSid: config.twilio_account_sid,
+                  authToken: config.twilio_auth_token,
+                  phoneNumber: config.twilio_phone_number,
+                  whatsappNumber: config.twilio_whatsapp_number,
+                },
+                {
+                  to: phoneNumber,
+                  templateName: config.whatsapp_template_name,
+                  templateLanguage: config.whatsapp_template_language || 'en',
+                  parameters: templateParams,
+                },
+              );
+              
+              this.logger.log(`📤 WhatsApp Template send result: ${JSON.stringify(result)}`);
+            } else {
+              // Fallback to freeform message (requires 24h window)
+              this.logger.log('⚠️ No template configured, using freeform message (requires 24h window)');
+              
+              const message = this.twilioService.formatMessage(
+                twilioTemplates.appointment_confirmation_whatsapp,
+                variables,
+              );
+              this.logger.log(`💬 Message content: ${message.substring(0, 100)}...`);
 
-            const result = await this.twilioService.sendWhatsApp(
-              {
-                accountSid: config.twilio_account_sid,
-                authToken: config.twilio_auth_token,
-                phoneNumber: config.twilio_phone_number,
-                whatsappNumber: config.twilio_whatsapp_number,
-              },
-              {
-                to: phoneNumber,
-                body: message,
-              },
-            );
+              result = await this.twilioService.sendWhatsApp(
+                {
+                  accountSid: config.twilio_account_sid,
+                  authToken: config.twilio_auth_token,
+                  phoneNumber: config.twilio_phone_number,
+                  whatsappNumber: config.twilio_whatsapp_number,
+                },
+                {
+                  to: phoneNumber,
+                  body: message,
+                },
+              );
 
-            this.logger.log(`📤 WhatsApp send result: ${JSON.stringify(result)}`);
+              this.logger.log(`📤 WhatsApp send result: ${JSON.stringify(result)}`);
+            }
             
             if (result.success) {
               whatsappSuccess = true;
