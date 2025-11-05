@@ -56,57 +56,57 @@ export function AdminStats() {
       title: 'Total Users',
       value: stats.total_users,
       icon: Users,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-500/10',
     },
     {
       title: 'Active Users',
       value: stats.active_users,
       icon: UserCheck,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      color: 'text-emerald-500',
+      bgColor: 'bg-emerald-500/10',
     },
     {
       title: 'Trial Users',
       value: stats.trial_users,
       icon: Clock,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50',
+      color: 'text-amber-500',
+      bgColor: 'bg-amber-500/10',
     },
     {
       title: 'Paid Users',
       value: stats.paid_users,
       icon: TrendingUp,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-500/10',
     },
     {
       title: 'Total Bots',
       value: stats.total_bots,
       icon: Bot,
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
+      color: 'text-indigo-500',
+      bgColor: 'bg-indigo-500/10',
     },
     {
       title: 'Active Bots',
       value: stats.active_bots,
       icon: Bot,
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-50',
+      color: 'text-teal-500',
+      bgColor: 'bg-teal-500/10',
     },
     {
       title: 'Chats Today',
       value: stats.chats_today,
       icon: MessageSquare,
-      color: 'text-pink-600',
-      bgColor: 'bg-pink-50',
+      color: 'text-pink-500',
+      bgColor: 'bg-pink-500/10',
     },
     {
       title: 'Messages Today',
       value: stats.messages_today,
       icon: MessageSquare,
-      color: 'text-rose-600',
-      bgColor: 'bg-rose-50',
+      color: 'text-rose-500',
+      bgColor: 'bg-rose-500/10',
     },
   ]
 
@@ -117,9 +117,9 @@ export function AdminStats() {
           const Icon = stat.icon
 
           return (
-            <Card key={stat.title} className="hover:shadow-lg transition-shadow">
+            <Card key={stat.title} className="hover:shadow-lg transition-shadow border-gray-200 dark:border-gray-700">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                   {stat.title}
                 </CardTitle>
                 <div className={`p-2 rounded-lg ${stat.bgColor}`}>
@@ -127,7 +127,7 @@ export function AdminStats() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-gray-900">{stat.value}</div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
               </CardContent>
             </Card>
           )
@@ -136,33 +136,33 @@ export function AdminStats() {
 
       {/* Additional Info */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-lg">Recent Growth</CardTitle>
+            <CardTitle className="text-lg text-gray-900 dark:text-white">Recent Growth</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600">This Week</span>
-                <span className="font-semibold">{stats.signups_this_week} signups</span>
+                <span className="text-gray-600 dark:text-gray-400">This Week</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{stats.signups_this_week} signups</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">This Month</span>
-                <span className="font-semibold">{stats.signups_this_month} signups</span>
+                <span className="text-gray-600 dark:text-gray-400">This Month</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{stats.signups_this_month} signups</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-lg">Conversion Rate</CardTitle>
+            <CardTitle className="text-lg text-gray-900 dark:text-white">Conversion Rate</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600">Trial → Paid</span>
-                <span className="font-semibold">
+                <span className="text-gray-600 dark:text-gray-400">Trial → Paid</span>
+                <span className="font-semibold text-gray-900 dark:text-white">
                   {stats.trial_users > 0
                     ? ((stats.paid_users / (stats.paid_users + stats.trial_users)) * 100).toFixed(1)
                     : 0}
@@ -170,8 +170,8 @@ export function AdminStats() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Bot Activation</span>
-                <span className="font-semibold">
+                <span className="text-gray-600 dark:text-gray-400">Bot Activation</span>
+                <span className="font-semibold text-gray-900 dark:text-white">
                   {stats.total_bots > 0
                     ? ((stats.active_bots / stats.total_bots) * 100).toFixed(1)
                     : 0}
