@@ -9,10 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowLeft, Settings, Database } from 'lucide-react'
 import Link from 'next/link'
 import KnowledgeBaseTab from '@/components/dashboard/knowledge-base-tab'
+import { useLanguage } from '@/lib/contexts/LanguageContext'
 
 export default function EditBotPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t, dir } = useLanguage()
   const [activeTab, setActiveTab] = useState<'settings' | 'knowledge'>('settings')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

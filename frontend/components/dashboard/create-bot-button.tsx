@@ -10,21 +10,23 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { usePlanLimits } from '@/hooks/usePlanLimits'
+import { useLanguage } from '@/lib/contexts/LanguageContext'
 
 interface CreateBotButtonProps {
-  hasExistingBot: boolean
+  hasExistingBot?: boolean
   subscriptionStatus?: string
 }
 
-export function CreateBotButton({ hasExistingBot, subscriptionStatus }: CreateBotButtonProps) {
+export function CreateBotButton({ hasExistingBot, subscriptionStatus }: CreateBotButtonProps = {}) {
   const { canCreateBot, plan, limits, usage, loading } = usePlanLimits()
+  const { t } = useLanguage()
 
   // Show loading state
   if (loading) {
     return (
       <Button disabled className="gap-2">
         <Plus className="h-4 w-4" />
-        Create Bot
+        {t('dashboard.createNewBot')}
       </Button>
     )
   }
@@ -44,7 +46,7 @@ export function CreateBotButton({ hasExistingBot, subscriptionStatus }: CreateBo
             <div>
               <Button disabled className="gap-2">
                 <Lock className="h-4 w-4" />
-                Create Bot
+                {t('dashboard.createNewBot')}
               </Button>
             </div>
           </TooltipTrigger>
@@ -72,7 +74,7 @@ export function CreateBotButton({ hasExistingBot, subscriptionStatus }: CreateBo
     <Link href="/dashboard/bots/new">
       <Button className="gap-2">
         <Plus className="h-4 w-4" />
-        Create Bot
+        {t('dashboard.createNewBot')}
       </Button>
     </Link>
   )

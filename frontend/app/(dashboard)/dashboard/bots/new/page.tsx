@@ -8,9 +8,11 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { useLanguage } from '@/lib/contexts/LanguageContext'
 
 export default function NewBotPage() {
   const router = useRouter()
+  const { t, dir } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [checking, setChecking] = useState(true)
@@ -154,24 +156,24 @@ export default function NewBotPage() {
     return (
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-center py-12">
-          <p className="text-dark-800">Checking bot limit...</p>
+          <p className="text-dark-800">{t('common.loading')}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto" dir={dir}>
       <Link href="/dashboard">
         <Button variant="ghost" size="sm" className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
+          {t('common.back')}
         </Button>
       </Link>
 
       <Card>
         <CardHeader>
-          <CardTitle>Create New Bot</CardTitle>
+          <CardTitle>{t('bot.create')}</CardTitle>
           <CardDescription>
             Set up your AI chatbot with custom settings
           </CardDescription>
@@ -191,7 +193,7 @@ export default function NewBotPage() {
             )}
 
             <Input
-              label="Bot Name"
+              label={t('bot.name')}
               placeholder="Customer Support Bot"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -200,7 +202,7 @@ export default function NewBotPage() {
 
             <div>
               <label className="block text-sm font-medium text-white mb-1">
-                Description
+                {t('bot.description')}
               </label>
               <textarea
                 className="w-full rounded-lg border border-primary/20 bg-dark-50 px-3 py-2 text-sm text-white placeholder:text-[#666666] focus:outline-none focus:ring-2 focus:ring-primary"
@@ -213,7 +215,7 @@ export default function NewBotPage() {
 
             <div>
               <label className="block text-sm font-medium text-white mb-1">
-                Language
+                {t('bot.language')}
               </label>
               <select
                 className="w-full rounded-lg border border-primary/20 bg-dark-50 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary"
@@ -221,12 +223,12 @@ export default function NewBotPage() {
                 onChange={(e) => setFormData({ ...formData, language: e.target.value })}
               >
                 <option value="en">English</option>
-                <option value="he">Hebrew</option>
+                <option value="he">עברית</option>
               </select>
             </div>
 
             <Input
-              label="Personality"
+              label={t('bot.personality')}
               placeholder="helpful and professional"
               value={formData.personality}
               onChange={(e) => setFormData({ ...formData, personality: e.target.value })}
@@ -234,7 +236,7 @@ export default function NewBotPage() {
 
             <div>
               <label className="block text-sm font-medium text-white mb-1">
-                Welcome Messages
+                {t('bot.welcomeMessage')}
               </label>
               <p className="text-xs text-[#666666] mb-3">
                 Add one or more opening messages that will be shown sequentially when the chat starts
@@ -295,7 +297,7 @@ export default function NewBotPage() {
 
             <div>
               <label className="block text-sm font-medium text-white mb-1">
-                Primary Color
+                {t('bot.primaryColor')}
               </label>
               <div className="flex items-center space-x-2">
                 <input
@@ -315,11 +317,11 @@ export default function NewBotPage() {
 
             <div className="flex items-center space-x-4">
               <Button type="submit" disabled={loading} className="flex-1">
-                {loading ? 'Creating...' : 'Create Bot'}
+                {loading ? t('bot.saving') : t('bot.create')}
               </Button>
               <Link href="/dashboard" className="flex-1">
                 <Button type="button" variant="outline" className="w-full">
-                  Cancel
+                  {t('bot.cancel')}
                 </Button>
               </Link>
             </div>

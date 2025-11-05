@@ -9,10 +9,13 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Bot } from 'lucide-react'
 import { FaGoogle, FaFacebook } from 'react-icons/fa'
+import { useLanguage } from '@/lib/contexts/LanguageContext'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 
 function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t, dir } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -39,52 +42,52 @@ function RegisterForm() {
   // Validation functions
   const validateFullName = (name: string): string | undefined => {
     if (!name.trim()) {
-      return 'Full name is required'
+      return t('error.fullNameRequired')
     }
     if (name.trim().length < 2) {
-      return 'Full name must be at least 2 characters'
+      return t('error.fullNameMinLength')
     }
     const nameParts = name.trim().split(' ')
     if (nameParts.length < 2) {
-      return 'Please enter both first and last name'
+      return t('error.fullNameTwoWords')
     }
     if (!/^[a-zA-Zא-ת\s]+$/.test(name)) {
-      return 'Full name can only contain letters and spaces'
+      return t('error.fullNameOnlyLetters')
     }
     return undefined
   }
 
   const validatePhone = (phoneNumber: string): string | undefined => {
     if (!phoneNumber.trim()) {
-      return 'Phone number is required'
+      return t('error.phoneRequired')
     }
     // Israeli phone number format: 05X-XXXXXXX or 05XXXXXXXX
     const phoneRegex = /^05[0-9][-\s]?[0-9]{7}$/
     const cleanPhone = phoneNumber.replace(/[\s-]/g, '')
     
     if (!phoneRegex.test(phoneNumber) && !/^05[0-9]{8}$/.test(cleanPhone)) {
-      return 'Invalid phone number. Format: 05X-XXXXXXX'
+      return t('error.phoneInvalid')
     }
     return undefined
   }
 
   const validateEmail = (emailAddress: string): string | undefined => {
     if (!emailAddress.trim()) {
-      return 'Email is required'
+      return t('error.emailRequired')
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(emailAddress)) {
-      return 'Invalid email address'
+      return t('error.emailInvalid')
     }
     return undefined
   }
 
   const validatePassword = (pass: string): string | undefined => {
     if (!pass) {
-      return 'Password is required'
+      return t('error.passwordRequired')
     }
     if (pass.length < 6) {
-      return 'Password must be at least 6 characters'
+      return t('error.passwordMinLength')
     }
     return undefined
   }
@@ -132,7 +135,7 @@ function RegisterForm() {
 
     // Check if there are any errors
     if (Object.values(errors).some(error => error !== undefined)) {
-      setError('Please fix the errors in the form')
+      setError(t('error.fixErrors'))
       setLoading(false)
       return
     }
@@ -191,7 +194,7 @@ function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-dark px-4 py-8" dir={dir}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2 mb-4">
@@ -200,30 +203,33 @@ function RegisterForm() {
             </div>
             <span className="text-3xl font-bold text-primary text-glow">AgentDesk</span>
           </Link>
-          <h1 className="text-2xl font-bold mb-2 text-white">Create Your Account</h1>
-          <p className="text-dark-800">Start building your AI assistant today</p>
+          <div className="flex justify-center mb-4">
+            <LanguageToggle />
+          </div>
+          <h1 className="text-2xl font-bold mb-2 text-white">{t('auth.createAccount')}</h1>
+          <p className="text-dark-800">{t('auth.getStarted')}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Sign Up</CardTitle>
-            <CardDescription>Create a free account to get started</CardDescription>
+            <CardTitle>{t('auth.signUp')}</CardTitle>
+            <CardDescription>{t('auth.getStarted')}</CardDescription>
           </CardHeader>
           <CardContent>
             {success ? (
               <div className="space-y-4">
                 <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-                  <h3 className="font-semibold text-green-900 mb-2">Check your email!</h3>
+                  <h3 className="font-semibold text-green-900 mb-2">{t('success.checkEmail')}</h3>
                   <p className="text-sm text-green-700">
-                    We've sent a confirmation link to <strong>{email}</strong>
+                    {t('success.confirmationSent')} <strong>{email}</strong>
                   </p>
                   <p className="text-sm text-green-700 mt-2">
-                    Click the link in the email to verify your account and get started.
+                    {t('success.verifyAccount')}
                   </p>
                 </div>
                 <Link href="/login">
                   <Button variant="outline" className="w-full">
-                    Back to Login
+                    {t('success.backToLogin')}
                   </Button>
                 </Link>
               </div>
@@ -244,7 +250,7 @@ function RegisterForm() {
                     onClick={() => handleOAuthSignIn('google')}
                   >
                     <FaGoogle className="h-5 w-5 text-red-500" />
-                    Continue with Google
+                    {t('auth.continueWithGoogle')}
                   </Button>
 
                   <Button
@@ -254,7 +260,7 @@ function RegisterForm() {
                     onClick={() => handleOAuthSignIn('facebook')}
                   >
                     <FaFacebook className="h-5 w-5" />
-                    Continue with Facebook
+                    {t('auth.continueWithFacebook')}
                   </Button>
                 </div>
 
@@ -264,12 +270,12 @@ function RegisterForm() {
                     <div className="w-full border-t border-dark-100"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-dark-50 text-dark-800">Or continue with email</span>
+                    <span className="px-4 bg-dark-50 text-dark-800">{t('auth.orContinueWithEmail')}</span>
                   </div>
                 </div>
 
               <Input
-                label="📛 Full Name *"
+                label={`📛 ${t('auth.fullName')} *`}
                 type="text"
                 value={fullName}
                 onChange={(e) => {
@@ -279,13 +285,13 @@ function RegisterForm() {
                   }
                 }}
                 onBlur={handleFullNameBlur}
-                placeholder="John Doe"
+                placeholder={t('placeholder.fullName')}
                 error={fieldErrors.fullName}
                 required
               />
 
               <Input
-                label="📞 Mobile Number *"
+                label={`📞 ${t('auth.mobileNumber')} *`}
                 type="tel"
                 value={phone}
                 onChange={(e) => {
@@ -295,21 +301,21 @@ function RegisterForm() {
                   }
                 }}
                 onBlur={handlePhoneBlur}
-                placeholder="050-1234567"
+                placeholder={t('placeholder.phone')}
                 error={fieldErrors.phone}
                 required
               />
 
               <Input
-                label="Company Name"
+                label={t('auth.companyName')}
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Your Company"
+                placeholder={t('placeholder.companyName')}
               />
 
               <Input
-                label="📧 Email *"
+                label={`📧 ${t('auth.email')} *`}
                 type="email"
                 value={email}
                 onChange={(e) => {
@@ -319,13 +325,13 @@ function RegisterForm() {
                   }
                 }}
                 onBlur={handleEmailBlur}
-                placeholder="you@example.com"
+                placeholder={t('placeholder.email')}
                 error={fieldErrors.email}
                 required
               />
 
               <Input
-                label="🔐 Password *"
+                label={`🔐 ${t('auth.password')} *`}
                 type="password"
                 value={password}
                 onChange={(e) => {
@@ -335,20 +341,20 @@ function RegisterForm() {
                   }
                 }}
                 onBlur={handlePasswordBlur}
-                placeholder="At least 6 characters"
+                placeholder={t('placeholder.password')}
                 error={fieldErrors.password}
                 required
                 minLength={6}
               />
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating account...' : 'Create Account'}
+                {loading ? t('auth.creatingAccount') : t('auth.createAccountButton')}
               </Button>
               
               <div className="mt-4 text-center text-sm">
-                <span className="text-dark-800">Already have an account? </span>
+                <span className="text-dark-800">{t('auth.alreadyHaveAccount')} </span>
                 <Link href="/login" className="text-primary hover:text-primary/80 transition-smooth font-medium">
-                  Sign in
+                  {t('auth.signIn')}
                 </Link>
               </div>
             </form>

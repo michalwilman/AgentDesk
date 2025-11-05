@@ -9,9 +9,12 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Bot } from 'lucide-react'
 import { FaGoogle, FaFacebook } from 'react-icons/fa'
+import { useLanguage } from '@/lib/contexts/LanguageContext'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { t, dir } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -58,7 +61,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark px-4">
+    <div className="min-h-screen flex items-center justify-center bg-dark px-4" dir={dir}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2 mb-4">
@@ -67,14 +70,17 @@ export default function LoginPage() {
             </div>
             <span className="text-3xl font-bold text-primary text-glow">AgentDesk</span>
           </Link>
-          <h1 className="text-2xl font-bold mb-2 text-white">Welcome Back</h1>
-          <p className="text-dark-800">Sign in to your account</p>
+          <div className="flex justify-center mb-4">
+            <LanguageToggle />
+          </div>
+          <h1 className="text-2xl font-bold mb-2 text-white">{t('auth.welcomeBack')}</h1>
+          <p className="text-dark-800">{t('auth.signInToAccount')}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Login</CardTitle>
-            <CardDescription>Enter your credentials to access your dashboard</CardDescription>
+            <CardTitle>{t('nav.login')}</CardTitle>
+            <CardDescription>{t('auth.signInToAccount')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
@@ -93,7 +99,7 @@ export default function LoginPage() {
                   onClick={() => handleOAuthSignIn('google')}
                 >
                   <FaGoogle className="h-5 w-5 text-red-500" />
-                  Continue with Google
+                  {t('auth.continueWithGoogle')}
                 </Button>
 
                 <Button
@@ -103,7 +109,7 @@ export default function LoginPage() {
                   onClick={() => handleOAuthSignIn('facebook')}
                 >
                   <FaFacebook className="h-5 w-5" />
-                  Continue with Facebook
+                  {t('auth.continueWithFacebook')}
                 </Button>
               </div>
 
@@ -113,47 +119,47 @@ export default function LoginPage() {
                   <div className="w-full border-t border-dark-100"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-dark-50 text-dark-800">Or continue with email</span>
+                  <span className="px-4 bg-dark-50 text-dark-800">{t('auth.orContinueWithEmail')}</span>
                 </div>
               </div>
 
               <Input
-                label="Email"
+                label={t('auth.email')}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t('placeholder.email')}
                 required
               />
 
               <div className="space-y-2">
                 <Input
-                  label="Password"
+                  label={t('auth.password')}
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder={t('placeholder.password')}
                   required
                 />
-                <div className="text-right">
+                <div className={dir === 'rtl' ? 'text-left' : 'text-right'}>
                   <Link 
                     href="/forgot-password" 
                     className="text-sm text-primary hover:text-primary/80 transition-smooth"
                   >
-                    Forgot password?
+                    {t('auth.forgotPassword')}
                   </Link>
                 </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Signing in...' : 'Sign In'}
+                {loading ? t('auth.signingIn') : t('auth.signIn')}
               </Button>
             </form>
 
             <div className="mt-4 text-center text-sm">
-              <span className="text-dark-800">Don't have an account? </span>
+              <span className="text-dark-800">{t('auth.dontHaveAccount')} </span>
               <Link href="/register" className="text-primary hover:text-primary/80 transition-smooth font-medium">
-                Sign up
+                {t('auth.signUp')}
               </Link>
             </div>
           </CardContent>

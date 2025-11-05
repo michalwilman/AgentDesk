@@ -17,10 +17,21 @@
   body {
     @apply bg-dark text-white antialiased;
     font-family: var(--font-inter), Inter, sans-serif;
+    transition: direction 0.3s ease-in-out;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-poppins), Poppins, sans-serif;
+  }
+
+  /* Smooth language transition */
+  html {
+    transition: direction 0.3s ease-in-out;
+  }
+
+  /* Animate text direction change */
+  *[dir] {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 

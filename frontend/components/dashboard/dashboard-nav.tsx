@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Bot, LogOut, User } from 'lucide-react'
 import { SubscriptionBadge } from '@/components/subscription/subscription-badge'
 import { NotificationsPanel } from './notifications-panel'
+import { LanguageToggleWithIcon } from '@/components/ui/language-toggle'
 
 export function DashboardNav({ user }: { user: any }) {
   const router = useRouter()
@@ -36,6 +37,7 @@ export function DashboardNav({ user }: { user: any }) {
             </div>
             <SubscriptionBadge variant="compact" />
             <NotificationsPanel />
+            <LanguageToggleWithIcon />
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Logout</span>
