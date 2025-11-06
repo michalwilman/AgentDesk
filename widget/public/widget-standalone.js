@@ -1,6 +1,6 @@
 /**
  * AgentDesk Standalone Widget
- * Version: 1.0.0
+ * Version: 1.0.1
  * 
  * Standalone chat widget that works without iframe or external dependencies.
  * Perfect for WordPress and other CMS platforms.
