@@ -74,8 +74,8 @@
           width: 60px;
           height: 60px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #00E0C6 0%, #00c9b3 100%);
-          box-shadow: 0 4px 20px rgba(0, 224, 198, 0.4);
+          background: var(--agentdesk-primary-color, #00E0C6);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -86,7 +86,7 @@
 
         .agentdesk-bubble:hover {
           transform: scale(1.1);
-          box-shadow: 0 6px 30px rgba(0, 224, 198, 0.6);
+          box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
         }
 
         .agentdesk-bubble-icon {
@@ -100,7 +100,8 @@
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          background: rgba(0, 224, 198, 0.4);
+          background: var(--agentdesk-primary-color, #00E0C6);
+          opacity: 0.4;
           animation: agentdesk-pulse 2s infinite;
         }
 

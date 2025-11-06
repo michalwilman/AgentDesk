@@ -7,7 +7,7 @@ export class WordpressService {
    * Get current plugin version and update info
    */
   getPluginUpdate() {
-    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.2.3';
+    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.2.4';
     
     return {
       name: 'AgentDesk AI Chatbot',
@@ -66,7 +66,16 @@ export class WordpressService {
           <li>🌍 Multi-language support (Hebrew & English)</li>
         </ul>
       `,
-      '1.2.3': `
+      '1.2.4': `
+        <h4>1.2.4 - Visual Consistency Fix</h4>
+        <ul>
+          <li>🎨 <strong>CRITICAL FIX:</strong> Bot bubble now uses correct color from Dashboard</li>
+          <li>🎨 Fixed bubble color not syncing (was green, now uses your color)</li>
+          <li>✨ Bubble and chat window now match perfectly</li>
+          <li>🎯 Full visual consistency between Dashboard and website</li>
+          <li>💎 Professional appearance across all states</li>
+        </ul>
+        
         <h4>1.2.3 - CRITICAL Bot Loading Fix</h4>
         <ul>
           <li>🔧 <strong>CRITICAL FIX:</strong> Fixed duplicate /api/api URL bug in widget</li>
@@ -155,7 +164,7 @@ export class WordpressService {
     return {
       name: 'AgentDesk AI Chatbot',
       slug: 'agentdesk-chatbot',
-      version: process.env.WP_PLUGIN_VERSION || '1.2.3',
+      version: process.env.WP_PLUGIN_VERSION || '1.2.4',
       author: 'AgentDesk',
       author_profile: 'https://agentdesk.com',
       homepage: 'https://agentdesk.com/wordpress-plugin',
