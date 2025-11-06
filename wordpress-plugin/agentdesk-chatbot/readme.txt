@@ -3,7 +3,7 @@ Contributors: agentdesk
 Tags: chatbot, ai, live chat, customer support, gpt-4, openai, chatgpt, conversational ai, support
 Requires at least: 5.8
 Tested up to: 6.4
-Stable tag: 1.2.4
+Stable tag: 1.2.5
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -245,6 +245,13 @@ We're here to help!
 8. Custom branding options - match your brand identity
 
 == Changelog ==
+
+= 1.2.5 - 2025-11-06 =
+* 🎯 CRITICAL FIX: Full RTL support for Hebrew
+* 🎯 Widget now perfectly mirrors Dashboard bot (language, colors, behavior)
+* 🎨 Auto-detect Hebrew and apply RTL layout
+* ✍️ Hebrew input placeholder and text alignment
+* 🔄 Message bubbles properly aligned for RTL
 
 = 1.2.4 - 2025-11-06 =
 * 🎨 CRITICAL FIX: Bot bubble now uses correct color from Dashboard

@@ -7,7 +7,7 @@ export class WordpressService {
    * Get current plugin version and update info
    */
   getPluginUpdate() {
-    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.2.4';
+    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.2.5';
     
     return {
       name: 'AgentDesk AI Chatbot',
@@ -66,7 +66,17 @@ export class WordpressService {
           <li>🌍 Multi-language support (Hebrew & English)</li>
         </ul>
       `,
-      '1.2.4': `
+      '1.2.5': `
+        <h4>1.2.5 - RTL & Dashboard Sync</h4>
+        <ul>
+          <li>🎯 <strong>CRITICAL FIX:</strong> Full RTL support for Hebrew</li>
+          <li>🎯 <strong>Widget now perfectly mirrors Dashboard bot</strong></li>
+          <li>🎨 Auto-detect Hebrew and apply RTL layout</li>
+          <li>✍️ Hebrew input placeholder and text alignment</li>
+          <li>🔄 Message bubbles properly aligned for RTL</li>
+          <li>💯 1:1 match with Dashboard appearance and behavior</li>
+        </ul>
+        
         <h4>1.2.4 - Visual Consistency Fix</h4>
         <ul>
           <li>🎨 <strong>CRITICAL FIX:</strong> Bot bubble now uses correct color from Dashboard</li>
@@ -164,7 +174,7 @@ export class WordpressService {
     return {
       name: 'AgentDesk AI Chatbot',
       slug: 'agentdesk-chatbot',
-      version: process.env.WP_PLUGIN_VERSION || '1.2.4',
+      version: process.env.WP_PLUGIN_VERSION || '1.2.5',
       author: 'AgentDesk',
       author_profile: 'https://agentdesk.com',
       homepage: 'https://agentdesk.com/wordpress-plugin',

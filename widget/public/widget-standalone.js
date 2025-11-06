@@ -44,6 +44,7 @@
   let botConfig = null;
   let sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(7);
   let isLoading = false;
+  let isRTL = false;
 
   // Create widget HTML
   function createWidget() {
@@ -120,6 +121,11 @@
           flex-direction: column;
           overflow: hidden;
           animation: agentdesk-slideUp 0.3s ease-out;
+          direction: ltr;
+        }
+        
+        .agentdesk-chat-window[dir="rtl"] {
+          direction: rtl;
         }
 
         .agentdesk-chat-window.open {
@@ -230,6 +236,11 @@
           font-size: 14px;
           line-height: 1.5;
           word-wrap: break-word;
+          text-align: left;
+        }
+        
+        .agentdesk-chat-window[dir="rtl"] .agentdesk-message-bubble {
+          text-align: right;
         }
 
         .agentdesk-message.user .agentdesk-message-bubble {
@@ -237,12 +248,22 @@
           color: white;
           border-bottom-right-radius: 4px;
         }
+        
+        .agentdesk-chat-window[dir="rtl"] .agentdesk-message.user .agentdesk-message-bubble {
+          border-bottom-right-radius: 18px;
+          border-bottom-left-radius: 4px;
+        }
 
         .agentdesk-message.assistant .agentdesk-message-bubble {
           background: white;
           color: #1f2937;
           border: 1px solid #e5e7eb;
           border-bottom-left-radius: 4px;
+        }
+        
+        .agentdesk-chat-window[dir="rtl"] .agentdesk-message.assistant .agentdesk-message-bubble {
+          border-bottom-left-radius: 18px;
+          border-bottom-right-radius: 4px;
         }
 
         .agentdesk-typing {
@@ -293,6 +314,13 @@
           font-size: 14px;
           outline: none;
           transition: border-color 0.2s, box-shadow 0.2s;
+          direction: ltr;
+          text-align: left;
+        }
+        
+        .agentdesk-chat-window[dir="rtl"] .agentdesk-input {
+          direction: rtl;
+          text-align: right;
         }
 
         .agentdesk-input:focus {
@@ -412,6 +440,7 @@
             id="agentdesk-input"
             class="agentdesk-input"
             placeholder="Type your message..."
+            autocomplete="off"
           />
           <button id="agentdesk-send-btn" class="agentdesk-send-btn">
             <svg class="agentdesk-send-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -457,6 +486,9 @@
   function updateWidgetUI() {
     if (!botConfig) return;
 
+    // Detect RTL language
+    isRTL = botConfig.language === 'he' || botConfig.language === 'hebrew' || botConfig.language === 'עברית';
+
     // Set primary color
     const root = document.documentElement;
     root.style.setProperty('--agentdesk-primary-color', botConfig.primary_color);
@@ -480,6 +512,18 @@
       avatarContainer.innerHTML = `<img src="${botConfig.avatar_url}" alt="${botConfig.name}" />`;
     } else if (avatarText) {
       avatarText.textContent = botConfig.name.charAt(0).toUpperCase();
+    }
+
+    // Set RTL direction
+    const chatWindow = document.getElementById('agentdesk-chat-window');
+    if (chatWindow) {
+      chatWindow.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+    }
+
+    // Update input placeholder based on language
+    const input = document.getElementById('agentdesk-input');
+    if (input) {
+      input.placeholder = isRTL ? 'הקלידי הודעה...' : 'Type your message...';
     }
 
     // Add welcome messages
