@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { AppointmentsTable } from '@/components/dashboard/appointments-table'
 
-export default async function AppointmentsPage() {
+export default async function AppointmentsPage({ 
+  searchParams 
+}: { 
+  searchParams: { bot_id?: string } 
+}) {
   const supabase = createClient()
 
   // Get current user
@@ -17,6 +21,9 @@ export default async function AppointmentsPage() {
     redirect('/login')
   }
 
+  // Get bot_id from query params if provided
+  const filterBotId = searchParams?.bot_id
+
   // Get all user's bots
   const { data: bots } = await supabase
     .from('bots')
@@ -26,17 +33,23 @@ export default async function AppointmentsPage() {
 
   const botIds = bots?.map((b) => b.id) || []
 
-  // Get all appointments for user's bots
+  // Get all appointments for user's bots (or filtered by bot_id if provided)
   let appointments: any[] = []
   if (botIds.length > 0) {
-    const { data: appointmentsData } = await supabase
+    let query = supabase
       .from('appointments')
       .select(`
         *,
         bots!inner(name)
       `)
       .in('bot_id', botIds)
-      .order('scheduled_time', { ascending: true })
+    
+    // Filter by specific bot if bot_id is provided
+    if (filterBotId) {
+      query = query.eq('bot_id', filterBotId)
+    }
+    
+    const { data: appointmentsData } = await query.order('scheduled_time', { ascending: true })
 
     appointments = appointmentsData || []
   }
@@ -52,10 +65,10 @@ export default async function AppointmentsPage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/dashboard">
+      <Link href={filterBotId ? `/dashboard/bots/${filterBotId}` : '/dashboard'}>
         <Button variant="ghost" size="sm" className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
+          {filterBotId ? 'Back to Bot' : 'Back to Dashboard'}
         </Button>
       </Link>
 
