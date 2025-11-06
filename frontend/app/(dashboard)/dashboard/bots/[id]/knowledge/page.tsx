@@ -117,19 +117,6 @@ export default async function KnowledgePage({ params }: { params: { id: string }
         </CardContent>
       </Card>
 
-      {/* Documents List */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Uploaded Documents</CardTitle>
-          <CardDescription>
-            Manage your uploaded files
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <KnowledgeDocumentsTable botId={params.id} />
-        </CardContent>
-      </Card>
-
       {/* Website Crawling */}
       <Card className="mb-6">
         <CardHeader>
@@ -143,6 +130,19 @@ export default async function KnowledgePage({ params }: { params: { id: string }
         </CardHeader>
         <CardContent>
           <KnowledgeWebsiteCrawling botId={params.id} />
+        </CardContent>
+      </Card>
+
+      {/* Documents List */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Uploaded Documents</CardTitle>
+          <CardDescription>
+            Manage your uploaded files
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <KnowledgeDocumentsTable botId={params.id} />
         </CardContent>
       </Card>
 
