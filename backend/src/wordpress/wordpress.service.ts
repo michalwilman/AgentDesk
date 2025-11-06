@@ -66,6 +66,14 @@ export class WordpressService {
           <li>🌍 Multi-language support (Hebrew & English)</li>
         </ul>
       `,
+      '1.2.7': `
+        <h4>1.2.7 - Critical Hotfix (2025-11-06)</h4>
+        <ul>
+          <li>🔧 <strong>CRITICAL FIX: Resolved JavaScript syntax error that prevented widget from displaying</strong></li>
+          <li>✅ Widget now loads correctly on all WordPress pages</li>
+          <li>⚡ Immediate stability and performance fix</li>
+        </ul>
+      `,
       '1.2.6': `
         <h4>1.2.6 - Complete Dashboard Parity</h4>
         <ul>
