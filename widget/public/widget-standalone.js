@@ -45,6 +45,7 @@
   let sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(7);
   let isLoading = false;
   let isRTL = false;
+  let welcomeShown = false;
 
   // Create widget HTML
   function createWidget() {
@@ -525,15 +526,47 @@
     if (input) {
       input.placeholder = isRTL ? 'הקלידי הודעה...' : 'Type your message...';
     }
+  }
 
-    // Add welcome messages
-    if (messages.length === 0) {
-      const welcomeMessages = botConfig.welcome_messages || [botConfig.welcome_message];
-      welcomeMessages.forEach((msg, index) => {
-        setTimeout(() => {
-          addMessage('assistant', msg);
-        }, index * 1000);
-      });
+  // Show welcome messages with typing effect
+  function showWelcomeMessages() {
+    if (messages.length > 0) return;
+      const messagesToShow = botConfig.welcome_messages && botConfig.welcome_messages.length > 0 
+        ? botConfig.welcome_messages 
+        : botConfig.welcome_message
+        ? [botConfig.welcome_message]
+        : [];
+
+      if (messagesToShow.length === 0) return;
+
+      // Show messages with typing indicator between them
+      let currentIndex = 0;
+      
+      const showNextMessage = () => {
+        if (currentIndex >= messagesToShow.length) return;
+        
+        const message = messagesToShow[currentIndex];
+        currentIndex++;
+        
+        // Show typing indicator
+        if (currentIndex < messagesToShow.length) {
+          setTimeout(() => {
+            showTyping();
+            setTimeout(() => {
+              hideTyping();
+              addMessage('assistant', message);
+              setTimeout(showNextMessage, 500);
+            }, 1000);
+          }, 300);
+        } else {
+          // Last message - no typing indicator after
+          setTimeout(() => {
+            addMessage('assistant', message);
+          }, 300);
+        }
+      };
+      
+      showNextMessage();
     }
   }
 
@@ -554,6 +587,12 @@
       bubble.style.display = 'none';
       chatWindow.classList.add('open');
       input.focus();
+      
+      // Show welcome messages only once
+      if (!welcomeShown && botConfig) {
+        welcomeShown = true;
+        showWelcomeMessages();
+      }
     });
 
     // Close chat window

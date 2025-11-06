@@ -3,7 +3,7 @@ Contributors: agentdesk
 Tags: chatbot, ai, live chat, customer support, gpt-4, openai, chatgpt, conversational ai, support
 Requires at least: 5.8
 Tested up to: 6.4
-Stable tag: 1.2.5
+Stable tag: 1.2.6
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -245,6 +245,13 @@ We're here to help!
 8. Custom branding options - match your brand identity
 
 == Changelog ==
+
+= 1.2.6 - 2025-11-06 =
+* 🎯 Widget now perfectly mirrors Dashboard bot (1:1 sync)
+* ✨ Multiple welcome messages with typing effect
+* 🎨 All UI behaviors match Dashboard exactly
+* 🔧 Fixed welcome message display logic
+* 💯 Complete feature parity with Dashboard widget
 
 = 1.2.5 - 2025-11-06 =
 * 🎯 CRITICAL FIX: Full RTL support for Hebrew

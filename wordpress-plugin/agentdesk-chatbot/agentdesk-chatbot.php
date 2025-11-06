@@ -3,7 +3,7 @@
  * Plugin Name: AgentDesk AI Chatbot
  * Plugin URI: https://agentdesk.com/wordpress
  * Description: Add intelligent AI chatbot to your WordPress site. Trained on your content, powered by GPT-4.
- * Version: 1.2.5
+ * Version: 1.2.6
  * Requires at least: 5.8
  * Requires PHP: 7.4
  * Author: AgentDesk
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin constants
-define('AGENTDESK_VERSION', '1.2.5');
+define('AGENTDESK_VERSION', '1.2.6');
 define('AGENTDESK_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AGENTDESK_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AGENTDESK_CDN_URL', 'https://agentdesk-widget-production.up.railway.app/widget-standalone.js');
