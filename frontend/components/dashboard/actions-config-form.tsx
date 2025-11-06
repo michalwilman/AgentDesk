@@ -19,7 +19,9 @@ import {
   Save,
   AlertCircle,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 
 interface ActionsConfigFormProps {
@@ -33,6 +35,9 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [googleConnected, setGoogleConnected] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [showAccountSid, setShowAccountSid] = useState(false)
+  const [showAuthToken, setShowAuthToken] = useState(false)
+  const [showWhatsAppNumber, setShowWhatsAppNumber] = useState(false)
   const searchParams = useSearchParams()
   const supabase = createClient()
 
@@ -452,24 +457,44 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
             
             <div>
               <Label>Twilio Account SID</Label>
-              <Input
-                type="text"
-                placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                value={config.twilio_account_sid || ''}
-                onChange={(e) => updateConfig('twilio_account_sid', e.target.value)}
-                className="mt-2"
-              />
+              <div className="relative mt-2">
+                <Input
+                  type={showAccountSid ? "text" : "password"}
+                  placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  value={config.twilio_account_sid || ''}
+                  onChange={(e) => updateConfig('twilio_account_sid', e.target.value)}
+                  className="pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAccountSid(!showAccountSid)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-800 hover:text-primary transition-colors"
+                  aria-label={showAccountSid ? "Hide Account SID" : "Show Account SID"}
+                >
+                  {showAccountSid ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             <div>
               <Label>Twilio Auth Token</Label>
-              <Input
-                type="password"
-                placeholder="Auth Token"
-                value={config.twilio_auth_token || ''}
-                onChange={(e) => updateConfig('twilio_auth_token', e.target.value)}
-                className="mt-2"
-              />
+              <div className="relative mt-2">
+                <Input
+                  type={showAuthToken ? "text" : "password"}
+                  placeholder="Auth Token"
+                  value={config.twilio_auth_token || ''}
+                  onChange={(e) => updateConfig('twilio_auth_token', e.target.value)}
+                  className="pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAuthToken(!showAuthToken)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-800 hover:text-primary transition-colors"
+                  aria-label={showAuthToken ? "Hide Auth Token" : "Show Auth Token"}
+                >
+                  {showAuthToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             <p className="text-xs text-dark-800">
@@ -532,13 +557,23 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
             {config.whatsapp_enabled && (
               <div>
                 <Label>Twilio WhatsApp Number</Label>
-                <Input
-                  type="tel"
-                  placeholder="+1234567890 (E.164 format)"
-                  value={config.twilio_whatsapp_number || ''}
-                  onChange={(e) => updateConfig('twilio_whatsapp_number', e.target.value)}
-                  className="mt-2"
-                />
+                <div className="relative mt-2">
+                  <Input
+                    type={showWhatsAppNumber ? "tel" : "password"}
+                    placeholder="+1234567890 (E.164 format)"
+                    value={config.twilio_whatsapp_number || ''}
+                    onChange={(e) => updateConfig('twilio_whatsapp_number', e.target.value)}
+                    className="pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowWhatsAppNumber(!showWhatsAppNumber)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-800 hover:text-primary transition-colors"
+                    aria-label={showWhatsAppNumber ? "Hide WhatsApp Number" : "Show WhatsApp Number"}
+                  >
+                    {showWhatsAppNumber ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
                 <p className="text-xs text-dark-800 mt-1">
                   Your Twilio WhatsApp-enabled number (must be configured in Twilio)
                 </p>
