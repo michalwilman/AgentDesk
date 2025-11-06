@@ -56,7 +56,7 @@ export default async function BotDetailPage({ params }: { params: { id: string }
   const embedCode = `<script src="${process.env.NEXT_PUBLIC_WIDGET_URL}/widget.js" data-bot-token="${bot.api_token}"></script>`
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <Link href="/dashboard">
         <Button variant="ghost" size="sm" className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -64,7 +64,7 @@ export default async function BotDetailPage({ params }: { params: { id: string }
         </Button>
       </Link>
 
-      <div className="mb-6">
+      <div className="mb-6 text-center">
         <h1 className="text-3xl font-bold text-white">{bot.name}</h1>
         <p className="text-dark-800 mt-1">{bot.description}</p>
       </div>
