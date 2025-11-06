@@ -3,7 +3,7 @@ Contributors: agentdesk
 Tags: chatbot, ai, live chat, customer support, gpt-4, openai, chatgpt, conversational ai, support
 Requires at least: 5.8
 Tested up to: 6.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -245,6 +245,13 @@ We're here to help!
 8. Custom branding options - match your brand identity
 
 == Changelog ==
+
+= 1.2.1 - 2025-11-06 =
+* 🔧 CRITICAL FIX: Resolved widget blocking page interactions
+* 🎯 Switched to standalone widget (no iframe) for better performance
+* ⚡ Improved widget loading and responsiveness
+* 🐛 Fixed Elementor compatibility issues
+* ✨ Enhanced page button functionality
 
 = 1.2.0 - 2025-11-02 =
 * 🔄 One-click updates - Update plugin without deactivation

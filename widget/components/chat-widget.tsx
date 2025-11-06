@@ -33,6 +33,16 @@ export function ChatWidget({ botToken }: { botToken: string }) {
   const menuRef = useRef<HTMLDivElement>(null)
   const lastWelcomeKey = useRef<string>('')
 
+  // Notify parent window when widget opens/closes (for iframe integration)
+  useEffect(() => {
+    if (window.parent !== window) {
+      window.parent.postMessage(
+        { type: isOpen ? 'agentdesk-widget-open' : 'agentdesk-widget-close' },
+        '*'
+      )
+    }
+  }, [isOpen])
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }

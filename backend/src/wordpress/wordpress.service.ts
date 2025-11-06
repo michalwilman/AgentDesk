@@ -7,13 +7,13 @@ export class WordpressService {
    * Get current plugin version and update info
    */
   getPluginUpdate() {
-    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.2.0';
+    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.2.1';
     
     return {
       name: 'AgentDesk AI Chatbot',
       slug: 'agentdesk-chatbot',
       version: currentVersion,
-      download_url: `${process.env.FRONTEND_URL || 'https://agentdesk-frontend-production.up.railway.app'}/downloads/agentdesk-chatbot.zip`,
+      download_url: `${process.env.FRONTEND_URL || 'https://agentdesk-frontend-production.up.railway.app'}/downloads/agentdesk-chatbot-v${currentVersion}.zip`,
       requires: '5.8',
       requires_php: '7.4',
       tested: '6.4',
@@ -66,6 +66,40 @@ export class WordpressService {
           <li>🌍 Multi-language support (Hebrew & English)</li>
         </ul>
       `,
+      '1.2.1': `
+        <h4>1.2.1 - Critical Widget Fix</h4>
+        <ul>
+          <li>🔧 <strong>CRITICAL FIX:</strong> Resolved widget blocking page interactions</li>
+          <li>🎯 Switched to standalone widget (no iframe) for better performance</li>
+          <li>⚡ Improved widget loading and responsiveness</li>
+          <li>🐛 Fixed Elementor compatibility issues</li>
+          <li>✨ Enhanced page button functionality</li>
+        </ul>
+        
+        <h4>1.2.0 - Enhanced Update System</h4>
+        <ul>
+          <li>🔄 One-click updates - Update plugin without deactivation</li>
+          <li>🔐 Enhanced security and validation</li>
+          <li>🌐 Improved multi-language support</li>
+          <li>🚀 Performance optimizations</li>
+          <li>✅ Full compatibility with WordPress 6.4+</li>
+          <li>🔧 Bug fixes and improvements</li>
+        </ul>
+        
+        <h4>1.1.0 - Auto-Update System</h4>
+        <ul>
+          <li>🚀 Automatic plugin updates</li>
+          <li>💓 WordPress heartbeat integration</li>
+          <li>🔄 One-click update from WordPress dashboard</li>
+        </ul>
+        
+        <h4>1.0.0 - Initial Release</h4>
+        <ul>
+          <li>✨ AI Chatbot integration with GPT-4</li>
+          <li>🎨 Customizable widget position and colors</li>
+          <li>🌍 Multi-language support</li>
+        </ul>
+      `,
       '1.2.0': `
         <h4>1.2.0 - Enhanced Update System</h4>
         <ul>
@@ -103,7 +137,7 @@ export class WordpressService {
     return {
       name: 'AgentDesk AI Chatbot',
       slug: 'agentdesk-chatbot',
-      version: process.env.WP_PLUGIN_VERSION || '1.2.0',
+      version: process.env.WP_PLUGIN_VERSION || '1.2.1',
       author: 'AgentDesk',
       author_profile: 'https://agentdesk.com',
       homepage: 'https://agentdesk.com/wordpress-plugin',

@@ -31,15 +31,19 @@
     const iframe = document.createElement('iframe');
     iframe.id = 'agentdesk-widget';
     iframe.src = `${WIDGET_URL}?botToken=${encodeURIComponent(botToken)}`;
+    
+    // Set iframe size to only cover the widget area, not the entire screen
     iframe.style.cssText = `
       position: fixed;
-      bottom: 0;
-      right: 0;
-      width: 100%;
-      height: 100%;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
       border: none;
       z-index: 999999;
-      pointer-events: none;
+      pointer-events: auto;
+      background: transparent;
+      transition: width 0.3s ease, height 0.3s ease;
     `;
 
     // Allow pointer events on the iframe content
@@ -47,9 +51,20 @@
     
     document.body.appendChild(iframe);
 
-    // Make iframe interactive
-    iframe.addEventListener('load', function() {
-      iframe.style.pointerEvents = 'auto';
+    // Listen for messages from iframe to adjust size
+    window.addEventListener('message', function(event) {
+      // Verify the message is from our widget
+      if (event.origin !== new URL(WIDGET_URL).origin) {
+        return;
+      }
+      
+      if (event.data.type === 'agentdesk-widget-open') {
+        iframe.style.width = '380px';
+        iframe.style.height = '600px';
+      } else if (event.data.type === 'agentdesk-widget-close') {
+        iframe.style.width = '60px';
+        iframe.style.height = '60px';
+      }
     });
   }
 

@@ -68,12 +68,24 @@ class AgentDesk_Widget {
         $page_title = get_the_title();
         $page_url = get_permalink();
         
-        // Output widget script with bot token
+        // Output widget configuration and script
         ?>
         <!-- AgentDesk AI Chatbot -->
+        <script>
+            window.agentdeskConfig = {
+                botToken: '<?php echo esc_js($api_token); ?>',
+                apiUrl: '<?php echo esc_js(AGENTDESK_API_URL); ?>',
+                position: '<?php echo esc_js($position); ?>',
+                source: 'wordpress',
+                metadata: {
+                    pageTitle: '<?php echo esc_js($page_title); ?>',
+                    pageUrl: '<?php echo esc_js($page_url); ?>',
+                    platform: 'WordPress'
+                }
+            };
+        </script>
         <script 
             src="<?php echo esc_url(AGENTDESK_CDN_URL); ?>"
-            data-bot-token="<?php echo esc_attr($api_token); ?>"
             async
             defer>
         </script>
