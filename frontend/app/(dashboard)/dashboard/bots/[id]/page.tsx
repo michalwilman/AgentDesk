@@ -9,6 +9,7 @@ import { ChannelConnections } from '@/components/dashboard/channel-connections'
 import { TrainedStatus } from '@/components/dashboard/trained-status'
 import { GoogleCalendarStatus } from '@/components/dashboard/google-calendar-status'
 import { SmsWhatsAppStatus } from '@/components/dashboard/sms-whatsapp-status'
+import { SecretDisplay } from '@/components/dashboard/secret-display'
 import { ArrowLeft, Code, Pencil, Globe, CheckCircle2, XCircle, Clock, Zap, UserPlus, Calendar } from 'lucide-react'
 
 function formatTimeAgo(dateString: string | null): string {
@@ -266,17 +267,7 @@ export default async function BotDetailPage({ params }: { params: { id: string }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="relative">
-              <pre className="bg-dark text-primary p-4 rounded-lg overflow-x-auto text-sm border border-primary/20">
-                {embedCode}
-              </pre>
-              <CopyButton 
-                text={embedCode}
-                variant="outline"
-                size="sm"
-                className="absolute top-2 right-2"
-              />
-            </div>
+            <SecretDisplay value={embedCode} type="code" />
           </CardContent>
         </Card>
 
@@ -287,16 +278,7 @@ export default async function BotDetailPage({ params }: { params: { id: string }
             <CardDescription>Use this token to authenticate API requests</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center space-x-2">
-              <code className="flex-1 bg-dark-50 px-3 py-2 rounded text-sm font-mono text-primary border border-primary/20">
-                {bot.api_token}
-              </code>
-              <CopyButton 
-                text={bot.api_token}
-                variant="outline"
-                size="sm"
-              />
-            </div>
+            <SecretDisplay value={bot.api_token} type="token" />
           </CardContent>
         </Card>
 
