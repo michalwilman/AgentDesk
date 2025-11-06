@@ -39,7 +39,7 @@ export function GoogleCalendarStatus({
               <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-primary font-bold text-base">Connected</p>
-                <p className="text-sm text-dark-800 mt-1 font-medium">
+                <p className="text-sm text-white mt-1 font-bold">
                   Your bot can automatically schedule appointments via Google Calendar
                 </p>
               </div>
