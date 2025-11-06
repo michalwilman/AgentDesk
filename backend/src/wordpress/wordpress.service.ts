@@ -7,7 +7,7 @@ export class WordpressService {
    * Get current plugin version and update info
    */
   getPluginUpdate() {
-    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.2.6';
+    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.2.7';
     
     return {
       name: 'AgentDesk AI Chatbot',
@@ -184,7 +184,7 @@ export class WordpressService {
     return {
       name: 'AgentDesk AI Chatbot',
       slug: 'agentdesk-chatbot',
-      version: process.env.WP_PLUGIN_VERSION || '1.2.6',
+      version: process.env.WP_PLUGIN_VERSION || '1.2.7',
       author: 'AgentDesk',
       author_profile: 'https://agentdesk.com',
       homepage: 'https://agentdesk.com/wordpress-plugin',
