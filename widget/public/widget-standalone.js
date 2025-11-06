@@ -567,7 +567,6 @@
       };
       
       showNextMessage();
-    }
   }
 
   // Initialize widget
