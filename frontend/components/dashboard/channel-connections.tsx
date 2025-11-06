@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { MessageSquare, ExternalLink, Check, X } from 'lucide-react'
+import { MessageSquare, ExternalLink, Check, X, Eye, EyeOff } from 'lucide-react'
 
 interface Bot {
   id: string
@@ -22,6 +22,7 @@ export function ChannelConnections({ bot }: ChannelConnectionsProps) {
   const [telegramUsername, setTelegramUsername] = useState(bot.telegram_bot_username || '')
   const [telegramLoading, setTelegramLoading] = useState(false)
   const [telegramSuccess, setTelegramSuccess] = useState(false)
+  const [showToken, setShowToken] = useState(false)
 
   // Check connection status
   const isTelegramConnected = Boolean(bot.telegram_token && bot.telegram_bot_username)
@@ -111,13 +112,23 @@ export function ChannelConnections({ bot }: ChannelConnectionsProps) {
               <label className="block text-sm font-medium text-[#666666] mb-2">
                 Bot API Token
               </label>
-              <Input
-                type="text"
-                placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
-                value={telegramToken}
-                onChange={(e) => setTelegramToken(e.target.value)}
-                className="font-mono text-sm"
-              />
+              <div className="relative">
+                <Input
+                  type={showToken ? "text" : "password"}
+                  placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+                  value={telegramToken}
+                  onChange={(e) => setTelegramToken(e.target.value)}
+                  className="font-mono text-sm pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowToken(!showToken)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-800 hover:text-primary transition-colors"
+                  aria-label={showToken ? "Hide token" : "Show token"}
+                >
+                  {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             <div>
