@@ -430,7 +430,9 @@
   // Fetch bot configuration
   async function fetchBotConfig() {
     try {
-      const response = await fetch(`${API_URL}/api/bots/config/${BOT_TOKEN}`);
+      // Remove trailing /api if present to avoid /api/api duplication
+      const baseUrl = API_URL.replace(/\/api$/, '');
+      const response = await fetch(`${baseUrl}/api/bots/config/${BOT_TOKEN}`);
       if (!response.ok) {
         throw new Error('Failed to fetch bot configuration');
       }
@@ -596,7 +598,9 @@
     showTyping();
 
     try {
-      const response = await fetch(`${API_URL}/api/chat/message`, {
+      // Remove trailing /api if present to avoid /api/api duplication
+      const baseUrl = API_URL.replace(/\/api$/, '');
+      const response = await fetch(`${baseUrl}/api/chat/message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

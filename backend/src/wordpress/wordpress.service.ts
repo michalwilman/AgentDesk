@@ -7,7 +7,7 @@ export class WordpressService {
    * Get current plugin version and update info
    */
   getPluginUpdate() {
-    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.2.2';
+    const currentVersion = process.env.WP_PLUGIN_VERSION || '1.2.3';
     
     return {
       name: 'AgentDesk AI Chatbot',
@@ -66,7 +66,16 @@ export class WordpressService {
           <li>🌍 Multi-language support (Hebrew & English)</li>
         </ul>
       `,
-      '1.2.2': `
+      '1.2.3': `
+        <h4>1.2.3 - CRITICAL Bot Loading Fix</h4>
+        <ul>
+          <li>🔧 <strong>CRITICAL FIX:</strong> Fixed duplicate /api/api URL bug in widget</li>
+          <li>🤖 <strong>CRITICAL FIX:</strong> Fixed bot not loading (pink bot issue)</li>
+          <li>✅ Widget now correctly loads bot configuration</li>
+          <li>🎨 Bot colors and name now display correctly</li>
+          <li>⚡ Improved API communication reliability</li>
+        </ul>
+        
         <h4>1.2.2 - Enhanced Update Checker</h4>
         <ul>
           <li>✨ <strong>NEW:</strong> Manual update check button in plugins page</li>
@@ -146,7 +155,7 @@ export class WordpressService {
     return {
       name: 'AgentDesk AI Chatbot',
       slug: 'agentdesk-chatbot',
-      version: process.env.WP_PLUGIN_VERSION || '1.2.2',
+      version: process.env.WP_PLUGIN_VERSION || '1.2.3',
       author: 'AgentDesk',
       author_profile: 'https://agentdesk.com',
       homepage: 'https://agentdesk.com/wordpress-plugin',
