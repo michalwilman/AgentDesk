@@ -59,6 +59,16 @@ export default async function KnowledgePage({ params }: { params: { id: string }
         <p className="text-dark-800 mt-1">Train your bot with your content</p>
       </div>
 
+      {/* Training Message */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-white mb-1">
+          Ready to train your bot?
+        </h3>
+        <p className="text-sm text-dark-800">
+          Retrain your bot with the latest content to improve responses
+        </p>
+      </div>
+
       {/* Status Overview */}
       <Card className="mb-6 border-primary/20">
         <CardContent className="pt-6">
@@ -145,33 +155,6 @@ export default async function KnowledgePage({ params }: { params: { id: string }
           <KnowledgeDocumentsTable botId={params.id} />
         </CardContent>
       </Card>
-
-      {/* Train Bot Button */}
-      {totalCount && totalCount > 0 && (
-        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-1">
-                  Ready to train your bot?
-                </h3>
-                <p className="text-sm text-dark-800">
-                  {isTrained 
-                    ? 'Retrain your bot with the latest content to improve responses'
-                    : 'Train your bot to start answering questions based on your content'
-                  }
-                </p>
-              </div>
-              <Link href={`/dashboard/bots/${params.id}`}>
-                <Button size="lg" className="gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  {isTrained ? 'Retrain Bot' : 'Train Bot'}
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }
