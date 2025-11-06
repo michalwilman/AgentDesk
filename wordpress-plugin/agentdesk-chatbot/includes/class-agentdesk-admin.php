@@ -19,6 +19,8 @@ class AgentDesk_Admin {
         add_action('admin_init', [$this, 'register_settings']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
         add_action('admin_notices', [$this, 'show_admin_notices']);
+        add_filter('plugin_row_meta', [$this, 'add_plugin_row_meta'], 10, 2);
+        add_action('wp_ajax_agentdesk_check_updates', [$this, 'ajax_check_updates']);
     }
     
     /**
@@ -482,6 +484,135 @@ class AgentDesk_Admin {
             AGENTDESK_VERSION,
             true
         );
+        
+        // Pass AJAX URL and nonce to JavaScript
+        wp_localize_script('agentdesk-admin-scripts', 'agentdeskAdmin', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('agentdesk_check_updates'),
+            'currentVersion' => AGENTDESK_VERSION,
+        ]);
+    }
+    
+    /**
+     * Add plugin row meta with update check link
+     */
+    public function add_plugin_row_meta($links, $file) {
+        if (plugin_basename(AGENTDESK_PLUGIN_DIR . 'agentdesk-chatbot.php') !== $file) {
+            return $links;
+        }
+        
+        $update_info = $this->get_cached_update_info();
+        
+        if ($update_info && isset($update_info['update_available']) && $update_info['update_available']) {
+            $status = sprintf(
+                '<span style="color: #d63638; font-weight: 600;">%s %s</span>',
+                __('Update available:', 'agentdesk-chatbot'),
+                $update_info['version']
+            );
+        } else {
+            $status = sprintf(
+                '<span style="color: #00a32a;">✓ %s</span>',
+                __('Up to date', 'agentdesk-chatbot')
+            );
+        }
+        
+        $check_link = sprintf(
+            '<a href="#" class="agentdesk-check-updates" style="color: #2271b1;">%s</a>',
+            __('Check for updates', 'agentdesk-chatbot')
+        );
+        
+        $row_meta = [
+            'version' => sprintf(__('Version %s', 'agentdesk-chatbot'), AGENTDESK_VERSION),
+            'status' => $status,
+            'check' => $check_link,
+        ];
+        
+        return array_merge($links, $row_meta);
+    }
+    
+    /**
+     * Get cached update information
+     */
+    private function get_cached_update_info() {
+        $cache_key = 'agentdesk_update_check_' . AGENTDESK_VERSION;
+        $cached = get_transient($cache_key);
+        
+        if ($cached !== false) {
+            return $cached;
+        }
+        
+        // If no cache, check now
+        return $this->check_for_updates();
+    }
+    
+    /**
+     * Check for plugin updates
+     */
+    private function check_for_updates() {
+        $api_url = defined('AGENTDESK_API_URL') 
+            ? AGENTDESK_API_URL 
+            : 'https://agentdesk-backend-production.up.railway.app/api';
+        
+        $response = wp_remote_get(
+            $api_url . '/wordpress/plugin-update?version=' . AGENTDESK_VERSION,
+            [
+                'timeout' => 10,
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+            ]
+        );
+        
+        if (is_wp_error($response)) {
+            return false;
+        }
+        
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        
+        if (!$data) {
+            return false;
+        }
+        
+        // Cache for 1 hour
+        $cache_key = 'agentdesk_update_check_' . AGENTDESK_VERSION;
+        set_transient($cache_key, $data, HOUR_IN_SECONDS);
+        
+        // Also update the last check time
+        update_option('agentdesk_last_update_check', current_time('mysql'));
+        
+        return $data;
+    }
+    
+    /**
+     * AJAX handler for checking updates
+     */
+    public function ajax_check_updates() {
+        check_ajax_referer('agentdesk_check_updates', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('Permission denied', 'agentdesk-chatbot')]);
+        }
+        
+        // Clear cache to force fresh check
+        $cache_key = 'agentdesk_update_check_' . AGENTDESK_VERSION;
+        delete_transient($cache_key);
+        
+        $update_info = $this->check_for_updates();
+        
+        if (!$update_info) {
+            wp_send_json_error(['message' => __('Failed to check for updates', 'agentdesk-chatbot')]);
+        }
+        
+        wp_send_json_success([
+            'update_available' => $update_info['update_available'] ?? false,
+            'current_version' => AGENTDESK_VERSION,
+            'latest_version' => $update_info['version'] ?? AGENTDESK_VERSION,
+            'message' => $update_info['update_available'] 
+                ? sprintf(__('Update available: %s', 'agentdesk-chatbot'), $update_info['version'])
+                : __('You have the latest version!', 'agentdesk-chatbot'),
+            'last_checked' => get_option('agentdesk_last_update_check', ''),
+        ]);
     }
 }
 
