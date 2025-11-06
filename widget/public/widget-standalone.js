@@ -1,6 +1,6 @@
 /**
  * AgentDesk Standalone Widget
- * Version: 1.0.1
+ * Version: 1.0.2
  * 
  * Standalone chat widget that works without iframe or external dependencies.
  * Perfect for WordPress and other CMS platforms.
@@ -95,6 +95,34 @@
           width: 32px;
           height: 32px;
           fill: white;
+        }
+
+        .agentdesk-bubble-avatar-container {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          overflow: hidden;
+        }
+
+        .agentdesk-bubble-avatar-container img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .agentdesk-bubble-status {
+          position: absolute;
+          bottom: 2px;
+          right: 2px;
+          width: 16px;
+          height: 16px;
+          background: #10b981;
+          border: 3px solid white;
+          border-radius: 50%;
+          z-index: 2;
         }
 
         .agentdesk-bubble-pulse {
@@ -403,12 +431,15 @@
       <!-- Floating Bubble -->
       <div id="agentdesk-bubble" class="agentdesk-bubble">
         <div class="agentdesk-bubble-pulse"></div>
-        <svg class="agentdesk-bubble-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H6L4 18V4H20V16Z" fill="currentColor"/>
-          <circle cx="12" cy="10" r="1.5" fill="currentColor"/>
-          <circle cx="8" cy="10" r="1.5" fill="currentColor"/>
-          <circle cx="16" cy="10" r="1.5" fill="currentColor"/>
-        </svg>
+        <div id="agentdesk-bubble-avatar" class="agentdesk-bubble-avatar-container">
+          <svg class="agentdesk-bubble-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H6L4 18V4H20V16Z" fill="currentColor"/>
+            <circle cx="12" cy="10" r="1.5" fill="currentColor"/>
+            <circle cx="8" cy="10" r="1.5" fill="currentColor"/>
+            <circle cx="16" cy="10" r="1.5" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="agentdesk-bubble-status"></div>
       </div>
 
       <!-- Chat Window -->
@@ -506,13 +537,31 @@
       botName.textContent = botConfig.name;
     }
 
-    // Set avatar
+    // Set avatar in chat header
     const avatarContainer = document.getElementById('agentdesk-avatar');
     const avatarText = document.getElementById('agentdesk-avatar-text');
     if (botConfig.avatar_url) {
       avatarContainer.innerHTML = `<img src="${botConfig.avatar_url}" alt="${botConfig.name}" />`;
     } else if (avatarText) {
       avatarText.textContent = botConfig.name.charAt(0).toUpperCase();
+    }
+
+    // Set avatar in bubble (floating button)
+    const bubbleAvatar = document.getElementById('agentdesk-bubble-avatar');
+    if (bubbleAvatar) {
+      if (botConfig.avatar_url) {
+        bubbleAvatar.innerHTML = `<img src="${botConfig.avatar_url}" alt="${botConfig.name}" />`;
+      } else {
+        // Keep the default icon if no avatar
+        bubbleAvatar.innerHTML = `
+          <svg class="agentdesk-bubble-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H6L4 18V4H20V16Z" fill="currentColor"/>
+            <circle cx="12" cy="10" r="1.5" fill="currentColor"/>
+            <circle cx="8" cy="10" r="1.5" fill="currentColor"/>
+            <circle cx="16" cy="10" r="1.5" fill="currentColor"/>
+          </svg>
+        `;
+      }
     }
 
     // Set RTL direction
