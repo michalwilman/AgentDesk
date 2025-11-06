@@ -246,6 +246,11 @@ We're here to help!
 
 == Changelog ==
 
+= 1.2.7 - 2025-11-06 =
+* 🔧 CRITICAL FIX: Resolved JavaScript syntax error that prevented widget from displaying
+* ✅ Widget now loads correctly on all WordPress pages
+* ⚡ Immediate stability and performance fix
+
 = 1.2.6 - 2025-11-06 =
 * 🎯 Widget now perfectly mirrors Dashboard bot (1:1 sync)
 * ✨ Multiple welcome messages with typing effect
