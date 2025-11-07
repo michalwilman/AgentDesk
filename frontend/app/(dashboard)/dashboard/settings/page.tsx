@@ -257,7 +257,6 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Full Name</label>
               <Input
-                icon={User}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="John Doe"
@@ -267,7 +266,6 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Phone Number</label>
               <Input
-                icon={Phone}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="050-1234567"
@@ -277,7 +275,6 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Company Name</label>
               <Input
-                icon={Building2}
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="Your Company"
