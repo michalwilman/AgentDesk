@@ -68,19 +68,34 @@ export class GoogleOAuthController {
     @Query('state') botId: string,
     @Res() res: Response,
   ) {
+    // 🔍 LOG: Callback received
+    console.log('📥 Google OAuth callback received:', {
+      hasCode: !!code,
+      codeLength: code?.length,
+      botId,
+      timestamp: new Date().toISOString(),
+    });
+
     try {
       if (!code || !botId) {
+        console.error('❌ Missing code or botId:', { hasCode: !!code, botId });
         return res.status(400).send('Missing authorization code or bot_id');
       }
 
+      console.log('🔄 Exchanging authorization code for tokens...');
       // Exchange authorization code for tokens
       const { tokens } = await this.oauth2Client.getToken(code);
+      console.log('✅ Tokens received:', {
+        hasAccessToken: !!tokens.access_token,
+        hasRefreshToken: !!tokens.refresh_token,
+      });
       
       if (!tokens.access_token || !tokens.refresh_token) {
         throw new Error('Failed to obtain tokens');
       }
 
       // Get user's primary calendar ID and email
+      console.log('📅 Fetching calendar and user info from Google...');
       this.oauth2Client.setCredentials(tokens);
       const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
       const oauth2 = google.oauth2({ version: 'v2', auth: this.oauth2Client });
@@ -92,8 +107,13 @@ export class GoogleOAuthController {
       
       const primaryCalendar = calendarList.data.items?.find(cal => cal.primary);
       const userEmail = userInfo.data.email;
+      console.log('✅ Google info fetched:', {
+        calendarId: primaryCalendar?.id,
+        email: userEmail,
+      });
 
       // Save tokens to database
+      console.log('💾 Saving tokens to database...');
       const supabase = this.supabaseService.getClient();
       
       const { error } = await supabase
@@ -111,9 +131,11 @@ export class GoogleOAuthController {
         });
 
       if (error) {
-        console.error('Error saving Google Calendar tokens:', error);
+        console.error('❌ Error saving Google Calendar tokens:', error);
         throw error;
       }
+
+      console.log('✅ Tokens saved to database successfully');
 
       // Redirect back to the Actions page with success message
       const frontendUrl = process.env.FRONTEND_URL || 
@@ -121,14 +143,21 @@ export class GoogleOAuthController {
           ? 'https://agentdesk-frontend-production.up.railway.app'
           : 'http://localhost:3000');
       
-      console.log(`✅ Google Calendar connected for bot ${botId}, redirecting to ${frontendUrl}`);
+      console.log(`🎉 Google Calendar connected for bot ${botId}`);
+      console.log(`🔀 Redirecting to: ${frontendUrl}/dashboard/bots/${botId}/actions?google_connected=true`);
       res.redirect(`${frontendUrl}/dashboard/bots/${botId}/actions?google_connected=true`);
     } catch (error) {
-      console.error('Error in Google OAuth callback:', error);
+      console.error('💥 Error in Google OAuth callback:', error);
+      console.error('💥 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
       const frontendUrl = process.env.FRONTEND_URL || 
         (process.env.NODE_ENV === 'production' 
           ? 'https://agentdesk-frontend-production.up.railway.app'
           : 'http://localhost:3000');
+      console.log(`🔀 Redirecting to error page: ${frontendUrl}/dashboard/bots/${botId}/actions?google_error=true`);
       res.redirect(`${frontendUrl}/dashboard/bots/${botId}/actions?google_error=true`);
     }
   }
