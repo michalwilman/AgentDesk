@@ -1,14 +1,17 @@
-import { Controller, Get, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Req, Res, UseGuards, Headers, UnauthorizedException } from '@nestjs/common';
 import { Response } from 'express';
 import { google } from 'googleapis';
 import { SupabaseService } from '../common/supabase.service';
-import { AuthGuard } from '@nestjs/passport';
+import { AuthService } from '../auth/auth.service';
 
 @Controller('actions/google')
 export class GoogleOAuthController {
   private oauth2Client;
 
-  constructor(private supabaseService: SupabaseService) {
+  constructor(
+    private supabaseService: SupabaseService,
+    private authService: AuthService,
+  ) {
     // Log environment variables for debugging
     console.log('🔧 Google OAuth Config:', {
       clientId: process.env.GOOGLE_CLIENT_ID ? '✅ Set' : '❌ Missing',
@@ -16,10 +19,15 @@ export class GoogleOAuthController {
       redirectUri: process.env.GOOGLE_REDIRECT_URI || 'Using default',
     });
 
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 
+      (process.env.NODE_ENV === 'production' 
+        ? 'https://agentdesk-backend-production.up.railway.app/api/actions/google/callback'
+        : 'http://localhost:3001/api/actions/google/callback');
+
     this.oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/api/actions/google/callback',
+      redirectUri,
     );
   }
 
@@ -29,7 +37,10 @@ export class GoogleOAuthController {
       return res.status(400).send('bot_id is required');
     }
 
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/api/actions/google/callback';
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 
+      (process.env.NODE_ENV === 'production' 
+        ? 'https://agentdesk-backend-production.up.railway.app/api/actions/google/callback'
+        : 'http://localhost:3001/api/actions/google/callback');
     
     console.log('🔗 Generating OAuth URL with redirect_uri:', redirectUri);
 
@@ -105,20 +116,49 @@ export class GoogleOAuthController {
       }
 
       // Redirect back to the Actions page with success message
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 
+        (process.env.NODE_ENV === 'production' 
+          ? 'https://agentdesk-frontend-production.up.railway.app'
+          : 'http://localhost:3000');
+      
+      console.log(`✅ Google Calendar connected for bot ${botId}, redirecting to ${frontendUrl}`);
       res.redirect(`${frontendUrl}/dashboard/bots/${botId}/actions?google_connected=true`);
     } catch (error) {
       console.error('Error in Google OAuth callback:', error);
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 
+        (process.env.NODE_ENV === 'production' 
+          ? 'https://agentdesk-frontend-production.up.railway.app'
+          : 'http://localhost:3000');
       res.redirect(`${frontendUrl}/dashboard/bots/${botId}/actions?google_error=true`);
     }
   }
 
   @Get('disconnect')
-  @UseGuards(AuthGuard('jwt'))
-  async disconnect(@Query('bot_id') botId: string, @Req() req: any) {
+  async disconnect(
+    @Query('bot_id') botId: string,
+    @Headers('authorization') authorization: string,
+  ) {
     try {
+      // Validate authentication
+      if (!authorization) {
+        throw new UnauthorizedException('Authorization header missing');
+      }
+
+      const token = authorization.replace('Bearer ', '');
+      const user = await this.authService.validateUser(token);
+
       const supabase = this.supabaseService.getClient();
+
+      // Verify bot ownership
+      const { data: bot, error: botError } = await supabase
+        .from('bots')
+        .select('user_id')
+        .eq('id', botId)
+        .single();
+
+      if (botError || !bot || bot.user_id !== user.id) {
+        throw new UnauthorizedException('Bot not found or access denied');
+      }
 
       // Remove Google Calendar tokens from database
       const { error } = await supabase
@@ -137,6 +177,8 @@ export class GoogleOAuthController {
         throw error;
       }
 
+      console.log(`✅ Google Calendar disconnected for bot ${botId}`);
+
       return {
         success: true,
         message: 'Google Calendar disconnected successfully',
@@ -145,16 +187,37 @@ export class GoogleOAuthController {
       console.error('Error disconnecting Google Calendar:', error);
       return {
         success: false,
-        error: 'Failed to disconnect Google Calendar',
+        error: error.message || 'Failed to disconnect Google Calendar',
       };
     }
   }
 
   @Get('status')
-  @UseGuards(AuthGuard('jwt'))
-  async getConnectionStatus(@Query('bot_id') botId: string) {
+  async getConnectionStatus(
+    @Query('bot_id') botId: string,
+    @Headers('authorization') authorization: string,
+  ) {
     try {
+      // Validate authentication
+      if (!authorization) {
+        throw new UnauthorizedException('Authorization header missing');
+      }
+
+      const token = authorization.replace('Bearer ', '');
+      const user = await this.authService.validateUser(token);
+
       const supabase = this.supabaseService.getClient();
+
+      // Verify bot ownership
+      const { data: bot, error: botError } = await supabase
+        .from('bots')
+        .select('user_id')
+        .eq('id', botId)
+        .single();
+
+      if (botError || !bot || bot.user_id !== user.id) {
+        throw new UnauthorizedException('Bot not found or access denied');
+      }
 
       const { data, error } = await supabase
         .from('bot_actions_config')
@@ -178,7 +241,7 @@ export class GoogleOAuthController {
       console.error('Error getting Google Calendar status:', error);
       return {
         connected: false,
-        error: 'Failed to get connection status',
+        error: error.message || 'Failed to get connection status',
       };
     }
   }
