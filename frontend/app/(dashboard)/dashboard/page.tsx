@@ -8,7 +8,6 @@ import { DashboardActivityChart } from '@/components/dashboard/dashboard-activit
 import { DashboardBotsPerformance } from '@/components/dashboard/dashboard-bots-performance'
 import { DashboardRecentActivity } from '@/components/dashboard/dashboard-recent-activity'
 import { DashboardAlerts } from '@/components/dashboard/dashboard-alerts'
-import { DashboardQuickActions } from '@/components/dashboard/dashboard-quick-actions'
 import { UsageDashboard } from '@/components/dashboard/usage-dashboard'
 import { DashboardContent } from '@/components/dashboard/dashboard-content'
 import { format, subDays } from 'date-fns'
@@ -395,9 +394,6 @@ export default async function DashboardPage() {
       {alerts.length > 0 && (
         <DashboardAlerts alerts={alerts} />
       )}
-
-      {/* Quick Actions */}
-      <DashboardQuickActions hasExistingBot={hasExistingBot} />
     </div>
   )
 }
