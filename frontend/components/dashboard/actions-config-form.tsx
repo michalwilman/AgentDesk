@@ -173,15 +173,20 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
       console.log('✅ Save successful!')
       setMessage({ type: 'success', text: '✅ Configuration saved successfully!' })
       
-      // Reload page after 1.5 seconds to show updated status
+      // Scroll to top to show the success message
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      
+      // Reload page after 3 seconds to show updated status
       setTimeout(() => {
         console.log('🔄 Reloading page...')
         window.location.reload()
-      }, 1500)
+      }, 3000)
     } catch (error) {
       console.error('💥 Error saving config:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to save configuration'
       setMessage({ type: 'error', text: `❌ ${errorMessage}` })
+      // Scroll to top to show the error message
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setLoading(false)
     }
@@ -192,18 +197,22 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       {/* Message */}
       {message && (
         <div
-          className={`p-4 rounded-lg flex items-center gap-2 ${
+          className={`p-5 rounded-lg flex items-center gap-3 shadow-lg animate-in slide-in-from-top-2 ${
             message.type === 'success'
-              ? 'bg-green-500/20 text-green-500 border border-green-500/30'
-              : 'bg-red-500/20 text-red-500 border border-red-500/30'
+              ? 'bg-green-500/20 text-green-400 border-2 border-green-500/50'
+              : 'bg-red-500/20 text-red-400 border-2 border-red-500/50'
           }`}
         >
-          <AlertCircle className="h-5 w-5" />
-          <span>{message.text}</span>
+          {message.type === 'success' ? (
+            <CheckCircle2 className="h-6 w-6 flex-shrink-0" />
+          ) : (
+            <AlertCircle className="h-6 w-6 flex-shrink-0" />
+          )}
+          <span className="text-base font-medium">{message.text}</span>
         </div>
       )}
 
