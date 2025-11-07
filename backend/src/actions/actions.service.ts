@@ -243,6 +243,7 @@ export class ActionsService {
             attendee_name: appointmentDto.attendee_name,
             attendee_email: appointmentDto.attendee_email,
             attendee_phone: appointmentDto.attendee_phone,
+            location: appointmentDto.location,
             notes: appointmentDto.notes,
             status: 'pending',
           },
@@ -276,6 +277,7 @@ export class ActionsService {
             {
               summary: `Meeting with ${appointmentDto.attendee_name}`,
               description: appointmentDto.notes,
+              location: appointmentDto.location,
               startTime,
               endTime,
               attendees: appointmentDto.attendee_email
@@ -464,11 +466,11 @@ export class ActionsService {
               // Prepare template parameters
               // {{1}} = attendee name
               // {{2}} = scheduled time
-              // {{3}} = duration
+              // {{3}} = location/address
               const templateParams = [
                 appointmentDto.attendee_name,
                 formattedDate,
-                (appointmentDto.duration_minutes || 30).toString(),
+                appointmentDto.location || 'משרד', // Default to 'משרד' (Office) if not provided
               ];
               
               this.logger.log(`📋 Template parameters: ${JSON.stringify(templateParams)}`);

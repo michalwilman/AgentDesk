@@ -33,6 +33,10 @@ export class ScheduleAppointmentDto {
 
   @IsOptional()
   @IsString()
+  location?: string; // Meeting location/address
+
+  @IsOptional()
+  @IsString()
   lead_id?: string; // Link to lead if exists
 }
 

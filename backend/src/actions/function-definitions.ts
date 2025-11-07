@@ -85,6 +85,11 @@ export function getAvailableTools(config: BotActionsConfig): any[] {
               type: 'string',
               description: "Customer's phone number (optional)",
             },
+            location: {
+              type: 'string',
+              description:
+                'Meeting location or address (e.g., "Office", "Zoom", or a physical address)',
+            },
             notes: {
               type: 'string',
               description:
