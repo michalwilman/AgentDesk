@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Bot } from 'lucide-react'
+import { Bot, Eye, EyeOff } from 'lucide-react'
 import { FaGoogle, FaFacebook } from 'react-icons/fa'
 import { useLanguage } from '@/lib/contexts/LanguageContext'
 import { LanguageToggle } from '@/components/ui/language-toggle'
@@ -21,6 +21,7 @@ function LoginForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   
   // Get redirect URL from query params (default to /dashboard)
   const redirectUrl = searchParams.get('redirect') || '/dashboard'
@@ -179,14 +180,24 @@ function LoginForm() {
               />
 
               <div className="space-y-2">
-                <Input
-                  label={t('auth.password')}
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t('placeholder.password')}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    label={t('auth.password')}
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t('placeholder.password')}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-3 top-[38px] text-dark-800 hover:text-white transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
                 <div className={dir === 'rtl' ? 'text-left' : 'text-right'}>
                   <Link 
                     href="/forgot-password" 

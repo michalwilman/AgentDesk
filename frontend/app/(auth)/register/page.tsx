@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Bot } from 'lucide-react'
+import { Bot, Eye, EyeOff } from 'lucide-react'
 import { FaGoogle, FaFacebook } from 'react-icons/fa'
 import { useLanguage } from '@/lib/contexts/LanguageContext'
 import { LanguageToggle } from '@/components/ui/language-toggle'
@@ -31,6 +31,7 @@ function RegisterForm() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [plan, setPlan] = useState<string>('starter')
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     const planParam = searchParams.get('plan')
@@ -334,22 +335,32 @@ function RegisterForm() {
                 required
               />
 
-              <Input
-                label={`🔐 ${t('auth.password')} *`}
-                type="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value)
-                  if (fieldErrors.password) {
-                    setFieldErrors(prev => ({ ...prev, password: undefined }))
-                  }
-                }}
-                onBlur={handlePasswordBlur}
-                placeholder={t('placeholder.password')}
-                error={fieldErrors.password}
-                required
-                minLength={8}
-              />
+              <div className="relative">
+                <Input
+                  label={`🔐 ${t('auth.password')} *`}
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    if (fieldErrors.password) {
+                      setFieldErrors(prev => ({ ...prev, password: undefined }))
+                    }
+                  }}
+                  onBlur={handlePasswordBlur}
+                  placeholder={t('placeholder.password')}
+                  error={fieldErrors.password}
+                  required
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-[38px] text-dark-800 hover:text-white transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? t('auth.creatingAccount') : t('auth.createAccountButton')}

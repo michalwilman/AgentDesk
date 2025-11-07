@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Bot, CheckCircle, AlertCircle } from 'lucide-react'
+import { Bot, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -17,6 +17,8 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [validSession, setValidSession] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   useEffect(() => {
     // Check if user has a valid recovery session
@@ -149,25 +151,45 @@ export default function ResetPasswordPage() {
                   </div>
                 )}
 
-                <Input
-                  label="New Password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter new password"
-                  required
-                  minLength={8}
-                />
+                <div className="relative">
+                  <Input
+                    label="New Password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-3 top-[38px] text-dark-800 hover:text-white transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
 
-                <Input
-                  label="Confirm Password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password"
-                  required
-                  minLength={8}
-                />
+                <div className="relative">
+                  <Input
+                    label="Confirm Password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute left-3 top-[38px] text-dark-800 hover:text-white transition-colors"
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
 
                 <div className="text-xs text-dark-800 space-y-1">
                   <p>Password must:</p>
