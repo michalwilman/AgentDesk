@@ -55,6 +55,11 @@ export async function GET(request: Request) {
         const now = new Date()
         const trialEndDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
         
+        // Generate API key manually (avoiding trigger issues)
+        const apiKey = 'sk_' + Array.from(crypto.getRandomValues(new Uint8Array(32)))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('')
+        
         await supabase.from('users').insert([
           {
             id: data.user.id,
@@ -63,10 +68,11 @@ export async function GET(request: Request) {
             company_name: userData.company_name || '',
             phone: userData.phone || null,
             avatar_url: userData.avatar_url || userData.picture || null,
+            api_key: apiKey,
             trial_start_date: now.toISOString(),
             trial_end_date: trialEndDate.toISOString(),
             subscription_status: 'trial',
-            subscription_tier: 'free'
+            subscription_tier: 'starter'
           },
         ])
       }
@@ -118,19 +124,37 @@ export async function GET(request: Request) {
           const now = new Date()
           const trialEndDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
           
-          await supabase.from('users').insert([
+          // Debug: Log user metadata to see what's available
+          console.log('📱 User metadata:', JSON.stringify(userData, null, 2))
+          console.log('📱 Phone from metadata:', userData.phone)
+          
+          // Generate API key manually (avoiding trigger issues)
+          const apiKey = 'sk_' + Array.from(crypto.getRandomValues(new Uint8Array(32)))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('')
+          
+          const { error: insertError } = await supabase.from('users').insert([
             {
               id: user.id,
               email: user.email,
               full_name: userData.full_name || '',
               company_name: userData.company_name || '',
               phone: userData.phone || null,
+              api_key: apiKey,
               trial_start_date: now.toISOString(),
               trial_end_date: trialEndDate.toISOString(),
               subscription_status: 'trial',
-              subscription_tier: 'free'
+              subscription_tier: 'starter'
             },
           ])
+
+          if (insertError) {
+            console.error('Failed to create user profile in DB:', insertError)
+            // User is still authenticated in Supabase Auth, but profile creation failed
+            // This could be due to RLS policies or other DB issues
+          } else {
+            console.log('✅ User profile created successfully with phone:', userData.phone)
+          }
         }
 
         // Check if user is inactive (suspended)

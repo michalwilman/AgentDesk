@@ -53,7 +53,7 @@ export class DocumentsService {
       .eq('id', userId)
       .single();
 
-    const subscriptionTier = user?.subscription_tier || 'free';
+    const subscriptionTier = user?.subscription_tier || 'starter';
 
     // Validate file size based on subscription
     this.validateFileSize(file.size, subscriptionTier);

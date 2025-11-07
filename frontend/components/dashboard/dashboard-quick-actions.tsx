@@ -84,61 +84,30 @@ export function DashboardQuickActions({ hasExistingBot = false }: DashboardQuick
         <CardDescription>Common tasks and shortcuts</CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Bot Limit Alert */}
-        {showBotLimitAlert && (
-          <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/50 rounded-lg">
-            <h3 className="text-yellow-500 font-semibold mb-2">Bot Limit Reached</h3>
-            <p className="text-sm text-white mb-3">
-              You've created {usage?.bots_created || 0} of {limits?.max_bots || 1} bot{limits?.max_bots && limits.max_bots > 1 ? 's' : ''} in your {plan} plan. 
-              Upgrade to create more bots and unlock additional features.
-            </p>
-            <Link href="/pricing">
-              <Button variant="outline" size="sm">
-                Upgrade Plan →
-              </Button>
-            </Link>
-          </div>
-        )}
-
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
           {actions.map((action) => {
             const Icon = action.icon
             const isCreateBot = action.label === 'Create New Bot'
-            const isDisabled = isCreateBot && isAtBotLimit
+            
+            // Hide Create Bot button if user has reached their bot limit
+            if (isCreateBot && isAtBotLimit) {
+              return null
+            }
             
             return (
               <div key={action.label} className="relative">
-                {isCreateBot && isAtBotLimit ? (
+                <Link href={action.href}>
                   <Button
                     variant={action.variant}
-                    className="w-full h-auto flex flex-col items-center gap-2 py-4 px-3 opacity-50 cursor-not-allowed"
-                    title={`Bot limit reached (${usage?.bots_created}/${limits?.max_bots}). Upgrade to create more bots.`}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setShowBotLimitAlert(true)
-                      setTimeout(() => setShowBotLimitAlert(false), 5000)
-                    }}
-                    disabled={isDisabled}
+                    className="w-full h-auto flex flex-col items-center gap-2 py-4 px-3"
+                    title={action.description}
                   >
                     <Icon className="h-5 w-5" />
                     <span className="text-xs text-center leading-tight">
                       {action.label}
                     </span>
                   </Button>
-                ) : (
-                  <Link href={action.href}>
-                    <Button
-                      variant={action.variant}
-                      className="w-full h-auto flex flex-col items-center gap-2 py-4 px-3"
-                      title={action.description}
-                    >
-                      <Icon className="h-5 w-5" />
-                      <span className="text-xs text-center leading-tight">
-                        {action.label}
-                      </span>
-                    </Button>
-                  </Link>
-                )}
+                </Link>
               </div>
             )
           })}

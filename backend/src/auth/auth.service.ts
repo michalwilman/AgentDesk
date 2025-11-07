@@ -27,16 +27,21 @@ export class AuthService {
       const now = new Date();
       const trialEndDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
       
+      // Generate API key manually (avoiding trigger issues)
+      const crypto = require('crypto');
+      const apiKey = 'sk_' + crypto.randomBytes(32).toString('hex');
+      
       await supabase.from('users').insert([
         {
           id: user.id,
           email: user.email,
           full_name: userData.full_name || '',
           company_name: userData.company_name || '',
+          api_key: apiKey,
           trial_start_date: now.toISOString(),
           trial_end_date: trialEndDate.toISOString(),
           subscription_status: 'trial',
-          subscription_tier: 'free'
+          subscription_tier: 'starter'
         },
       ]);
     }

@@ -86,8 +86,11 @@ function RegisterForm() {
     if (!pass) {
       return t('error.passwordRequired')
     }
-    if (pass.length < 6) {
-      return t('error.passwordMinLength')
+    if (pass.length < 8) {
+      return 'Password must be at least 8 characters (e.g., MyPass123)'
+    }
+    if (!/\d/.test(pass)) {
+      return 'Password must contain at least one number'
     }
     return undefined
   }
@@ -151,7 +154,7 @@ function RegisterForm() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
           data: {
             full_name: fullName.trim(),
             company_name: companyName.trim(),
@@ -180,7 +183,7 @@ function RegisterForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback`,
           queryParams: {
             plan: plan,
           },
@@ -345,7 +348,7 @@ function RegisterForm() {
                 placeholder={t('placeholder.password')}
                 error={fieldErrors.password}
                 required
-                minLength={6}
+                minLength={8}
               />
 
               <Button type="submit" className="w-full" disabled={loading}>

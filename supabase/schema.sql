@@ -33,7 +33,7 @@ CREATE TABLE users (
   role_id UUID REFERENCES roles(id) DEFAULT (SELECT id FROM roles WHERE name = 'user'),
   avatar_url TEXT,
   is_active BOOLEAN DEFAULT TRUE,
-  subscription_tier VARCHAR(50) DEFAULT 'free', -- free, pro, enterprise
+  subscription_tier VARCHAR(50) DEFAULT 'starter', -- starter, growth, plus, premium
   api_key VARCHAR(255) UNIQUE,
   metadata JSONB DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

@@ -156,7 +156,7 @@ export default function ResetPasswordPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter new password"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
 
                 <Input
@@ -166,13 +166,14 @@ export default function ResetPasswordPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
 
                 <div className="text-xs text-dark-800 space-y-1">
                   <p>Password must:</p>
                   <ul className="list-disc list-inside">
-                    <li>Be at least 6 characters long</li>
+                    <li>Be at least 8 characters long</li>
+                    <li>Contain at least one number</li>
                     <li>Match the confirmation</li>
                   </ul>
                 </div>

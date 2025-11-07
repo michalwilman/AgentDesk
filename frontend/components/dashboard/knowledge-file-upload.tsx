@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Upload, FileText, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { createClient } from '@/lib/supabase/client'
 
 interface KnowledgeFileUploadProps {
   botId: string
@@ -45,17 +46,20 @@ export function KnowledgeFileUpload({ botId }: KnowledgeFileUploadProps) {
       formData.append('file', file)
       formData.append('botId', botId)
 
-      // Get auth token
-      const token = localStorage.getItem('supabase.auth.token')
-      if (!token) {
-        throw new Error('Not authenticated')
+      // Get auth token from Supabase
+      const supabase = createClient()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError || !session?.access_token) {
+        throw new Error('Not authenticated. Please log in again.')
       }
 
       // Upload file
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/upload`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+      const response = await fetch(`${apiUrl}/documents/upload`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: formData,
       })

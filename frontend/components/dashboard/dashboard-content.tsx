@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { MessageSquare } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { CreateBotButton } from './create-bot-button'
+import { CreateBotForm } from './create-bot-form'
 import { useLanguage } from '@/lib/contexts/LanguageContext'
 
 interface Bot {
@@ -113,19 +114,32 @@ export function DashboardContent({
         </div>
       )}
 
-      {/* No Bots State */}
+      {/* No Bots State - Show inline form for first bot creation */}
       {(!bots || bots.length === 0) && (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <h3 className="text-xl font-semibold text-white mb-2">
+        <div className="max-w-2xl mx-auto">
+          <div className="mb-6 text-center">
+            <h3 className="text-2xl font-semibold text-white mb-2">
               {t('dashboard.noBots')}
             </h3>
-            <p className="text-dark-800 mb-4">
+            <p className="text-dark-800">
               {t('dashboard.noBotsDescription')}
             </p>
-            <CreateBotButton subscriptionStatus={subscriptionStatus} />
-          </CardContent>
-        </Card>
+          </div>
+          <Card className="border-primary/30">
+            <CardHeader>
+              <CardTitle>{t('bot.create')}</CardTitle>
+              <CardDescription>
+                Set up your first AI chatbot with custom settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CreateBotForm embedded onSuccess={() => {
+                // Refresh the page after successful creation
+                window.location.reload()
+              }} />
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   )

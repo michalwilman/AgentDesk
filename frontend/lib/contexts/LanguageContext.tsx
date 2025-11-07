@@ -54,7 +54,7 @@ const translations: Record<Language, Record<string, string>> = {
     'placeholder.phone': '050-1234567',
     'placeholder.companyName': 'Your Company',
     'placeholder.email': 'you@example.com',
-    'placeholder.password': 'At least 6 characters',
+    'placeholder.password': 'At least 8 characters with a number',
     
     // Validation Errors
     'error.fullNameRequired': 'Full name is required',
@@ -66,7 +66,7 @@ const translations: Record<Language, Record<string, string>> = {
     'error.emailRequired': 'Email is required',
     'error.emailInvalid': 'Invalid email address',
     'error.passwordRequired': 'Password is required',
-    'error.passwordMinLength': 'Password must be at least 6 characters',
+    'error.passwordMinLength': 'Password must be at least 8 characters with a number (e.g., MyPass123)',
     'error.fixErrors': 'Please fix the errors in the form',
     
     // Success Messages
@@ -156,6 +156,7 @@ const translations: Record<Language, Record<string, string>> = {
     'common.loading': 'Loading...',
     'common.error': 'Error',
     'common.success': 'Success',
+    'common.tip': 'Tip',
   },
   he: {
     // Navigation
@@ -196,7 +197,7 @@ const translations: Record<Language, Record<string, string>> = {
     'placeholder.phone': '050-1234567',
     'placeholder.companyName': 'שם החברה שלך',
     'placeholder.email': 'email@example.com',
-    'placeholder.password': 'לפחות 6 תווים',
+    'placeholder.password': 'לפחות 8 תווים עם מספר',
     
     // Validation Errors
     'error.fullNameRequired': 'שם מלא הוא שדה חובה',
@@ -208,7 +209,7 @@ const translations: Record<Language, Record<string, string>> = {
     'error.emailRequired': 'אימייל הוא שדה חובה',
     'error.emailInvalid': 'כתובת אימייל לא תקינה',
     'error.passwordRequired': 'סיסמה היא שדה חובה',
-    'error.passwordMinLength': 'סיסמה חייבת להכיל לפחות 6 תווים',
+    'error.passwordMinLength': 'סיסמה חייבת להכיל לפחות 8 תווים עם מספר אחד (לדוגמה: MyPass123)',
     'error.fixErrors': 'אנא תקן את השגיאות בטופס',
     
     // Success Messages
@@ -298,6 +299,7 @@ const translations: Record<Language, Record<string, string>> = {
     'common.loading': 'טוען...',
     'common.error': 'שגיאה',
     'common.success': 'הצלחה',
+    'common.tip': 'טיפ',
   },
 }
 

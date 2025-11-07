@@ -80,11 +80,15 @@ export function usePlanLimits() {
 
   // Helper functions
   const canCreateBot = () => {
-    if (!data?.limits || !data?.usage) return false
+    if (!data?.limits) return false
+    
+    // If no usage data, assume 0 bots created (new user)
+    const botsCreated = data?.usage?.bots_created || 0
+    
     if (data.limits.max_bots === -1) return true // unlimited
     
     // Count current bots from usage
-    return data.usage.bots_created < data.limits.max_bots
+    return botsCreated < data.limits.max_bots
   }
 
   const canSendMessage = () => {

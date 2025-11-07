@@ -138,3 +138,4 @@ start-*.bat
 test-*.ps1
 test-*.sh
 create-plugin-zip.sh
+docs_private/

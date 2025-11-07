@@ -84,10 +84,13 @@ function LoginForm() {
       setError('')
       const supabase = createClient()
       
+      // Use production URL or fallback to current origin
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+      
       // Include redirect URL in OAuth callback
       const callbackUrl = redirectUrl !== '/dashboard' 
-        ? `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectUrl)}`
-        : `${window.location.origin}/auth/callback`
+        ? `${baseUrl}/auth/callback?redirect=${encodeURIComponent(redirectUrl)}`
+        : `${baseUrl}/auth/callback`
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
