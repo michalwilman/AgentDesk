@@ -87,8 +87,14 @@ export function GoogleCalendarManageDialog({
         throw new Error('No active session')
       }
 
+      // Smart backend URL detection
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 
+        (typeof window !== 'undefined' && window.location.hostname !== 'localhost' 
+          ? 'https://agentdesk-backend-production.up.railway.app/api'
+          : 'http://localhost:3001/api')
+      
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/actions/google/disconnect?bot_id=${botId}`,
+        `${apiUrl}/actions/google/disconnect?bot_id=${botId}`,
         {
           method: 'GET',
           headers: {

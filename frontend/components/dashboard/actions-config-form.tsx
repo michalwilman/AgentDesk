@@ -62,7 +62,12 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
 
   const checkGoogleConnectionStatus = async () => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+      // Smart backend URL detection
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 
+        (typeof window !== 'undefined' && window.location.hostname !== 'localhost' 
+          ? 'https://agentdesk-backend-production.up.railway.app'
+          : 'http://localhost:3001')
+      
       const { data: { session } } = await supabase.auth.getSession()
       
       const response = await fetch(
@@ -84,7 +89,14 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
   const handleConnectGoogle = async () => {
     setGoogleLoading(true)
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+      // Smart backend URL detection
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 
+        (typeof window !== 'undefined' && window.location.hostname !== 'localhost' 
+          ? 'https://agentdesk-backend-production.up.railway.app'
+          : 'http://localhost:3001')
+      
+      console.log('🔗 Connecting to backend:', backendUrl)
+      
       const { data: { session } } = await supabase.auth.getSession()
       
       // Redirect to Google OAuth flow
@@ -103,7 +115,12 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
     
     setGoogleLoading(true)
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+      // Smart backend URL detection
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 
+        (typeof window !== 'undefined' && window.location.hostname !== 'localhost' 
+          ? 'https://agentdesk-backend-production.up.railway.app'
+          : 'http://localhost:3001')
+      
       const { data: { session } } = await supabase.auth.getSession()
       
       const response = await fetch(
