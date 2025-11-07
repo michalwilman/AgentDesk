@@ -9,7 +9,8 @@ import {
   Bot, 
   FileText, 
   Settings,
-  Shield
+  Shield,
+  DollarSign
 } from 'lucide-react'
 
 interface AdminNavProps {
@@ -23,6 +24,7 @@ export function AdminNav({ user }: AdminNavProps) {
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/users', label: 'Users', icon: Users },
     { href: '/admin/bots', label: 'Bots', icon: Bot },
+    { href: '/admin/usage', label: 'Usage & Costs', icon: DollarSign },
     { href: '/admin/audit-logs', label: 'Audit Logs', icon: FileText },
   ]
 

@@ -1,7 +1,10 @@
 -- Create plan_limits table for configurable plan constraints
 -- Allows flexible adjustment of limits without code changes
 
-CREATE TABLE IF NOT EXISTS plan_limits (
+-- Drop existing table if it exists (to ensure clean migration)
+DROP TABLE IF EXISTS plan_limits;
+
+CREATE TABLE plan_limits (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   plan_type VARCHAR(20) UNIQUE NOT NULL,
   sms_monthly_limit INTEGER,

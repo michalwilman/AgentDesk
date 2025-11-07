@@ -549,21 +549,22 @@ export class ActionsService {
               if (result.success) {
                 whatsappSuccess = true;
                 this.logger.log(`✅ WhatsApp confirmation sent successfully for appointment ${appointment.id}`);
-            } else {
-              this.logger.error(`❌ WhatsApp send failed: ${result.error}`);
-              
-              // Check if it's the 24-hour window error (Error 63016)
-              const isWindowError = result.error?.includes('63016') || 
-                                   result.error?.includes('outside the allowed window') ||
-                                   result.error?.includes('freeform message');
-              
-              if (isWindowError) {
-                this.logger.warn(`⚠️ WhatsApp failed due to 24-hour window restriction (Error 63016)`);
-                this.logger.warn(`🔄 Will attempt to send SMS as fallback...`);
-                // Don't throw error - we'll try SMS instead
               } else {
-                // Other WhatsApp errors - still throw
-                throw new Error(result.error || 'WhatsApp send failed');
+                this.logger.error(`❌ WhatsApp send failed: ${result.error}`);
+                
+                // Check if it's the 24-hour window error (Error 63016)
+                const isWindowError = result.error?.includes('63016') || 
+                                     result.error?.includes('outside the allowed window') ||
+                                     result.error?.includes('freeform message');
+                
+                if (isWindowError) {
+                  this.logger.warn(`⚠️ WhatsApp failed due to 24-hour window restriction (Error 63016)`);
+                  this.logger.warn(`🔄 Will attempt to send SMS as fallback...`);
+                  // Don't throw error - we'll try SMS instead
+                } else {
+                  // Other WhatsApp errors - still throw
+                  throw new Error(result.error || 'WhatsApp send failed');
+                }
               }
             }
           } else {

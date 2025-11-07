@@ -20,8 +20,12 @@ SET plan_type = CASE
 END
 WHERE plan_type IS NULL OR plan_type = 'starter';
 
+-- Drop existing tables if they exist (to ensure clean migration)
+DROP TABLE IF EXISTS message_logs;
+DROP TABLE IF EXISTS monthly_usage;
+
 -- Create monthly usage tracking table
-CREATE TABLE IF NOT EXISTS monthly_usage (
+CREATE TABLE monthly_usage (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
   bot_id UUID REFERENCES bots(id) ON DELETE CASCADE NOT NULL,
@@ -47,7 +51,7 @@ CREATE INDEX IF NOT EXISTS idx_monthly_usage_user_month ON monthly_usage(user_id
 CREATE INDEX IF NOT EXISTS idx_monthly_usage_bot_month ON monthly_usage(bot_id, month);
 
 -- Create message_logs table for detailed tracking
-CREATE TABLE IF NOT EXISTS message_logs (
+CREATE TABLE message_logs (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
   bot_id UUID REFERENCES bots(id) ON DELETE CASCADE NOT NULL,
