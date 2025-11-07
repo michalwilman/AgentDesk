@@ -572,29 +572,78 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
             </div>
 
             {config.whatsapp_enabled && (
-              <div>
-                <Label>Twilio WhatsApp Number</Label>
-                <div className="relative mt-2">
-                  <Input
-                    type={showWhatsAppNumber ? "tel" : "password"}
-                    placeholder="+1234567890 (E.164 format)"
-                    value={config.twilio_whatsapp_number || ''}
-                    onChange={(e) => updateConfig('twilio_whatsapp_number', e.target.value)}
-                    className="pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowWhatsAppNumber(!showWhatsAppNumber)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-800 hover:text-primary transition-colors"
-                    aria-label={showWhatsAppNumber ? "Hide WhatsApp Number" : "Show WhatsApp Number"}
-                  >
-                    {showWhatsAppNumber ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+              <>
+                <div>
+                  <Label>Twilio WhatsApp Number</Label>
+                  <div className="relative mt-2">
+                    <Input
+                      type={showWhatsAppNumber ? "tel" : "password"}
+                      placeholder="+1234567890 (E.164 format)"
+                      value={config.twilio_whatsapp_number || ''}
+                      onChange={(e) => updateConfig('twilio_whatsapp_number', e.target.value)}
+                      className="pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowWhatsAppNumber(!showWhatsAppNumber)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-800 hover:text-primary transition-colors"
+                      aria-label={showWhatsAppNumber ? "Hide WhatsApp Number" : "Show WhatsApp Number"}
+                    >
+                      {showWhatsAppNumber ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-dark-800 mt-1">
+                    Your Twilio WhatsApp-enabled number (must be configured in Twilio)
+                  </p>
                 </div>
-                <p className="text-xs text-dark-800 mt-1">
-                  Your Twilio WhatsApp-enabled number (must be configured in Twilio)
-                </p>
-              </div>
+
+                {/* WhatsApp Template Configuration */}
+                <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg space-y-4">
+                  <div className="flex items-start gap-2">
+                    <MessageCircle className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-semibold text-white mb-1">WhatsApp Template (Optional)</h4>
+                      <p className="text-xs text-blue-400">
+                        Use your approved Meta/Facebook WhatsApp template for appointment confirmations
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Template Name</Label>
+                    <Input
+                      type="text"
+                      placeholder="appointment_confirmation"
+                      value={config.whatsapp_template_name || ''}
+                      onChange={(e) => updateConfig('whatsapp_template_name', e.target.value)}
+                      className="mt-2"
+                    />
+                    <p className="text-xs text-dark-800 mt-1">
+                      The name of your approved WhatsApp template from Meta/Facebook Business
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label>Template Language</Label>
+                    <select
+                      value={config.whatsapp_template_language || 'he'}
+                      onChange={(e) => updateConfig('whatsapp_template_language', e.target.value)}
+                      className="w-full mt-2 px-3 py-2 bg-dark-100 border border-dark-200 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="he">Hebrew (עברית)</option>
+                      <option value="en">English</option>
+                      <option value="ar">Arabic (العربية)</option>
+                    </select>
+                    <p className="text-xs text-dark-800 mt-1">
+                      Must match the language code of your approved template
+                    </p>
+                  </div>
+
+                  <div className="text-xs text-blue-400">
+                    💡 <strong>Note:</strong> If template is configured, it will be used instead of freeform messages (no 24h window restriction!)
+                  </div>
+                </div>
+              </>
             )}
           </div>
 
