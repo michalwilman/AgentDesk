@@ -66,9 +66,18 @@ export class ScraperService {
   }
 
   private async scrapeWithPuppeteer(url: string): Promise<string> {
+    const executablePath = this.configService.get<string>('PUPPETEER_EXECUTABLE_PATH');
+    
     const browser = await puppeteer.launch({
       headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: executablePath || undefined,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+      ],
     });
 
     try {

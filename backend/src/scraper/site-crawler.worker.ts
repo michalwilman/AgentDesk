@@ -82,8 +82,11 @@ export class SiteCrawlerWorker {
       console.log(`🔄 Processing job ${jobId} for bot ${botId}`);
 
       // Launch Puppeteer browser
+      const executablePath = this.configService.get<string>('PUPPETEER_EXECUTABLE_PATH');
+      
       browser = await puppeteer.launch({
         headless: 'new',
+        executablePath: executablePath || undefined,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
