@@ -12,6 +12,7 @@ import { PdfService } from './integrations/pdf.service';
 import { WebhookService } from './integrations/webhook.service';
 import { TwilioService } from './integrations/twilio.service';
 import { RemindersService } from './integrations/reminders.service';
+import { UsageTrackingService } from './integrations/usage-tracking.service';
 import { SupabaseService } from '../common/supabase.service';
 import { PlanGuardService } from '../common/plan-guard.service';
 import { AuthService } from '../auth/auth.service';
@@ -32,6 +33,7 @@ import { AuthService } from '../auth/auth.service';
     WebhookService,
     TwilioService,
     RemindersService,
+    UsageTrackingService,
     SupabaseService,
     PlanGuardService,
     AuthService,

@@ -38,8 +38,33 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
   const [showAccountSid, setShowAccountSid] = useState(false)
   const [showAuthToken, setShowAuthToken] = useState(false)
   const [showWhatsAppNumber, setShowWhatsAppNumber] = useState(false)
+  const [planType, setPlanType] = useState<'starter' | 'pro' | 'enterprise'>('starter')
   const searchParams = useSearchParams()
   const supabase = createClient()
+
+  // Fetch user's plan type
+  useEffect(() => {
+    fetchPlanType()
+  }, [])
+
+  const fetchPlanType = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('plan_type')
+          .eq('id', user.id)
+          .single()
+        
+        if (userData?.plan_type) {
+          setPlanType(userData.plan_type as 'starter' | 'pro' | 'enterprise')
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching plan type:', error)
+    }
+  }
 
   // Check Google Calendar connection status on mount
   useEffect(() => {
@@ -471,116 +496,198 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
             <div>
               <CardTitle>SMS & WhatsApp Notifications</CardTitle>
               <CardDescription>
-                Send appointment confirmations and reminders via SMS or WhatsApp using Twilio
+                {planType === 'starter' && 'Upgrade to Pro to enable SMS & WhatsApp notifications'}
+                {planType === 'pro' && 'Managed by AgentDesk - Simply toggle on/off'}
+                {planType === 'enterprise' && 'Use your own Twilio account for SMS & WhatsApp'}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Twilio Configuration */}
-          <div className="space-y-4 p-4 bg-dark-100 rounded-lg">
-            <h4 className="text-sm font-semibold text-white">Twilio Configuration</h4>
-            
-            <div>
-              <Label>Twilio Account SID</Label>
-              <div className="relative mt-2">
-                <Input
-                  type={showAccountSid ? "text" : "password"}
-                  placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  value={config.twilio_account_sid || ''}
-                  onChange={(e) => updateConfig('twilio_account_sid', e.target.value)}
-                  className="pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowAccountSid(!showAccountSid)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-800 hover:text-primary transition-colors"
-                  aria-label={showAccountSid ? "Hide Account SID" : "Show Account SID"}
+          {/* Starter Plan - Upgrade Prompt */}
+          {planType === 'starter' && (
+            <div className="p-6 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-lg text-center space-y-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/20 mb-2">
+                <MessageCircle className="h-8 w-8 text-blue-400" />
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-white mb-2">
+                  Unlock SMS & WhatsApp Messaging
+                </h4>
+                <p className="text-sm text-gray-400">
+                  Send appointment confirmations and reminders via SMS and WhatsApp. 
+                  Available in Pro and Enterprise plans.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 max-w-xs mx-auto">
+                <Button 
+                  onClick={() => window.location.href = '/pricing'}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
                 >
-                  {showAccountSid ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                  Upgrade to Pro Plan
+                </Button>
+                <p className="text-xs text-gray-500">
+                  Starting at ₪249/month • 250 SMS + 100 WhatsApp messages included
+                </p>
               </div>
             </div>
+          )}
 
-            <div>
-              <Label>Twilio Auth Token</Label>
-              <div className="relative mt-2">
-                <Input
-                  type={showAuthToken ? "text" : "password"}
-                  placeholder="Auth Token"
-                  value={config.twilio_auth_token || ''}
-                  onChange={(e) => updateConfig('twilio_auth_token', e.target.value)}
-                  className="pr-12"
+          {/* Pro Plan - Simple Toggle */}
+          {planType === 'pro' && (
+            <div className="space-y-4">
+              <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                <p className="text-sm text-green-400 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Your messaging is managed by AgentDesk. Simply enable the channels you want to use.</span>
+                </p>
+              </div>
+
+              {/* SMS Toggle - Pro */}
+              <div className="flex items-center justify-between p-4 bg-dark-100 rounded-lg">
+                <div>
+                  <h4 className="text-sm font-semibold text-white">SMS Notifications</h4>
+                  <p className="text-xs text-dark-800 mt-1">
+                    Send appointment confirmations via SMS
+                  </p>
+                </div>
+                <Switch
+                  checked={config.sms_enabled || false}
+                  onCheckedChange={(checked) => updateConfig('sms_enabled', checked)}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowAuthToken(!showAuthToken)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-800 hover:text-primary transition-colors"
-                  aria-label={showAuthToken ? "Hide Auth Token" : "Show Auth Token"}
-                >
-                  {showAuthToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
               </div>
-            </div>
 
-            <p className="text-xs text-dark-800">
-              Get your credentials from{' '}
-              <a href="https://console.twilio.com" target="_blank" rel="noopener" className="text-primary hover:underline">
-                console.twilio.com
-              </a>
-            </p>
-          </div>
-
-          {/* SMS Configuration */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-semibold text-white">SMS Notifications</h4>
-                <p className="text-xs text-dark-800 mt-1">
-                  Send appointment confirmations via SMS
-                </p>
-              </div>
-              <Switch
-                checked={config.sms_enabled || false}
-                onCheckedChange={(checked) => updateConfig('sms_enabled', checked)}
-                disabled={!config.twilio_account_sid || !config.twilio_auth_token}
-              />
-            </div>
-
-            {config.sms_enabled && (
-              <div>
-                <Label>Twilio Phone Number</Label>
-                <Input
-                  type="tel"
-                  placeholder="+1234567890 (E.164 format)"
-                  value={config.twilio_phone_number || ''}
-                  onChange={(e) => updateConfig('twilio_phone_number', e.target.value)}
-                  className="mt-2"
+              {/* WhatsApp Toggle - Pro */}
+              <div className="flex items-center justify-between p-4 bg-dark-100 rounded-lg">
+                <div>
+                  <h4 className="text-sm font-semibold text-white">WhatsApp Notifications</h4>
+                  <p className="text-xs text-dark-800 mt-1">
+                    Send appointment confirmations via WhatsApp
+                  </p>
+                </div>
+                <Switch
+                  checked={config.whatsapp_enabled || false}
+                  onCheckedChange={(checked) => updateConfig('whatsapp_enabled', checked)}
                 />
-                <p className="text-xs text-dark-800 mt-1">
-                  Your Twilio phone number in E.164 format (e.g., +1234567890)
-                </p>
               </div>
-            )}
-          </div>
-
-          {/* WhatsApp Configuration */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-semibold text-white">WhatsApp Notifications</h4>
-                <p className="text-xs text-dark-800 mt-1">
-                  Send appointment confirmations via WhatsApp
-                </p>
-              </div>
-              <Switch
-                checked={config.whatsapp_enabled || false}
-                onCheckedChange={(checked) => updateConfig('whatsapp_enabled', checked)}
-                disabled={!config.twilio_account_sid || !config.twilio_auth_token}
-              />
             </div>
+          )}
 
-            {config.whatsapp_enabled && (
+          {/* Enterprise Plan - Full Twilio Configuration */}
+          {planType === 'enterprise' && (
+            <>
+              {/* Twilio Configuration */}
+              <div className="space-y-4 p-4 bg-dark-100 rounded-lg">
+                <h4 className="text-sm font-semibold text-white">Twilio Configuration</h4>
+                <p className="text-xs text-blue-400 mb-4">
+                  Use your own Twilio account for unlimited messaging
+                </p>
+                
+                <div>
+                  <Label>Twilio Account SID</Label>
+                  <div className="relative mt-2">
+                    <Input
+                      type={showAccountSid ? "text" : "password"}
+                      placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      value={config.twilio_account_sid || ''}
+                      onChange={(e) => updateConfig('twilio_account_sid', e.target.value)}
+                      className="pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowAccountSid(!showAccountSid)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-800 hover:text-primary transition-colors"
+                      aria-label={showAccountSid ? "Hide Account SID" : "Show Account SID"}
+                    >
+                      {showAccountSid ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Twilio Auth Token</Label>
+                  <div className="relative mt-2">
+                    <Input
+                      type={showAuthToken ? "text" : "password"}
+                      placeholder="Auth Token"
+                      value={config.twilio_auth_token || ''}
+                      onChange={(e) => updateConfig('twilio_auth_token', e.target.value)}
+                      className="pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowAuthToken(!showAuthToken)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-800 hover:text-primary transition-colors"
+                      aria-label={showAuthToken ? "Hide Auth Token" : "Show Auth Token"}
+                    >
+                      {showAuthToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-xs text-dark-800">
+                  Get your credentials from{' '}
+                  <a href="https://console.twilio.com" target="_blank" rel="noopener" className="text-primary hover:underline">
+                    console.twilio.com
+                  </a>
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* SMS & WhatsApp Configuration for Enterprise */}
+          {planType === 'enterprise' && (
+            <>
+              {/* SMS Configuration */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-semibold text-white">SMS Notifications</h4>
+                    <p className="text-xs text-dark-800 mt-1">
+                      Send appointment confirmations via SMS
+                    </p>
+                  </div>
+                  <Switch
+                    checked={config.sms_enabled || false}
+                    onCheckedChange={(checked) => updateConfig('sms_enabled', checked)}
+                    disabled={!config.twilio_account_sid || !config.twilio_auth_token}
+                  />
+                </div>
+
+                {config.sms_enabled && (
+                  <div>
+                    <Label>Twilio Phone Number</Label>
+                    <Input
+                      type="tel"
+                      placeholder="+1234567890 (E.164 format)"
+                      value={config.twilio_phone_number || ''}
+                      onChange={(e) => updateConfig('twilio_phone_number', e.target.value)}
+                      className="mt-2"
+                    />
+                    <p className="text-xs text-dark-800 mt-1">
+                      Your Twilio phone number in E.164 format (e.g., +1234567890)
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* WhatsApp Configuration */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-semibold text-white">WhatsApp Notifications</h4>
+                    <p className="text-xs text-dark-800 mt-1">
+                      Send appointment confirmations via WhatsApp
+                    </p>
+                  </div>
+                  <Switch
+                    checked={config.whatsapp_enabled || false}
+                    onCheckedChange={(checked) => updateConfig('whatsapp_enabled', checked)}
+                    disabled={!config.twilio_account_sid || !config.twilio_auth_token}
+                  />
+                </div>
+
+                {config.whatsapp_enabled && (
               <>
                 <div>
                   <Label>Twilio WhatsApp Number</Label>
@@ -654,9 +761,12 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
                 </div>
               </>
             )}
-          </div>
+              </div>
+            </>
+          )}
 
-          {/* Reminder Configuration */}
+          {/* Reminder Configuration - Available for Pro and Enterprise */}
+          {(planType === 'pro' || planType === 'enterprise') && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -680,9 +790,10 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
               </div>
             )}
           </div>
+          )}
 
-          {/* Show SMS Error if exists and is newer than last success */}
-          {config.sms_last_error && (
+          {/* Show SMS Error if exists and is newer than last success - Enterprise only */}
+          {planType === 'enterprise' && config.sms_last_error && (
             !config.sms_last_success_time ||
             new Date(config.sms_last_error_time || 0) > new Date(config.sms_last_success_time || 0)
           ) && (

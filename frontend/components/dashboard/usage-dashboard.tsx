@@ -1,264 +1,267 @@
 'use client'
 
-import { useState } from 'react'
-import { Bot, MessageCircle, MessageSquare, TrendingUp, Zap, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
-import { usePlanLimits } from '@/hooks/usePlanLimits'
-import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { MessageSquare, Mail, Phone, AlertTriangle, TrendingUp, Calendar } from 'lucide-react'
 
-export function UsageDashboard() {
-  const [isExpanded, setIsExpanded] = useState(false)
-  
-  const {
-    plan,
-    limits,
-    usage,
-    loading,
-    getUsagePercentage,
-    getRemainingCount,
-  } = usePlanLimits()
+interface UsageData {
+  sms_sent: number
+  whatsapp_sent: number
+  email_sent: number
+  sms_limit: number | null
+  whatsapp_limit: number | null
+  email_limit: number | null
+}
+
+interface UsageDashboardProps {
+  botId: string
+  planType?: 'starter' | 'pro' | 'enterprise'
+}
+
+export function UsageDashboard({ botId, planType = 'starter' }: UsageDashboardProps) {
+  const [usage, setUsage] = useState<UsageData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [currentMonth, setCurrentMonth] = useState<string>('')
+  const supabase = createClient()
+
+  useEffect(() => {
+    fetchUsage()
+  }, [botId])
+
+  const fetchUsage = async () => {
+    try {
+      setLoading(true)
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) return
+
+      // Get current month (first day)
+      const now = new Date()
+      const monthKey = new Date(now.getFullYear(), now.getMonth(), 1)
+        .toISOString()
+        .split('T')[0]
+      
+      setCurrentMonth(monthKey)
+
+      // Fetch usage data
+      const { data, error } = await supabase
+        .from('monthly_usage')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('bot_id', botId)
+        .eq('month', monthKey)
+        .single()
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching usage:', error)
+        return
+      }
+
+      // If no usage data exists, create default
+      if (!data) {
+        setUsage({
+          sms_sent: 0,
+          whatsapp_sent: 0,
+          email_sent: 0,
+          sms_limit: planType === 'pro' ? 250 : null,
+          whatsapp_limit: planType === 'pro' ? 100 : null,
+          email_limit: planType === 'pro' ? 500 : 100,
+        })
+      } else {
+        setUsage(data)
+      }
+    } catch (error) {
+      console.error('Error fetching usage:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getUsagePercentage = (current: number, limit: number | null): number => {
+    if (limit === null) return 0 // Unlimited
+    return limit > 0 ? (current / limit) * 100 : 0
+  }
+
+  const getUsageColor = (percentage: number): string => {
+    if (percentage >= 90) return 'bg-red-500'
+    if (percentage >= 75) return 'bg-yellow-500'
+    return 'bg-green-500'
+  }
+
+  const formatLimit = (limit: number | null): string => {
+    return limit === null ? '∞' : limit.toString()
+  }
 
   if (loading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            Your Usage This Month
-          </CardTitle>
+          <CardTitle>Message Usage</CardTitle>
+          <CardDescription>Loading usage data...</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-dark-800">Loading...</div>
+          <div className="animate-pulse space-y-4">
+            <div className="h-20 bg-dark-100 rounded"></div>
+            <div className="h-20 bg-dark-100 rounded"></div>
+            <div className="h-20 bg-dark-100 rounded"></div>
+          </div>
         </CardContent>
       </Card>
     )
   }
 
-  if (!limits || !usage) {
+  if (!usage) {
     return null
   }
 
-  const planNames: Record<string, string> = {
-    starter: 'Starter',
-    growth: 'Growth',
-    plus: 'Plus',
-    premium: 'Premium',
+  // Only show if user is on Pro or Enterprise plan
+  if (planType === 'starter') {
+    return null
   }
 
-  const planPrices: Record<string, string> = {
-    starter: '$24.17/mo',
-    growth: '$49.17/mo',
-    plus: '$749/mo',
-    premium: 'Custom',
-  }
+  const smsPercentage = getUsagePercentage(usage.sms_sent, usage.sms_limit)
+  const whatsappPercentage = getUsagePercentage(usage.whatsapp_sent, usage.whatsapp_limit)
+  const emailPercentage = getUsagePercentage(usage.email_sent, usage.email_limit)
 
-  const botsPercentage = getUsagePercentage('bots')
-  const conversationsPercentage = getUsagePercentage('conversations')
-  const whatsappPercentage = getUsagePercentage('whatsapp')
-
-  const botsRemaining = getRemainingCount('bots')
-  const conversationsRemaining = getRemainingCount('conversations')
-  const whatsappRemaining = getRemainingCount('whatsapp')
-
-  const getProgressColor = (percentage: number) => {
-    if (percentage >= 90) return 'bg-red-500'
-    if (percentage >= 70) return 'bg-yellow-500'
-    return 'bg-primary'
-  }
-
-  const getStatusIcon = (remaining: number | string) => {
-    if (remaining === '∞') return <Zap className="h-4 w-4 text-primary inline ml-1" />
-    if (typeof remaining === 'number' && remaining === 0) return '⚠️'
-    return '✅'
-  }
+  const hasWarning = smsPercentage >= 75 || whatsappPercentage >= 75 || emailPercentage >= 75
 
   return (
-    <Card className="shadow-glow">
+    <Card className="border-primary/30">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div className="space-y-1.5">
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Your Usage This Month
-            </CardTitle>
-            <CardDescription>
-              {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-            </CardDescription>
+          <div className="flex items-center gap-3">
+            <TrendingUp className="h-6 w-6 text-primary" />
+            <div>
+              <CardTitle>Monthly Usage</CardTitle>
+              <CardDescription>
+                {new Date(currentMonth).toLocaleDateString('he-IL', { 
+                  month: 'long', 
+                  year: 'numeric' 
+                })}
+              </CardDescription>
+            </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="h-8 w-8 p-0"
-          >
-            {isExpanded ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </Button>
+          {hasWarning && (
+            <div className="flex items-center gap-2 text-yellow-500">
+              <AlertTriangle className="h-5 w-5" />
+              <span className="text-sm font-medium">Approaching Limit</span>
+            </div>
+          )}
         </div>
       </CardHeader>
-      
-      {/* Collapsed Summary */}
-      {!isExpanded && (
-        <CardContent className="py-3">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-4 text-dark-800">
-              <span className="flex items-center gap-1">
-                <Bot className="h-3 w-3" /> {usage.bots_created}/{limits.max_bots === -1 ? '∞' : limits.max_bots}
-              </span>
-              <span className="flex items-center gap-1">
-                <MessageCircle className="h-3 w-3" /> {usage.conversations_used}/{limits.max_conversations === -1 ? '∞' : limits.max_conversations}
-              </span>
-              <span className="flex items-center gap-1">
-                <MessageSquare className="h-3 w-3" /> {usage.whatsapp_messages_sent}/{limits.max_whatsapp_messages === -1 ? '∞' : limits.max_whatsapp_messages}
-              </span>
-            </div>
-            <span className="text-primary font-medium">{planNames[plan]}</span>
-          </div>
-        </CardContent>
-      )}
-      
-      {/* Expanded Details */}
-      {isExpanded && (
-        <CardContent className="space-y-6">
-        {/* Bots Usage */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-primary" />
-              <span className="font-medium text-white">AI Bots</span>
-            </div>
-            <span className="text-dark-800">
-              {usage.bots_created} / {limits.max_bots === -1 ? '∞' : limits.max_bots}
-            </span>
-          </div>
-          {limits.max_bots !== -1 && (
-            <>
-              <div className="h-2 bg-dark-100 rounded-full overflow-hidden">
-                <div
-                  className={`h-full ${getProgressColor(botsPercentage)} transition-all duration-300`}
-                  style={{ width: `${Math.min(botsPercentage, 100)}%` }}
-                />
-              </div>
-              <div className="text-xs text-dark-800">
-                {getStatusIcon(botsRemaining)} {botsRemaining === 0 ? 'Limit reached' : `${botsRemaining} bot(s) remaining`}
-              </div>
-            </>
-          )}
-          {limits.max_bots === -1 && (
-            <div className="text-xs text-primary flex items-center gap-1">
-              <Zap className="h-3 w-3" /> Unlimited bots
-            </div>
-          )}
-          {botsRemaining === 0 && (
-            <Link href="/pricing">
-              <Button size="sm" variant="outline" className="w-full mt-2">
-                Upgrade to create more bots
-              </Button>
-            </Link>
-          )}
-        </div>
-
-        {/* Conversations Usage */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4 text-primary" />
-              <span className="font-medium text-white">AI Conversations</span>
-            </div>
-            <span className="text-dark-800">
-              {usage.conversations_used} / {limits.max_conversations === -1 ? '∞' : limits.max_conversations}
-            </span>
-          </div>
-          {limits.max_conversations !== -1 && (
-            <>
-              <div className="h-2 bg-dark-100 rounded-full overflow-hidden">
-                <div
-                  className={`h-full ${getProgressColor(conversationsPercentage)} transition-all duration-300`}
-                  style={{ width: `${Math.min(conversationsPercentage, 100)}%` }}
-                />
-              </div>
-              <div className="text-xs text-dark-800">
-                {getStatusIcon(conversationsRemaining)} {conversationsRemaining === 0 ? 'Limit reached' : `${conversationsRemaining} conversation(s) remaining`}
-              </div>
-            </>
-          )}
-          {limits.max_conversations === -1 && (
-            <div className="text-xs text-primary flex items-center gap-1">
-              <Zap className="h-3 w-3" /> Unlimited conversations
-            </div>
-          )}
-          {typeof conversationsRemaining === 'number' && conversationsRemaining <= 10 && conversationsRemaining > 0 && (
-            <Link href="/pricing">
-              <Button size="sm" variant="outline" className="w-full mt-2">
-                Upgrade for more conversations
-              </Button>
-            </Link>
-          )}
-        </div>
-
-        {/* WhatsApp Usage */}
-        {limits.whatsapp_notifications && (
+      <CardContent className="space-y-6">
+        {/* SMS Usage */}
+        {planType !== 'starter' && (
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-primary" />
-                <span className="font-medium text-white">WhatsApp Messages</span>
+                <Phone className="h-4 w-4 text-blue-400" />
+                <span className="text-sm font-medium text-white">SMS Messages</span>
               </div>
-              <span className="text-dark-800">
-                {usage.whatsapp_messages_sent} / {limits.max_whatsapp_messages === -1 ? '∞' : limits.max_whatsapp_messages}
+              <span className="text-sm text-dark-800">
+                {usage.sms_sent} / {formatLimit(usage.sms_limit)}
               </span>
             </div>
-            {limits.max_whatsapp_messages !== -1 && (
-              <>
-                <div className="h-2 bg-dark-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${getProgressColor(whatsappPercentage)} transition-all duration-300`}
-                    style={{ width: `${Math.min(whatsappPercentage, 100)}%` }}
-                  />
-                </div>
-                <div className="text-xs text-dark-800">
-                  {getStatusIcon(whatsappRemaining)} {whatsappRemaining === 0 ? 'Limit reached' : `${whatsappRemaining} message(s) remaining`}
-                </div>
-              </>
-            )}
-            {limits.max_whatsapp_messages === -1 && (
-              <div className="text-xs text-primary flex items-center gap-1">
-                <Zap className="h-3 w-3" /> Unlimited WhatsApp messages
-              </div>
-            )}
-            {typeof whatsappRemaining === 'number' && whatsappRemaining <= 50 && whatsappRemaining > 0 && (
-              <Link href="/pricing">
-                <Button size="sm" variant="outline" className="w-full mt-2">
-                  Upgrade for unlimited WhatsApp
-                </Button>
-              </Link>
+            <Progress 
+              value={smsPercentage} 
+              className="h-2"
+              indicatorClassName={getUsageColor(smsPercentage)}
+            />
+            {smsPercentage >= 90 && (
+              <p className="text-xs text-red-400 flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                You've used {smsPercentage.toFixed(0)}% of your monthly SMS quota
+              </p>
             )}
           </div>
         )}
 
-        {/* Plan Info */}
-        <div className="pt-4 border-t border-dark-100 space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-dark-800">Current Plan:</span>
-            <span className="font-semibold text-white">{planNames[plan] || plan}</span>
+        {/* WhatsApp Usage */}
+        {planType !== 'starter' && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-green-400" />
+                <span className="text-sm font-medium text-white">WhatsApp Messages</span>
+              </div>
+              <span className="text-sm text-dark-800">
+                {usage.whatsapp_sent} / {formatLimit(usage.whatsapp_limit)}
+              </span>
+            </div>
+            <Progress 
+              value={whatsappPercentage} 
+              className="h-2"
+              indicatorClassName={getUsageColor(whatsappPercentage)}
+            />
+            {whatsappPercentage >= 90 && (
+              <p className="text-xs text-red-400 flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                You've used {whatsappPercentage.toFixed(0)}% of your monthly WhatsApp quota
+              </p>
+            )}
           </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-dark-800">Price:</span>
-            <span className="font-semibold text-primary">{planPrices[plan] || 'N/A'}</span>
+        )}
+
+        {/* Email Usage */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-purple-400" />
+              <span className="text-sm font-medium text-white">Email Messages</span>
+            </div>
+            <span className="text-sm text-dark-800">
+              {usage.email_sent} / {formatLimit(usage.email_limit)}
+            </span>
           </div>
-          <Link href="/pricing" className="block">
-            <Button className="w-full mt-3 bg-gradient-cyan hover:shadow-glow-lg transition-smooth">
-              {plan === 'starter' ? 'Upgrade Your Plan' : 'View All Plans'}
-            </Button>
-          </Link>
+          <Progress 
+            value={emailPercentage} 
+            className="h-2"
+            indicatorClassName={getUsageColor(emailPercentage)}
+          />
+          {emailPercentage >= 90 && (
+            <p className="text-xs text-red-400 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              You've used {emailPercentage.toFixed(0)}% of your monthly email quota
+            </p>
+          )}
         </div>
-        </CardContent>
-      )}
+
+        {/* Upgrade CTA for Pro users approaching limits */}
+        {planType === 'pro' && (smsPercentage >= 80 || whatsappPercentage >= 80) && (
+          <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-lg">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h4 className="text-sm font-semibold text-white mb-1">
+                  Need more messages?
+                </h4>
+                <p className="text-xs text-gray-400">
+                  Upgrade to Enterprise for unlimited messaging with your own Twilio account
+                </p>
+              </div>
+              <Button 
+                size="sm"
+                onClick={() => window.location.href = '/pricing'}
+                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+              >
+                Upgrade
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Enterprise unlimited message */}
+        {planType === 'enterprise' && (
+          <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <p className="text-sm text-green-400 flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>Unlimited messaging with your Twilio account</span>
+            </p>
+          </div>
+        )}
+      </CardContent>
     </Card>
   )
 }
-

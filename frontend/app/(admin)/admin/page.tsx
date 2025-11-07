@@ -2,7 +2,7 @@ import { checkAdminAccess } from '@/lib/admin/check-admin'
 import { AdminStats } from '@/components/admin/admin-stats'
 import { AdminRecentActivity } from '@/components/admin/admin-recent-activity'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, Bot, MessageSquare, TrendingUp } from 'lucide-react'
+import { Users, Bot, MessageSquare, TrendingUp, DollarSign } from 'lucide-react'
 
 export default async function AdminDashboardPage() {
   const adminUser = await checkAdminAccess()
@@ -21,7 +21,7 @@ export default async function AdminDashboardPage() {
       <AdminStats />
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="hover:shadow-lg transition-shadow cursor-pointer border-gray-700 bg-gray-900">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
@@ -52,6 +52,23 @@ export default async function AdminDashboardPage() {
           <CardContent>
             <a href="/admin/bots" className="text-blue-400 hover:text-blue-300 hover:underline">
               Go to Bots →
+            </a>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer border-gray-700 bg-gray-900">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <DollarSign className="h-5 w-5 text-green-500" />
+              Usage & Costs
+            </CardTitle>
+            <CardDescription className="text-gray-300">
+              Monitor message usage and costs
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <a href="/admin/usage" className="text-blue-400 hover:text-blue-300 hover:underline">
+              Go to Usage →
             </a>
           </CardContent>
         </Card>

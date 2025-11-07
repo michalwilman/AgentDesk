@@ -14,6 +14,7 @@ import {
 import { AdminService, PromoteUserDto } from './admin.service';
 import { AdminGuard, UserRole } from '../common/guards/admin.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { UsageTrackingService } from '../actions/integrations/usage-tracking.service';
 
 /**
  * Admin Controller - All routes are protected by AdminGuard
@@ -22,7 +23,10 @@ import { Roles } from '../common/decorators/roles.decorator';
 @Controller('admin')
 @UseGuards(AdminGuard)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly usageTrackingService: UsageTrackingService,
+  ) {}
 
   /**
    * GET /admin/stats
@@ -194,6 +198,69 @@ export class AdminController {
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   async getDeletionStats() {
     return this.adminService.getDeletionStats();
+  }
+
+  /**
+   * GET /admin/usage-stats
+   * Get message usage statistics across all customers
+   * Accessible by: admin, super_admin
+   * 
+   * Query params:
+   * - month: string (YYYY-MM-DD format, first day of month)
+   * - plan_type: string (starter, pro, enterprise)
+   */
+  @Get('usage-stats')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  async getUsageStats(
+    @Query('month') month?: string,
+    @Query('plan_type') planType?: string,
+  ) {
+    const usageData = await this.usageTrackingService.getUsageStats(month, planType);
+    
+    // Calculate totals and costs
+    let totalSMS = 0;
+    let totalWhatsApp = 0;
+    let totalEmail = 0;
+    let estimatedCost = 0;
+
+    const SMS_COST = 0.08; // USD per SMS to Israel
+    const WHATSAPP_COST = 0.005; // USD per WhatsApp message
+
+    usageData.forEach((usage: any) => {
+      totalSMS += usage.sms_sent || 0;
+      totalWhatsApp += usage.whatsapp_sent || 0;
+      totalEmail += usage.email_sent || 0;
+      
+      // Calculate estimated cost
+      estimatedCost += (usage.sms_sent || 0) * SMS_COST;
+      estimatedCost += (usage.whatsapp_sent || 0) * WHATSAPP_COST;
+    });
+
+    return {
+      summary: {
+        totalSMS,
+        totalWhatsApp,
+        totalEmail,
+        estimatedCostUSD: estimatedCost.toFixed(2),
+        estimatedCostILS: (estimatedCost * 3.7).toFixed(2), // Approximate ILS conversion
+        totalCustomers: usageData.length,
+      },
+      details: usageData.map((usage: any) => ({
+        userId: usage.user_id,
+        userEmail: usage.users?.email,
+        userName: usage.users?.full_name,
+        planType: usage.users?.plan_type,
+        botId: usage.bot_id,
+        botName: usage.bots?.name,
+        month: usage.month,
+        sms: usage.sms_sent || 0,
+        whatsapp: usage.whatsapp_sent || 0,
+        email: usage.email_sent || 0,
+        smsLimit: usage.sms_limit,
+        whatsappLimit: usage.whatsapp_limit,
+        costUSD: ((usage.sms_sent || 0) * SMS_COST + (usage.whatsapp_sent || 0) * WHATSAPP_COST).toFixed(2),
+      })),
+    };
   }
 }
 

@@ -6,6 +6,7 @@ import { CalendarService } from './integrations/calendar.service';
 import { PdfService } from './integrations/pdf.service';
 import { WebhookService } from './integrations/webhook.service';
 import { TwilioService } from './integrations/twilio.service';
+import { UsageTrackingService } from './integrations/usage-tracking.service';
 import { SaveLeadDto } from './dto/save-lead.dto';
 import { ScheduleAppointmentDto } from './dto/schedule-appointment.dto';
 import { SendEmailDto } from './dto/send-email.dto';
@@ -26,6 +27,7 @@ export class ActionsService {
     private pdfService: PdfService,
     private webhookService: WebhookService,
     private twilioService: TwilioService,
+    private usageTrackingService: UsageTrackingService,
   ) {}
 
   /**
@@ -452,74 +454,101 @@ export class ActionsService {
           // Send WhatsApp confirmation if enabled  
           if (config.whatsapp_enabled && config.twilio_account_sid && config.twilio_whatsapp_number) {
             this.logger.log('📲 Attempting to send WhatsApp message...');
-            this.logger.log(`📋 Twilio Config:
-              - Account SID: ${config.twilio_account_sid?.substring(0, 10)}...
-              - WhatsApp Number: ${config.twilio_whatsapp_number}
-              - To: ${phoneNumber}`);
             
-            let result: { success: boolean; messageId?: string; error?: string };
-            
-            // Try to use WhatsApp Template if configured (no 24h window restriction!)
-            if (config.whatsapp_template_name) {
-              this.logger.log(`✨ Using WhatsApp Template: ${config.whatsapp_template_name}`);
-              
-              // Prepare template parameters
-              // {{1}} = attendee name
-              // {{2}} = scheduled time
-              // {{3}} = location/address
-              const templateParams = [
-                appointmentDto.attendee_name,
-                formattedDate,
-                appointmentDto.location || 'משרד', // Default to 'משרד' (Office) if not provided
-              ];
-              
-              this.logger.log(`📋 Template parameters: ${JSON.stringify(templateParams)}`);
-              
-              result = await this.twilioService.sendWhatsAppTemplate(
-                {
-                  accountSid: config.twilio_account_sid,
-                  authToken: config.twilio_auth_token,
-                  phoneNumber: config.twilio_phone_number,
-                  whatsappNumber: config.twilio_whatsapp_number,
-                },
-                {
-                  to: phoneNumber,
-                  templateName: config.whatsapp_template_name,
-                  templateLanguage: config.whatsapp_template_language || 'en',
-                  parameters: templateParams,
-                },
-              );
-              
-              this.logger.log(`📤 WhatsApp Template send result: ${JSON.stringify(result)}`);
+            // Check usage limit first
+            const usageCheck = await this.usageTrackingService.checkUsageLimit(
+              bot.user_id,
+              botId,
+              'whatsapp',
+            );
+
+            if (!usageCheck.allowed) {
+              this.logger.warn(`⚠️ WhatsApp limit reached for user ${bot.user_id}: ${usageCheck.current}/${usageCheck.limit} (${usageCheck.planType} plan)`);
+              // TODO: Send notification to user about limit
             } else {
-              // Fallback to freeform message (requires 24h window)
-              this.logger.log('⚠️ No template configured, using freeform message (requires 24h window)');
+              this.logger.log(`📊 WhatsApp usage: ${usageCheck.current}/${usageCheck.limit || '∞'} (${usageCheck.percentage.toFixed(1)}%)`);
+              this.logger.log(`📋 Twilio Config:
+                - Account SID: ${config.twilio_account_sid?.substring(0, 10)}...
+                - WhatsApp Number: ${config.twilio_whatsapp_number}
+                - To: ${phoneNumber}`);
               
-              const message = this.twilioService.formatMessage(
-                twilioTemplates.appointment_confirmation_whatsapp,
-                variables,
-              );
-              this.logger.log(`💬 Message content: ${message.substring(0, 100)}...`);
+              let result: { success: boolean; messageId?: string; error?: string };
+              
+              // Try to use WhatsApp Template if configured (no 24h window restriction!)
+              if (config.whatsapp_template_name) {
+                this.logger.log(`✨ Using WhatsApp Template: ${config.whatsapp_template_name}`);
+                
+                // Prepare template parameters
+                // {{1}} = attendee name
+                // {{2}} = scheduled time
+                // {{3}} = location/address
+                const templateParams = [
+                  appointmentDto.attendee_name,
+                  formattedDate,
+                  appointmentDto.location || 'משרד', // Default to 'משרד' (Office) if not provided
+                ];
+                
+                this.logger.log(`📋 Template parameters: ${JSON.stringify(templateParams)}`);
+                
+                result = await this.twilioService.sendWhatsAppTemplateWithPlanCheck(
+                  bot.user_id,
+                  {
+                    accountSid: config.twilio_account_sid,
+                    authToken: config.twilio_auth_token,
+                    phoneNumber: config.twilio_phone_number,
+                    whatsappNumber: config.twilio_whatsapp_number,
+                  },
+                  {
+                    to: phoneNumber,
+                    templateName: config.whatsapp_template_name,
+                    templateLanguage: config.whatsapp_template_language || 'en',
+                    parameters: templateParams,
+                  },
+                );
+                
+                this.logger.log(`📤 WhatsApp Template send result: ${JSON.stringify(result)}`);
+              } else {
+                // Fallback to freeform message (requires 24h window)
+                this.logger.log('⚠️ No template configured, using freeform message (requires 24h window)');
+                
+                const message = this.twilioService.formatMessage(
+                  twilioTemplates.appointment_confirmation_whatsapp,
+                  variables,
+                );
+                this.logger.log(`💬 Message content: ${message.substring(0, 100)}...`);
 
-              result = await this.twilioService.sendWhatsApp(
-                {
-                  accountSid: config.twilio_account_sid,
-                  authToken: config.twilio_auth_token,
-                  phoneNumber: config.twilio_phone_number,
-                  whatsappNumber: config.twilio_whatsapp_number,
-                },
-                {
-                  to: phoneNumber,
-                  body: message,
-                },
-              );
+                result = await this.twilioService.sendWhatsAppWithPlanCheck(
+                  bot.user_id,
+                  {
+                    accountSid: config.twilio_account_sid,
+                    authToken: config.twilio_auth_token,
+                    phoneNumber: config.twilio_phone_number,
+                    whatsappNumber: config.twilio_whatsapp_number,
+                  },
+                  {
+                    to: phoneNumber,
+                    body: message,
+                  },
+                );
 
-              this.logger.log(`📤 WhatsApp send result: ${JSON.stringify(result)}`);
-            }
-            
-            if (result.success) {
-              whatsappSuccess = true;
-              this.logger.log(`✅ WhatsApp confirmation sent successfully for appointment ${appointment.id}`);
+                this.logger.log(`📤 WhatsApp send result: ${JSON.stringify(result)}`);
+              }
+              
+              // Log usage
+              await this.usageTrackingService.incrementUsage(
+                bot.user_id,
+                botId,
+                'whatsapp',
+                phoneNumber,
+                result.success ? 'sent' : 'failed',
+                result.messageId,
+                result.error,
+                0.005, // Estimated WhatsApp cost in USD
+              );
+              
+              if (result.success) {
+                whatsappSuccess = true;
+                this.logger.log(`✅ WhatsApp confirmation sent successfully for appointment ${appointment.id}`);
             } else {
               this.logger.error(`❌ WhatsApp send failed: ${result.error}`);
               
@@ -560,39 +589,65 @@ export class ActionsService {
               this.logger.log('📲 Attempting to send SMS message...');
             }
             
-            this.logger.log(`📋 SMS Config:
-              - Account SID: ${config.twilio_account_sid?.substring(0, 10)}...
-              - SMS Number: ${config.twilio_phone_number}
-              - To: ${phoneNumber}`);
-            
-            const message = this.twilioService.formatMessage(
-              twilioTemplates.appointment_confirmation_sms,
-              variables,
-            );
-            this.logger.log(`💬 SMS content: ${message.substring(0, 100)}...`);
-
-            const result = await this.twilioService.sendSMS(
-              {
-                accountSid: config.twilio_account_sid,
-                authToken: config.twilio_auth_token,
-                phoneNumber: config.twilio_phone_number,
-              },
-              {
-                to: phoneNumber,
-                body: message,
-              },
+            // Check usage limit first
+            const smsUsageCheck = await this.usageTrackingService.checkUsageLimit(
+              bot.user_id,
+              botId,
+              'sms',
             );
 
-            this.logger.log(`📤 SMS send result: ${JSON.stringify(result)}`);
-
-            if (result.success) {
-              this.logger.log(`✅ SMS confirmation sent successfully for appointment ${appointment.id}`);
-              // Mark as success - either WhatsApp or SMS worked
-              smsSuccess = true;
+            if (!smsUsageCheck.allowed) {
+              this.logger.warn(`⚠️ SMS limit reached for user ${bot.user_id}: ${smsUsageCheck.current}/${smsUsageCheck.limit} (${smsUsageCheck.planType} plan)`);
+              // TODO: Send notification to user about limit
             } else {
-              this.logger.error(`❌ SMS send failed: ${result.error}`);
-              // If SMS also failed, throw error
-              throw new Error(result.error || 'SMS send failed');
+              this.logger.log(`📊 SMS usage: ${smsUsageCheck.current}/${smsUsageCheck.limit || '∞'} (${smsUsageCheck.percentage.toFixed(1)}%)`);
+              this.logger.log(`📋 SMS Config:
+                - Account SID: ${config.twilio_account_sid?.substring(0, 10)}...
+                - SMS Number: ${config.twilio_phone_number}
+                - To: ${phoneNumber}`);
+              
+              const message = this.twilioService.formatMessage(
+                twilioTemplates.appointment_confirmation_sms,
+                variables,
+              );
+              this.logger.log(`💬 SMS content: ${message.substring(0, 100)}...`);
+
+              const result = await this.twilioService.sendSMSWithPlanCheck(
+                bot.user_id,
+                {
+                  accountSid: config.twilio_account_sid,
+                  authToken: config.twilio_auth_token,
+                  phoneNumber: config.twilio_phone_number,
+                },
+                {
+                  to: phoneNumber,
+                  body: message,
+                },
+              );
+
+              this.logger.log(`📤 SMS send result: ${JSON.stringify(result)}`);
+
+              // Log usage
+              await this.usageTrackingService.incrementUsage(
+                bot.user_id,
+                botId,
+                'sms',
+                phoneNumber,
+                result.success ? 'sent' : 'failed',
+                result.messageId,
+                result.error,
+                0.08, // Estimated SMS cost in USD for Israel
+              );
+
+              if (result.success) {
+                this.logger.log(`✅ SMS confirmation sent successfully for appointment ${appointment.id}`);
+                // Mark as success - either WhatsApp or SMS worked
+                smsSuccess = true;
+              } else {
+                this.logger.error(`❌ SMS send failed: ${result.error}`);
+                // If SMS also failed, throw error
+                throw new Error(result.error || 'SMS send failed');
+              }
             }
           } else {
             // If WhatsApp succeeded, mark as success even without SMS

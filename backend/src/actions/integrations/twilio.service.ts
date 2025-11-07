@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SupabaseService } from '../../common/supabase.service';
 
 interface TwilioCredentials {
   accountSid: string;
@@ -30,7 +31,10 @@ export class TwilioService {
   private readonly logger = new Logger(TwilioService.name);
   private twilioClient: any;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private supabaseService: SupabaseService,
+  ) {
     // Initialize Twilio client if credentials are available
     const accountSid = this.configService.get('TWILIO_ACCOUNT_SID');
     const authToken = this.configService.get('TWILIO_AUTH_TOKEN');
@@ -40,12 +44,12 @@ export class TwilioService {
         // Dynamically import twilio to avoid requiring it if not used
         const twilio = require('twilio');
         this.twilioClient = twilio(accountSid, authToken);
-        this.logger.log('✅ Twilio service initialized');
+        this.logger.log('✅ Twilio service initialized with master account');
       } catch (error) {
         this.logger.warn('⚠️  Twilio package not installed. SMS/WhatsApp features disabled.');
       }
     } else {
-      this.logger.warn('⚠️  Twilio credentials not configured. SMS/WhatsApp features disabled.');
+      this.logger.warn('⚠️  Master Twilio credentials not configured. Will use customer credentials.');
     }
   }
 
@@ -289,6 +293,160 @@ export class TwilioService {
     }
     
     return cleaned;
+  }
+
+  /**
+   * Check if user should use master Twilio account
+   */
+  private shouldUseMasterAccount(userPlanType: string): boolean {
+    return userPlanType === 'pro';
+  }
+
+  /**
+   * Get master Twilio credentials from environment
+   */
+  private getMasterCredentials(): TwilioCredentials | null {
+    const accountSid = this.configService.get('TWILIO_ACCOUNT_SID');
+    const authToken = this.configService.get('TWILIO_AUTH_TOKEN');
+    const phoneNumber = this.configService.get('TWILIO_PHONE_NUMBER');
+    const whatsappNumber = this.configService.get('TWILIO_WHATSAPP_NUMBER');
+
+    if (accountSid && authToken && phoneNumber) {
+      return { accountSid, authToken, phoneNumber, whatsappNumber };
+    }
+    return null;
+  }
+
+  /**
+   * Send SMS with plan-aware credential selection
+   */
+  async sendSMSWithPlanCheck(
+    userId: string,
+    credentials: TwilioCredentials | null,
+    message: SMSMessage,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    try {
+      // Get user's plan type
+      const supabase = this.supabaseService.getClient();
+      const { data: user } = await supabase
+        .from('users')
+        .select('plan_type')
+        .eq('id', userId)
+        .single();
+
+      const planType = user?.plan_type || 'starter';
+
+      // Determine which credentials to use
+      let finalCredentials = credentials;
+      if (this.shouldUseMasterAccount(planType)) {
+        const masterCreds = this.getMasterCredentials();
+        if (masterCreds) {
+          finalCredentials = masterCreds;
+          this.logger.log(`📱 Using master Twilio account for user ${userId} (${planType} plan)`);
+        } else {
+          this.logger.warn(`⚠️ Master Twilio not configured, falling back to customer credentials`);
+        }
+      }
+
+      if (!finalCredentials) {
+        throw new Error('No Twilio credentials available');
+      }
+
+      // Send SMS using the determined credentials
+      return await this.sendSMS(finalCredentials, message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`❌ Failed to send SMS with plan check: ${errorMessage}`);
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  /**
+   * Send WhatsApp with plan-aware credential selection
+   */
+  async sendWhatsAppWithPlanCheck(
+    userId: string,
+    credentials: TwilioCredentials | null,
+    message: WhatsAppMessage,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    try {
+      // Get user's plan type
+      const supabase = this.supabaseService.getClient();
+      const { data: user } = await supabase
+        .from('users')
+        .select('plan_type')
+        .eq('id', userId)
+        .single();
+
+      const planType = user?.plan_type || 'starter';
+
+      // Determine which credentials to use
+      let finalCredentials = credentials;
+      if (this.shouldUseMasterAccount(planType)) {
+        const masterCreds = this.getMasterCredentials();
+        if (masterCreds) {
+          finalCredentials = masterCreds;
+          this.logger.log(`📱 Using master Twilio account for user ${userId} (${planType} plan)`);
+        } else {
+          this.logger.warn(`⚠️ Master Twilio not configured, falling back to customer credentials`);
+        }
+      }
+
+      if (!finalCredentials) {
+        throw new Error('No Twilio credentials available');
+      }
+
+      // Send WhatsApp using the determined credentials
+      return await this.sendWhatsApp(finalCredentials, message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`❌ Failed to send WhatsApp with plan check: ${errorMessage}`);
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  /**
+   * Send WhatsApp Template with plan-aware credential selection
+   */
+  async sendWhatsAppTemplateWithPlanCheck(
+    userId: string,
+    credentials: TwilioCredentials | null,
+    message: WhatsAppTemplateMessage,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    try {
+      // Get user's plan type
+      const supabase = this.supabaseService.getClient();
+      const { data: user } = await supabase
+        .from('users')
+        .select('plan_type')
+        .eq('id', userId)
+        .single();
+
+      const planType = user?.plan_type || 'starter';
+
+      // Determine which credentials to use
+      let finalCredentials = credentials;
+      if (this.shouldUseMasterAccount(planType)) {
+        const masterCreds = this.getMasterCredentials();
+        if (masterCreds) {
+          finalCredentials = masterCreds;
+          this.logger.log(`📱 Using master Twilio account for user ${userId} (${planType} plan)`);
+        } else {
+          this.logger.warn(`⚠️ Master Twilio not configured, falling back to customer credentials`);
+        }
+      }
+
+      if (!finalCredentials) {
+        throw new Error('No Twilio credentials available');
+      }
+
+      // Send WhatsApp Template using the determined credentials
+      return await this.sendWhatsAppTemplate(finalCredentials, message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`❌ Failed to send WhatsApp template with plan check: ${errorMessage}`);
+      return { success: false, error: errorMessage };
+    }
   }
 }
 
