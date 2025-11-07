@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MessageSquare } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
-import { CreateBotButton } from './create-bot-button'
 import { CreateBotForm } from './create-bot-form'
 import { useLanguage } from '@/lib/contexts/LanguageContext'
 
@@ -36,17 +35,11 @@ export function DashboardContent({
   return (
     <div className="space-y-8" dir={dir}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">{t('dashboard.title')}</h1>
-          <p className="text-dark-800 mt-1">
-            {t('dashboard.welcome')}! {t('dashboard.description')}
-          </p>
-        </div>
-        <CreateBotButton 
-          hasExistingBot={hasExistingBot} 
-          subscriptionStatus={subscriptionStatus}
-        />
+      <div>
+        <h1 className="text-3xl font-bold text-white">{t('dashboard.title')}</h1>
+        <p className="text-dark-800 mt-1">
+          {t('dashboard.welcome')}! {t('dashboard.description')}
+        </p>
       </div>
 
       {/* My Bots Section */}

@@ -151,18 +151,11 @@ function SuccessContent() {
                   </Button>
                 </Link>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <Link href="/dashboard/bots/new">
-                    <Button variant="outline" className="w-full rounded-full py-3">
-                      Create Your First Bot
-                    </Button>
-                  </Link>
-                  <Link href="/support">
-                    <Button variant="outline" className="w-full rounded-full py-3">
-                      Contact Support
-                    </Button>
-                  </Link>
-                </div>
+                <Link href="/support" className="block">
+                  <Button variant="outline" className="w-full rounded-full py-3">
+                    Contact Support
+                  </Button>
+                </Link>
               </div>
 
               {/* Help Text */}
