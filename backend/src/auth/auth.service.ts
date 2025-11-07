@@ -37,6 +37,7 @@ export class AuthService {
           email: user.email,
           full_name: userData.full_name || '',
           company_name: userData.company_name || '',
+          phone: userData.phone || null,
           api_key: apiKey,
           trial_start_date: now.toISOString(),
           trial_end_date: trialEndDate.toISOString(),
