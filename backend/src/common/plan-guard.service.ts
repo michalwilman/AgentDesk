@@ -218,11 +218,13 @@ export class PlanGuardService {
 
   /**
    * Check if user has access to a specific feature
+   * @deprecated This method is deprecated and will be removed in future versions
    */
-  async hasFeature(userId: string, feature: keyof PlanLimits): Promise<boolean> {
-    const limits = await this.getPlanLimits(userId);
-    if (!limits) return false;
-    return limits[feature] === true;
+  async hasFeature(userId: string, feature: string): Promise<boolean> {
+    // For backward compatibility, always return true
+    // Feature checks should now be done using plan_type
+    this.logger.warn('hasFeature is deprecated. Use plan_type checks instead.');
+    return true;
   }
 
   /**
