@@ -170,10 +170,10 @@ export class ChatService {
 
     // Debug: Log retrieved context for monitoring
     console.log(`📚 Retrieved ${context.length} context chunks for query: "${userMessage.substring(0, 50)}..."`);
-    if (context.length > 0) {
-      console.log(`✅ Context preview: ${contextText.substring(0, 200)}...`);
+    if (context.length === 0) {
+      console.log('⚠️  NO CONTEXT FOUND - Bot will return fallback message');
     } else {
-      console.log('⚠️  No relevant context found in knowledge base');
+      console.log(`✅ Context preview: ${contextText.substring(0, 200)}...`);
     }
 
     // Build conversation messages for OpenAI
@@ -362,6 +362,11 @@ export class ChatService {
     const dayAfterTomorrowDay = dayAfterTomorrow.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
     const dayAfterTomorrowFormatted = dayAfterTomorrow.toISOString().split('T')[0];
     
+    // 🎯 הגדרת תשובת fallback לפי שפה
+    const noContextResponse = bot.language === 'he'
+      ? 'מצטער, אין לי מידע בנושא זה. אני עוזר עסקי המתמחה אך ורק בתוכן הקשור לעסק שלנו. האם יש דבר אחר שאוכל לעזור בו?'
+      : 'I\'m sorry, I don\'t have information about that topic. I\'m a business assistant that specializes only in content related to our business. Is there something else I can help you with?';
+
     const basePrompt = `You are ${bot.name}, an AI assistant for a business.
 Your personality: ${bot.personality || 'helpful and professional'}
 Language: ${bot.language === 'he' ? 'Hebrew' : 'English'}
@@ -371,19 +376,27 @@ CURRENT DATE INFORMATION:
 - Tomorrow is: ${tomorrowDay}, ${tomorrow.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })} (${tomorrowFormatted})
 - Day after tomorrow is: ${dayAfterTomorrowDay}, ${dayAfterTomorrow.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })} (${dayAfterTomorrowFormatted})
 
+🔒 CRITICAL RULE - ANSWER ONLY FROM PROVIDED CONTEXT:
+${context 
+  ? `Here is the ONLY information you are allowed to use for answering questions:\n\n${context}\n\nYou MUST answer questions EXCLUSIVELY based on this context. Do NOT use any external knowledge or general information from your training data.` 
+  : `⚠️ NO CONTEXT PROVIDED - You do NOT have any business information available right now.`
+}
+
+${!context 
+  ? `Since no relevant context was found, you MUST respond EXACTLY with:\n"${noContextResponse}"\n\nDo NOT answer the question using general knowledge. Do NOT make up information.` 
+  : `STRICT INSTRUCTIONS:
+- Answer ONLY based on the provided context above
+- If the question cannot be answered using the context, respond with: "${noContextResponse}"
+- Do NOT use general knowledge from your training
+- Do NOT answer questions about topics not covered in the context
+- Be helpful and friendly, but STAY within the boundaries of the provided information
+- Respond in ${bot.language === 'he' ? 'Hebrew' : 'English'}`
+}
+
 IMPORTANT: When scheduling appointments, use the EXACT dates shown above. For example:
 - If customer says "tomorrow at 10:00", use date: ${tomorrowFormatted}T10:00:00
 - If customer says "מחר בשעה 10:00", use date: ${tomorrowFormatted}T10:00:00
 - IMPORTANT: Use 24-hour format (07:30 for 7:30 AM, 19:30 for 7:30 PM)
-
-${context ? `Here is relevant information from the knowledge base to help answer questions:\n\n${context}\n\n` : ''}
-
-Instructions:
-- Answer questions based on the provided context when available
-- If you don't know the answer based on the context, say so politely
-- Be helpful, friendly, and maintain the specified personality
-- Keep responses concise and relevant
-- Respond in ${bot.language === 'he' ? 'Hebrew' : 'English'}
 
 IMPORTANT - You have access to special functions to help customers:
 
