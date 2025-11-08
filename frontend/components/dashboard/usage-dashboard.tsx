@@ -17,7 +17,7 @@ interface UsageData {
 }
 
 interface UsageDashboardProps {
-  botId: string
+  botId?: string
   planType?: 'starter' | 'pro' | 'enterprise'
 }
 
@@ -28,10 +28,14 @@ export function UsageDashboard({ botId, planType = 'starter' }: UsageDashboardPr
   const supabase = createClient()
 
   useEffect(() => {
-    fetchUsage()
+    if (botId) {
+      fetchUsage()
+    }
   }, [botId])
 
   const fetchUsage = async () => {
+    if (!botId) return // Skip if no botId provided
+
     try {
       setLoading(true)
       const { data: { user } } = await supabase.auth.getUser()
@@ -95,6 +99,11 @@ export function UsageDashboard({ botId, planType = 'starter' }: UsageDashboardPr
     return limit === null ? '∞' : limit.toString()
   }
 
+  // Don't render if no botId is provided
+  if (!botId) {
+    return null
+  }
+
   if (loading) {
     return (
       <Card>
@@ -154,7 +163,7 @@ export function UsageDashboard({ botId, planType = 'starter' }: UsageDashboardPr
       </CardHeader>
       <CardContent className="space-y-6">
         {/* SMS Usage */}
-        {planType !== 'starter' && (
+        {(planType === 'pro' || planType === 'enterprise') && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -180,7 +189,7 @@ export function UsageDashboard({ botId, planType = 'starter' }: UsageDashboardPr
         )}
 
         {/* WhatsApp Usage */}
-        {planType !== 'starter' && (
+        {(planType === 'pro' || planType === 'enterprise') && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

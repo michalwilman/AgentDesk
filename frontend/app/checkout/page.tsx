@@ -8,7 +8,7 @@ import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Bot, CreditCard, Check, ShieldCheck } from 'lucide-react'
+import { Bot, CreditCard, Check, ShieldCheck, AlertCircle } from 'lucide-react'
 
 interface PlanDetails {
   name: string
@@ -52,6 +52,7 @@ function CheckoutContent() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [demoMode, setDemoMode] = useState(true)
 
   // Card details (UI only)
   const [cardNumber, setCardNumber] = useState('')
@@ -64,12 +65,25 @@ function CheckoutContent() {
     setPlan(planParam)
     setPlanDetails(PLAN_DETAILS[planParam] || PLAN_DETAILS.growth)
 
-    // Check if user is authenticated
+    // Check if user is authenticated and fetch demo mode
     const checkUser = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       
       setUser(user)
+
+      // Check demo mode status
+      try {
+        const response = await fetch('/api/check-demo-mode')
+        const data = await response.json()
+        const isDemo = data.demo_mode || true
+        console.log('🎮 Demo Mode Status:', isDemo)
+        setDemoMode(isDemo)
+      } catch (err) {
+        console.error('Error fetching demo mode:', err)
+        setDemoMode(true) // Default to demo mode on error
+      }
+      
       setLoading(false)
     }
 
@@ -90,8 +104,72 @@ function CheckoutContent() {
     })
   }
 
+  const handleSimulatedPayment = async () => {
+    console.log('🎬 Demo payment started!')
+    try {
+      const supabase = createClient()
+      const fakeOrderId = `DEMO_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      console.log('📦 Fake order ID:', fakeOrderId)
+      
+      // Save simulated transaction to database
+      const { error: insertError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          plan: plan,
+          amount: planDetails.price,
+          currency: planDetails.currency,
+          status: 'demo_success',
+          paypal_order_id: fakeOrderId,
+          full_name: user.user_metadata?.full_name || user.email,
+          email: user.email,
+          metadata: {
+            demo_mode: true,
+            simulated_at: new Date().toISOString(),
+          }
+        })
+
+      if (insertError) {
+        console.error('Error saving demo transaction:', insertError)
+      }
+
+      // Update user subscription tier and status
+      const now = new Date()
+      console.log('📝 Updating user subscription...')
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ 
+          subscription_tier: plan,
+          subscription_status: 'active',
+          subscription_start_date: now.toISOString(),
+          plan_type: plan === 'starter' ? 'starter' : (plan === 'premium' ? 'enterprise' : 'pro')
+        })
+        .eq('id', user.id)
+
+      if (updateError) {
+        console.error('❌ Error updating user:', updateError)
+      } else {
+        console.log('✅ User subscription updated successfully!')
+      }
+
+      // Redirect to success page
+      console.log('🎉 Redirecting to success page...')
+      router.push(`/checkout/success?order_id=${fakeOrderId}&plan=${plan}&demo=true`)
+    } catch (error: any) {
+      console.error('Demo payment error:', error)
+      setError('Simulated payment failed. Please try again.')
+    }
+  }
+
   const onApprove = async (data: any, actions: any) => {
     try {
+      // If demo mode is enabled, simulate payment
+      if (demoMode) {
+        await handleSimulatedPayment()
+        return
+      }
+
+      // Real payment processing
       const order = await actions.order.capture()
       
       // Save transaction to database
@@ -123,7 +201,8 @@ function CheckoutContent() {
         .update({ 
           subscription_tier: plan,
           subscription_status: 'active',
-          subscription_start_date: now.toISOString()
+          subscription_start_date: now.toISOString(),
+          plan_type: plan === 'starter' ? 'starter' : (plan === 'premium' ? 'enterprise' : 'pro')
         })
         .eq('id', user.id)
 
@@ -221,27 +300,23 @@ function CheckoutContent() {
     )
   }
 
-  return (
-    <PayPalScriptProvider
-      options={{
-        clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '',
-        currency: 'ILS',
-        intent: 'capture',
-      }}
-    >
-      <div className="min-h-screen bg-dark py-12 px-4">
-        <div className="container mx-auto max-w-6xl">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <Link href="/" className="inline-flex items-center space-x-2 mb-6">
-              <div className="bg-gradient-cyan p-2 rounded-xl shadow-glow">
-                <Bot className="h-8 w-8 text-dark" />
-              </div>
-              <span className="text-3xl font-bold text-primary text-glow">AgentDesk</span>
-            </Link>
-            <h1 className="text-4xl font-bold text-white mb-2">Complete Your Purchase</h1>
-            <p className="text-dark-800">Secure checkout powered by PayPal</p>
-          </div>
+  // Render checkout content
+  const renderCheckoutContent = () => (
+    <div className="min-h-screen bg-dark py-12 px-4">
+      <div className="container mx-auto max-w-6xl">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <Link href="/" className="inline-flex items-center space-x-2 mb-6">
+            <div className="bg-gradient-cyan p-2 rounded-xl shadow-glow">
+              <Bot className="h-8 w-8 text-dark" />
+            </div>
+            <span className="text-3xl font-bold text-primary text-glow">AgentDesk</span>
+          </Link>
+          <h1 className="text-4xl font-bold text-white mb-2">Complete Your Purchase</h1>
+          <p className="text-dark-800">
+            {demoMode ? 'Demo Checkout - No Payment Required' : 'Secure checkout powered by PayPal'}
+          </p>
+        </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Plan Summary */}
@@ -367,31 +442,65 @@ function CheckoutContent() {
                     </p>
                   </div>
 
-                  {/* Divider */}
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-dark-100"></div>
+                  {/* Demo Mode Notice */}
+                  {demoMode && (
+                    <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                      <p className="text-sm text-blue-400 flex items-center gap-2">
+                        <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                        <span>
+                          <strong>Demo Mode Active:</strong> This is a simulated checkout. No real payment will be processed.
+                          Click the button below to complete the demo upgrade.
+                        </span>
+                      </p>
                     </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-4 bg-dark-50 text-dark-800">Or pay with PayPal</span>
-                    </div>
-                  </div>
+                  )}
 
-                  {/* PayPal Button */}
-                  <div className="space-y-3">
-                    <PayPalButtons
-                      createOrder={createOrder}
-                      onApprove={onApprove}
-                      onError={onError}
-                      onCancel={onCancel}
-                      style={{
-                        layout: 'vertical',
-                        color: 'blue',
-                        shape: 'rect',
-                        label: 'pay',
-                      }}
-                    />
-                  </div>
+                  {/* Demo Payment Button */}
+                  {demoMode && (
+                    <Button
+                      onClick={handleSimulatedPayment}
+                      className="w-full bg-gradient-cyan hover:shadow-glow-lg py-6 text-lg font-semibold"
+                    >
+                      Complete Demo Upgrade
+                    </Button>
+                  )}
+
+                  {/* Divider - Only show if not demo mode */}
+                  {!demoMode && (
+                    <>
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-dark-100"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="px-4 bg-dark-50 text-dark-800">Or pay with PayPal</span>
+                        </div>
+                      </div>
+
+                      {/* PayPal Button - Only show if not demo mode */}
+                      <div className="space-y-3">
+                        <PayPalButtons
+                          createOrder={createOrder}
+                          onApprove={onApprove}
+                          onError={onError}
+                          onCancel={onCancel}
+                          style={{
+                            layout: 'vertical',
+                            color: 'blue',
+                            shape: 'rect',
+                            label: 'pay',
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Demo Mode Footer Notice */}
+                  {demoMode && (
+                    <div className="text-center text-xs text-dark-800 pt-4 border-t border-dark-100">
+                      💡 This is a demo checkout — no payment will be processed.
+                    </div>
+                  )}
 
                   <div className="text-center">
                     <Link href="/pricing" className="text-primary hover:text-primary/80 transition-smooth text-sm">
@@ -404,6 +513,18 @@ function CheckoutContent() {
           </div>
         </div>
       </div>
+    )
+
+  // Wrap with PayPal provider only if NOT in demo mode
+  return demoMode ? renderCheckoutContent() : (
+    <PayPalScriptProvider
+      options={{
+        clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '',
+        currency: 'ILS',
+        intent: 'capture',
+      }}
+    >
+      {renderCheckoutContent()}
     </PayPalScriptProvider>
   )
 }

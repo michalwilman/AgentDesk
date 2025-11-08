@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RoleBadge } from '@/components/admin/role-badge'
+import { DemoModeToggle } from '@/components/admin/demo-mode-toggle'
 import { Shield, UserCog, Plus, Settings } from 'lucide-react'
 import { getAllUsers } from '@/lib/admin/admin-api'
 
@@ -48,6 +49,9 @@ export default function SettingsPage() {
         <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
         <p className="text-gray-600 mt-2">Manage system configuration and administrators</p>
       </div>
+
+      {/* Demo Mode Toggle */}
+      <DemoModeToggle />
 
       {/* Admin Users Section */}
       <Card className="border-gray-700 bg-gray-900">

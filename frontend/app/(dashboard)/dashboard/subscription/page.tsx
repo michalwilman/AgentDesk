@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { checkTrialStatus, formatTrialEndDate, type TrialStatus } from '@/lib/subscription/trial-checker'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ContactSalesModal } from '@/components/modals/contact-sales-modal'
 import { 
   Clock, 
   CheckCircle, 
@@ -88,11 +89,31 @@ const PLAN_PRICES: Record<string, number> = {
   premium: 0 // Custom pricing
 }
 
+// Helper function to get the next plan for upgrade
+const getNextPlan = (currentTier: string): string => {
+  switch (currentTier.toLowerCase()) {
+    case 'free':
+    case 'starter':
+      return 'growth'
+    case 'growth':
+      return 'plus'
+    case 'plus':
+      return 'premium'
+    case 'premium':
+      return '' // Already on highest plan
+    default:
+      return 'growth'
+  }
+}
+
 export default function SubscriptionPage() {
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [showCancelModal, setShowCancelModal] = useState(false)
+  const [showContactSalesModal, setShowContactSalesModal] = useState(false)
+  const [userEmail, setUserEmail] = useState('')
+  const [userName, setUserName] = useState('')
 
   useEffect(() => {
     async function loadData() {
@@ -100,12 +121,26 @@ export default function SubscriptionPage() {
         const status = await checkTrialStatus()
         setTrialStatus(status)
 
-        // Load transactions if subscribed
-        if (status.subscriptionTier !== 'free') {
-          const supabase = createClient()
-          const { data: { user } } = await supabase.auth.getUser()
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (user) {
+          // Set user email
+          setUserEmail(user.email || '')
           
-          if (user) {
+          // Fetch user data for name
+          const { data: userData } = await supabase
+            .from('users')
+            .select('full_name')
+            .eq('id', user.id)
+            .single()
+          
+          if (userData?.full_name) {
+            setUserName(userData.full_name)
+          }
+
+          // Load transactions if subscribed
+          if (status.subscriptionTier !== 'free') {
             const { data } = await supabase
               .from('transactions')
               .select('*')
@@ -161,6 +196,7 @@ export default function SubscriptionPage() {
   const planName = trialStatus.subscriptionTier.charAt(0).toUpperCase() + trialStatus.subscriptionTier.slice(1)
   const planFeatures = PLAN_FEATURES[trialStatus.subscriptionTier] || PLAN_FEATURES['free']
   const planPrice = PLAN_PRICES[trialStatus.subscriptionTier] || 0
+  const nextPlan = getNextPlan(trialStatus.subscriptionTier)
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -279,7 +315,7 @@ export default function SubscriptionPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {(isOnTrial || isExpired) && (
-                <Link href="/pricing" className="block">
+                <Link href={`/dashboard/upgrade${nextPlan ? `?plan=${nextPlan}` : ''}`} className="block">
                   <Button className="w-full bg-gradient-cyan hover:shadow-glow-lg transition-smooth">
                     <TrendingUp className="h-4 w-4 mr-2" />
                     Upgrade Plan
@@ -289,12 +325,28 @@ export default function SubscriptionPage() {
               
               {hasSubscription && (
                 <>
-                  <Link href="/pricing" className="block">
-                    <Button variant="outline" className="w-full">
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                      Change Plan
-                    </Button>
-                  </Link>
+                  {nextPlan === 'premium' || !nextPlan ? (
+                    <div className="space-y-2">
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => setShowContactSalesModal(true)}
+                      >
+                        <ArrowRight className="h-4 w-4 mr-2" />
+                        {nextPlan === 'premium' ? 'Upgrade to Premium' : 'Contact Sales'}
+                      </Button>
+                      <p className="text-xs text-dark-800 text-center">
+                        Looking for a custom plan? Contact us directly.
+                      </p>
+                    </div>
+                  ) : (
+                    <Link href={`/dashboard/upgrade?plan=${nextPlan}`} className="block">
+                      <Button variant="outline" className="w-full">
+                        <ArrowRight className="h-4 w-4 mr-2" />
+                        Change Plan
+                      </Button>
+                    </Link>
+                  )}
                   
                   <Button 
                     variant="ghost" 
@@ -419,6 +471,14 @@ export default function SubscriptionPage() {
           </Card>
         </div>
       )}
+
+      {/* Contact Sales Modal */}
+      <ContactSalesModal 
+        open={showContactSalesModal}
+        onOpenChange={setShowContactSalesModal}
+        userEmail={userEmail}
+        userName={userName}
+      />
     </div>
   )
 }

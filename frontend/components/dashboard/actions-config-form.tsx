@@ -39,6 +39,7 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
   const [showAuthToken, setShowAuthToken] = useState(false)
   const [showWhatsAppNumber, setShowWhatsAppNumber] = useState(false)
   const [planType, setPlanType] = useState<'starter' | 'pro' | 'enterprise'>('starter')
+  const [subscriptionTier, setSubscriptionTier] = useState<'starter' | 'growth' | 'plus' | 'premium'>('starter')
   const searchParams = useSearchParams()
   const supabase = createClient()
 
@@ -53,16 +54,47 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
       if (user) {
         const { data: userData } = await supabase
           .from('users')
-          .select('plan_type')
+          .select('plan_type, subscription_tier')
           .eq('id', user.id)
           .single()
         
         if (userData?.plan_type) {
           setPlanType(userData.plan_type as 'starter' | 'pro' | 'enterprise')
         }
+        if (userData?.subscription_tier) {
+          setSubscriptionTier(userData.subscription_tier as 'starter' | 'growth' | 'plus' | 'premium')
+        }
       }
     } catch (error) {
       console.error('Error fetching plan type:', error)
+    }
+  }
+
+  // Helper function to get marketing plan names and upgrade info
+  const getPlanUpgradeInfo = (currentTier: string) => {
+    switch (currentTier) {
+      case 'starter':
+        return {
+          nextPlan: 'Growth',
+          features: '250 SMS + 100 WhatsApp messages included',
+          price: '₪249/month'
+        }
+      case 'growth':
+        return {
+          nextPlan: 'Plus',
+          features: 'Unlimited messages + Bring your own Twilio',
+          price: '₪749/month'
+        }
+      case 'plus':
+        return {
+          nextPlan: 'Premium',
+          features: 'Managed AI agent with unlimited everything',
+          price: 'Custom pricing'
+        }
+      case 'premium':
+        return null // Highest plan
+      default:
+        return null
     }
   }
 
@@ -496,7 +528,7 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
             <div>
               <CardTitle>SMS & WhatsApp Notifications</CardTitle>
               <CardDescription>
-                {planType === 'starter' && 'Upgrade to Pro to enable SMS & WhatsApp notifications'}
+                {planType === 'starter' && 'Upgrade to Growth or higher to enable SMS & WhatsApp notifications'}
                 {planType === 'pro' && 'Managed by AgentDesk - Simply toggle on/off'}
                 {planType === 'enterprise' && 'Use your own Twilio account for SMS & WhatsApp'}
               </CardDescription>
@@ -516,18 +548,30 @@ export function ActionsConfigForm({ bot, config: initialConfig }: ActionsConfigF
                 </h4>
                 <p className="text-sm text-gray-400">
                   Send appointment confirmations and reminders via SMS and WhatsApp. 
-                  Available in Pro and Enterprise plans.
+                  Available in Growth and higher plans.
                 </p>
               </div>
               <div className="flex flex-col gap-2 max-w-xs mx-auto">
                 <Button 
-                  onClick={() => window.location.href = '/pricing'}
+                  onClick={() => {
+                    const upgradeInfo = getPlanUpgradeInfo(subscriptionTier)
+                    const planParam = upgradeInfo ? upgradeInfo.nextPlan.toLowerCase() : ''
+                    window.location.href = `/dashboard/upgrade${planParam ? `?plan=${planParam}` : ''}`
+                  }}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
                 >
-                  Upgrade to Pro Plan
+                  {(() => {
+                    const upgradeInfo = getPlanUpgradeInfo(subscriptionTier)
+                    return upgradeInfo ? `Upgrade to ${upgradeInfo.nextPlan} Plan` : 'View Plans'
+                  })()}
                 </Button>
                 <p className="text-xs text-gray-500">
-                  Starting at ₪249/month • 250 SMS + 100 WhatsApp messages included
+                  {(() => {
+                    const upgradeInfo = getPlanUpgradeInfo(subscriptionTier)
+                    return upgradeInfo 
+                      ? `Starting at ${upgradeInfo.price} • ${upgradeInfo.features}`
+                      : 'See all available plans'
+                  })()}
                 </p>
               </div>
             </div>
