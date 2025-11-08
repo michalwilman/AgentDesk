@@ -11,6 +11,11 @@
 -- Enable RLS
 ALTER TABLE user_deletion_log ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Admins can view deletion logs" ON user_deletion_log;
+DROP POLICY IF EXISTS "System can insert deletion logs" ON user_deletion_log;
+DROP POLICY IF EXISTS "Admins can insert deletion logs" ON user_deletion_log;
+
 -- Policy: Admins can view all deletion logs
 CREATE POLICY "Admins can view deletion logs" ON user_deletion_log
   FOR SELECT USING (
@@ -45,6 +50,11 @@ COMMENT ON POLICY "System can insert deletion logs" ON user_deletion_log IS 'Sys
 -- Enable RLS
 ALTER TABLE monthly_usage ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own usage" ON monthly_usage;
+DROP POLICY IF EXISTS "Admins can view all usage" ON monthly_usage;
+DROP POLICY IF EXISTS "System can manage usage" ON monthly_usage;
+
 -- Policy: Users can view their own usage
 CREATE POLICY "Users can view own usage" ON monthly_usage
   FOR SELECT USING (user_id = auth.uid());
@@ -73,6 +83,11 @@ COMMENT ON POLICY "Admins can view all usage" ON monthly_usage IS 'Admins can vi
 -- Enable RLS
 ALTER TABLE message_logs ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own message logs" ON message_logs;
+DROP POLICY IF EXISTS "Admins can view all message logs" ON message_logs;
+DROP POLICY IF EXISTS "System can insert message logs" ON message_logs;
+
 -- Policy: Users can view their own message logs
 CREATE POLICY "Users can view own message logs" ON message_logs
   FOR SELECT USING (user_id = auth.uid());
@@ -100,6 +115,11 @@ COMMENT ON POLICY "Admins can view all message logs" ON message_logs IS 'Admins 
 
 -- Enable RLS
 ALTER TABLE plan_limits ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Authenticated users can view plan limits" ON plan_limits;
+DROP POLICY IF EXISTS "Admins can update plan limits" ON plan_limits;
+DROP POLICY IF EXISTS "Admins can insert plan limits" ON plan_limits;
 
 -- Policy: Everyone can view plan limits (needed for checking limits)
 CREATE POLICY "Authenticated users can view plan limits" ON plan_limits
