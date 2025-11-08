@@ -111,6 +111,7 @@ export function BotChatPreview({
   )
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const lastWelcomeKey = useRef<string>('')
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -119,6 +120,14 @@ export function BotChatPreview({
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
+    }
+  }, [input])
 
   useEffect(() => {
     // Determine which messages to show
@@ -246,7 +255,7 @@ export function BotChatPreview({
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage()
@@ -547,18 +556,21 @@ export function BotChatPreview({
 
       {/* Input */}
       <div className="border-t border-gray-200 p-4 bg-white">
-        <div className="flex items-center gap-2.5">
-          <input
-            type="text"
+        <div className="flex items-end gap-2.5">
+          <textarea
+            ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             placeholder={
               language === 'he' ? 'הקלד הודעה...' : 'Type your message...'
             }
-            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-gray-900 placeholder:text-gray-400"
+            rows={1}
+            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm text-gray-900 placeholder:text-gray-400 resize-none overflow-y-auto"
             style={{ 
-              boxShadow: input ? `0 0 0 2px ${primaryColor}20` : undefined 
+              boxShadow: input ? `0 0 0 2px ${primaryColor}20` : undefined,
+              minHeight: '42px',
+              maxHeight: '120px'
             }}
             disabled={loading}
             dir={isRtl ? 'rtl' : 'ltr'}
@@ -566,7 +578,7 @@ export function BotChatPreview({
           <button
             onClick={sendMessage}
             disabled={!input.trim() || loading}
-            className="flex items-center justify-center w-10 h-10 text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 hover:scale-105 flex-shrink-0 shadow-md"
+            className="flex items-center justify-center w-10 h-10 text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 hover:scale-105 flex-shrink-0 shadow-md mb-0.5"
             style={{ backgroundColor: primaryColor }}
             aria-label={language === 'he' ? 'שלח הודעה' : 'Send message'}
           >

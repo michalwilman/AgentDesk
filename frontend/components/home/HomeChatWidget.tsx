@@ -109,7 +109,7 @@ export default function HomeChatWidget() {
   const [error, setError] = useState<string | null>(null)
   const [showQuickReplies, setShowQuickReplies] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const lastRequestTime = useRef<number>(0)
 
   // Scroll to bottom of messages
@@ -120,6 +120,14 @@ export default function HomeChatWidget() {
   useEffect(() => {
     scrollToBottom()
   }, [messages, loading])
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto'
+      inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 120)}px`
+    }
+  }, [input])
 
   // Load chat history from localStorage on mount
   useEffect(() => {
@@ -253,7 +261,7 @@ export default function HomeChatWidget() {
     sendMessage(reply)
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -632,24 +640,26 @@ export default function HomeChatWidget() {
 
           {/* Input */}
           <div className="border-t border-gray-200 p-5 bg-white safe-area-bottom">
-            <div className="flex items-center gap-3">
-              <input
+            <div className="flex items-end gap-3">
+              <textarea
                 ref={inputRef}
-                type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 placeholder="Type your message..."
-                className="flex-1 px-5 py-4 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50 text-[17px] text-gray-900 placeholder:text-gray-400"
+                rows={1}
+                className="flex-1 px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-opacity-50 text-[17px] text-gray-900 placeholder:text-gray-400 resize-none overflow-y-auto"
                 style={{
                   boxShadow: input ? `0 0 0 2px ${PRIMARY_COLOR}20` : undefined,
+                  minHeight: '56px',
+                  maxHeight: '120px'
                 }}
                 disabled={loading}
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
-                className="flex items-center justify-center w-14 h-14 text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 hover:scale-105 flex-shrink-0 shadow-md"
+                className="flex items-center justify-center w-14 h-14 text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 hover:scale-105 flex-shrink-0 shadow-md mb-0.5"
                 style={{ backgroundColor: PRIMARY_COLOR }}
                 aria-label="Send message"
               >

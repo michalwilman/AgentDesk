@@ -31,6 +31,7 @@ export function ChatWidget({ botToken }: { botToken: string }) {
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substring(7)}`)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const lastWelcomeKey = useRef<string>('')
 
   // Notify parent window when widget opens/closes (for iframe integration)
@@ -50,6 +51,14 @@ export function ChatWidget({ botToken }: { botToken: string }) {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
+    }
+  }, [input])
 
   // Fetch bot configuration
   useEffect(() => {
@@ -194,7 +203,7 @@ export function ChatWidget({ botToken }: { botToken: string }) {
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage()
@@ -513,16 +522,19 @@ export function ChatWidget({ botToken }: { botToken: string }) {
 
           {/* Input Area */}
           <div className="border-t border-gray-200 p-4 bg-white">
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
+            <div className="flex items-end gap-3">
+              <textarea
+                ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 placeholder={isRtl ? 'הקלד הודעה...' : 'Type your message...'}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm"
+                rows={1}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm resize-none overflow-y-auto"
                 style={{ 
-                  boxShadow: input ? `0 0 0 2px ${primaryColor}20` : undefined 
+                  boxShadow: input ? `0 0 0 2px ${primaryColor}20` : undefined,
+                  minHeight: '48px',
+                  maxHeight: '120px'
                 }}
                 disabled={loading}
                 dir={isRtl ? 'rtl' : 'ltr'}
@@ -530,7 +542,7 @@ export function ChatWidget({ botToken }: { botToken: string }) {
               <button
                 onClick={sendMessage}
                 disabled={!input.trim() || loading}
-                className="flex items-center justify-center w-12 h-12 text-white rounded-full transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 flex-shrink-0"
+                className="flex items-center justify-center w-12 h-12 text-white rounded-full transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 flex-shrink-0 mb-0.5"
                 style={{ backgroundColor: primaryColor }}
                 aria-label={isRtl ? 'שלח הודעה' : 'Send message'}
               >
