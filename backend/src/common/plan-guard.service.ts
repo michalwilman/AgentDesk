@@ -9,25 +9,11 @@ export interface PlanCheckResult {
 }
 
 export interface PlanLimits {
-  plan_name: string;
-  max_bots: number;
-  max_conversations: number;
-  max_whatsapp_messages: number;
-  email_notifications: boolean;
-  google_calendar_sync: boolean;
-  whatsapp_notifications: boolean;
-  appointment_reminders: boolean;
-  lead_collection: boolean;
-  basic_analytics: boolean;
-  advanced_analytics: boolean;
-  remove_branding: boolean;
-  priority_support: boolean;
-  webhook_integrations: boolean;
-  custom_branding: boolean;
-  bring_own_twilio: boolean;
-  multiple_team_members: boolean;
-  api_access: boolean;
-  sla_guarantee: boolean;
+  plan_type: string;
+  sms_monthly_limit: number | null;
+  whatsapp_monthly_limit: number | null;
+  email_monthly_limit: number | null;
+  price_monthly: number;
 }
 
 export interface UsageStats {
@@ -97,10 +83,10 @@ export class PlanGuardService {
     try {
       const supabase = this.supabaseService.getClient();
 
-      // Get user's subscription tier
+      // Get user's subscription tier and plan_type
       const { data: user, error: userError } = await supabase
         .from('users')
-        .select('subscription_tier')
+        .select('subscription_tier, plan_type')
         .eq('id', userId)
         .single();
 
@@ -109,11 +95,17 @@ export class PlanGuardService {
         return null;
       }
 
-      // Get plan limits
+      // Map subscription_tier to plan_type if plan_type is not set
+      let planType = user.plan_type;
+      if (!planType) {
+        planType = this.mapSubscriptionTierToPlanType(user.subscription_tier);
+      }
+
+      // Get plan limits using plan_type
       const { data: limits, error: limitsError } = await supabase
         .from('plan_limits')
         .select('*')
-        .eq('plan_name', user.subscription_tier)
+        .eq('plan_type', planType)
         .single();
 
       if (limitsError || !limits) {
@@ -255,6 +247,23 @@ export class PlanGuardService {
     } catch (error) {
       this.logger.error('Error in getUserPlan:', error);
       return null;
+    }
+  }
+
+  /**
+   * Map subscription_tier to plan_type for backward compatibility
+   */
+  private mapSubscriptionTierToPlanType(subscriptionTier: string): string {
+    switch (subscriptionTier) {
+      case 'starter':
+        return 'starter';
+      case 'growth':
+      case 'plus':
+        return 'pro';
+      case 'premium':
+        return 'enterprise';
+      default:
+        return 'starter';
     }
   }
 }
