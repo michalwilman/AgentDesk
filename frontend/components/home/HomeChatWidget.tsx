@@ -459,24 +459,26 @@ export default function HomeChatWidget() {
 
           {/* Input */}
           <div className="border-t border-gray-200 p-5 bg-white">
-            <div className="flex items-center gap-3">
-              <input
+            <div className="flex items-end gap-3">
+              <textarea
                 ref={inputRef}
-                type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 placeholder="Type your message..."
-                className="flex-1 px-5 py-4 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-opacity-50 text-[17px] text-gray-900 placeholder:text-gray-400"
+                rows={1}
+                className="flex-1 px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-opacity-50 text-[17px] text-gray-900 placeholder:text-gray-400 resize-none overflow-y-auto"
                 style={{
                   boxShadow: input ? `0 0 0 2px ${PRIMARY_COLOR}20` : undefined,
+                  minHeight: '56px',
+                  maxHeight: '120px'
                 }}
                 disabled={loading}
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
-                className="flex items-center justify-center w-14 h-14 text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 hover:scale-105 flex-shrink-0 shadow-md"
+                className="flex items-center justify-center w-14 h-14 text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 hover:scale-105 flex-shrink-0 shadow-md mb-0.5"
                 style={{ backgroundColor: PRIMARY_COLOR }}
                 aria-label="Send message"
               >
